@@ -70,12 +70,15 @@ class Cube:
     
     def move_co(self, mov):
         surface = [[3, 1, 7, 5], [3, 1, 7, 5], [0, 2, 4, 6], [0, 1, 3, 2], [0, 1, 3, 2], [4, 5, 7, 6], [2, 3, 5, 4], [2, 3, 5, 4], [1, 0, 6, 7]]
-        pls = [[1, 2, 1, 2], [0, 0, 0, 0], [2, 1, 2, 1]]
+        pls = [1, 2, 1, 2]
         res = [i for i in self.Co]
         mov_type = mov // 3
         mov_amount = mov % 3
         for i in range(4):
-            res[surface[mov_type][(i + mov_amount + 1) % 4]] = (self.Co[surface[mov_type][i]] + pls[mov_amount][i]) % 3
+            res[surface[mov_type][(i + mov_amount + 1) % 4]] = self.Co[surface[mov_type][i]]
+            if mov // 9 != 1 and mov_amount != 1:
+                res[surface[mov_type][(i + mov_amount + 1) % 4]] += pls[i]
+                res[surface[mov_type][(i + mov_amount + 1) % 4]] %= 3
         return res
     
     def move_ep(self, mov):
@@ -125,7 +128,6 @@ class Cube:
 
 def dfs(status, depth):
     global ans
-    print(ans)
     l_mov_type = ans[-1] // 3 if ans else -10
     l3_mov_type = ans[-1] // 9 if len(ans) >= 3 and ans[-1] // 9 == ans[-2] // 9 == ans[-3] else -10
     for mov in range(27):
@@ -153,10 +155,13 @@ puzzle = Cube()
 for mov in scramble:
     puzzle = puzzle.move(mov)
 
-for depth in range(10):
+for depth in range(1, 5):
     if dfs(puzzle, depth):
-        print(ans)
+        break
 
+for i in ans:
+    print(move_candidate[i], end=' ')
+print('')
 
 '''
 root = tkinter.Tk()
