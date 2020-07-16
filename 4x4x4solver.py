@@ -50,10 +50,7 @@ L 23 22 R
     B
 '''
 
-
-
-
-move_candidate = ["R", "R2", "R'", "Rw", "Rw2", "Rw'", "L", "L2", "L'", "U", "U2", "U'", "Uw", "Uw2", "Uw'", "D", "D2", "D'", "F", "F2", "F'", "Fw", "Fw2", "Fw'", "B", "B2", "B'"]
+import tkinter
 
 class Cube:
     def __init__(self):
@@ -126,4 +123,54 @@ class Cube:
         res.Ce = self.move_ce(mov)
         return res
 
-cube = Cube()
+def dfs(status, depth):
+    global ans
+    print(ans)
+    l_mov_type = ans[-1] // 3 if ans else -10
+    l3_mov_type = ans[-1] // 9 if len(ans) >= 3 and ans[-1] // 9 == ans[-2] // 9 == ans[-3] else -10
+    for mov in range(27):
+        if l_mov_type == mov // 3 or l3_mov_type == mov // 9:
+            continue
+        n_status = status.move(mov)
+        ans.append(mov)
+        if len(ans) == depth:
+            if n_status.Cp == solved.Cp and n_status.Co == solved.Co and n_status.Ep == solved.Ep and n_status.Ce == solved.Ce:
+                return True
+            else:
+                ans.pop()
+        elif dfs(n_status, depth):
+            return True
+        else:
+            ans.pop()
+    return False
+
+ans = []
+solved = Cube()
+move_candidate = ["R", "R2", "R'", "Rw", "Rw2", "Rw'", "L", "L2", "L'", "U", "U2", "U'", "Uw", "Uw2", "Uw'", "D", "D2", "D'", "F", "F2", "F'", "Fw", "Fw2", "Fw'", "B", "B2", "B'"]
+scramble = [move_candidate.index(i) for i in input().split()]
+print(scramble)
+puzzle = Cube()
+for mov in scramble:
+    puzzle = puzzle.move(mov)
+
+for depth in range(10):
+    if dfs(puzzle, depth):
+        print(ans)
+
+
+'''
+root = tkinter.Tk()
+root.title("2x2x2solver")
+root.geometry("400x300")
+
+entry = [[None for _ in range(8)] for _ in range(6)]
+
+dic = {'w':'white', 'g':'green', 'r':'red', 'b':'blue', 'o':'magenta', 'y':'yellow'}
+
+for i in range(6):
+    for j in range(8):
+        if 1 < i < 4 or 1 < j < 4:
+            canvas.create_rectangle(j * grid, i * grid, (j + 1) * grid, (i + 1) * grid, fill = 'gray')
+            entry[i][j] = tkinter.Entry(width=2)
+            entry[i][j].place(x = j * grid, y = i * grid)
+'''
