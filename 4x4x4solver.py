@@ -155,7 +155,7 @@ class Cube:
         return res % 2
 
 
-# ather RL centers
+# gather RL centers
 def phase_1(status, depth):
     global ans, puzzle
     l_mov_type = ans[-1] // 3 if ans else -10
@@ -230,30 +230,30 @@ def phase_3(status, depth):
             ans.pop()
     return False
 
-# pair up remaining edges
-def phase_3(status, depth):
+# pair up remaining edges, solve centers
+def phase_4(status, depth):
     global ans, puzzle
     l_mov_type = ans[-1] // 3 if ans else -10
     l3_mov_type = ans[-1] // 9 if len(ans) >= 3 and ans[-1] // 9 == ans[-2] // 9 == ans[-3] else -10
-    lst = [1, 4, 7, 9, 11, 13, 15, 17, 18, 20, 22, 24, 26]
+    lst = [1, 4, 7, 9, 11, 15, 17, 19, 22, 25]
     for mov in lst:
         if l_mov_type == mov // 3 or l3_mov_type == mov // 9:
             continue
         n_status = status.move(mov)
         ans.append(mov)
         if len(ans) == depth:
-            flag_phase3 = True
-            for arr in phase3_edges:
+            flag_phase4 = True
+            for arr in phase4_edges:
                 tmp = [n_status.Ep[i] for i in arr]
                 if abs(tmp[0] - tmp[1]) != 1 or min(tmp) % 2:
-                    flag_phase3 = False
+                    flag_phase4 = False
                     break
-            if flag_phase3:
+            if flag_phase4 and [n_status.Ce[i] for i in rl_center] == [2, 2, 2, 2, 4, 4, 4, 4] and [n_status.Ce[i] for i in fb_center] == [1, 1, 1, 1, 3, 3, 3, 3] and [n_status.Ce[i] for i in ud_center] == [0, 0, 0, 0, 5, 5, 5, 5]:
                 puzzle = n_status
                 return True
             else:
                 ans.pop()
-        elif phase_3(n_status, depth):
+        elif phase_4(n_status, depth):
             return True
         else:
             ans.pop()
@@ -298,6 +298,7 @@ for mov in scramble:
     puzzle = puzzle.move(mov)
 strt = time()
 
+# phase 1
 rl_center = [8, 9, 10, 11, 16, 17, 18, 19]
 if set([puzzle.Ce[i] for i in rl_center]) != set([2, 4]):
     for depth in range(1, 10):
@@ -308,6 +309,7 @@ for i in ans:
     print(move_candidate[i], end=' ')
 print('')
 
+# phase 2
 fb_center = [4, 5, 6, 7, 12, 13, 14, 15]
 if set([puzzle.Ce[i] for i in fb_center]) != set([1, 3]) or puzzle.sgn_ep() != 0:
     for depth in range(len(ans) + 1, len(ans) + 10):
@@ -318,7 +320,9 @@ for i in ans:
     print(move_candidate[i], end=' ')
 print('')
 
+# phase 3
 phase3_edges = [[8, 9], [10, 11], [12, 13], [14, 15]]
+flag_phase3 = True
 for arr in phase3_edges:
     tmp = [puzzle.Ep[i] for i in arr]
     if abs(tmp[0] - tmp[1]) != 1 or min(tmp) % 2:
@@ -328,6 +332,25 @@ if not flag_phase3:
     for depth in range(len(ans) + 1, len(ans) + 10):
         if phase_3(puzzle, depth):
             break
+
+for i in ans:
+    print(move_candidate[i], end=' ')
+print('')
+
+# phase 4
+ud_center = [0, 1, 2, 3, 20, 21, 22, 23]
+phase4_edges = [[0, 1], [2, 3], [4, 5], [6, 7], [16, 17], [18, 19], [20, 21], [22, 23]]
+flag_phase4 = True
+for arr in phase4_edges:
+    tmp = [puzzle.Ep[i] for i in arr]
+    if abs(tmp[0] - tmp[1]) != 1 or min(tmp) % 2:
+        flag_phase4 = False
+        break
+if not flag_phase4 or [puzzle.Ce[i] for i in rl_center] != [2, 2, 2, 2, 4, 4, 4, 4] or [puzzle.Ce[i] for i in fb_center] != [1, 1, 1, 1, 3, 3, 3, 3] or [puzzle.Ce[i] for i in ud_center] != [0, 0, 0, 0, 5, 5, 5, 5]:
+    for depth in range(len(ans) + 1, len(ans) + 10):
+        if phase_4(puzzle, depth):
+            break
+
 for i in ans:
     print(move_candidate[i], end=' ')
 print('')
