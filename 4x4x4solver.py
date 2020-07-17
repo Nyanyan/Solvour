@@ -103,7 +103,7 @@ class Cube:
     
     def move_ce(self, mov):
         surface = [[[8, 9, 10, 11]], # R
-                   [[8, 9, 10, 11], [2, 12, 23, 6], [1, 15, 21, 5]], # Rw
+                   [[8, 9, 10, 11], [2, 12, 22, 6], [1, 15, 21, 5]], # Rw
                    [[16, 17, 18, 19]], # L
                    [[0, 1, 2, 3]], # U
                    [[0, 1, 2, 3], [13, 9, 5, 17], [12, 8, 4, 16]], # Uw
@@ -127,7 +127,7 @@ class Cube:
         res.Ep = self.move_ep(mov)
         res.Ce = self.move_ce(mov)
         return res
-    
+    '''
     def idx(self): # Epの組み合わせが6e23くらいあるのでこれで枝刈りするのは無理
         res_cp = 0
         for i in range(8):
@@ -141,7 +141,7 @@ class Cube:
             res_co *= 3
             res_co += self.Co[i]
         return res_cp, res_co
-    
+    '''
     def parity(self):
         arr = [i for i in self.Ep]
         res = 0
@@ -153,7 +153,49 @@ class Cube:
                         res += 1
                         break
         return res % 2
+    
+    def ce_phase3_idx(self):
+        res_rl = 0
+        cnt = 0
+        for i in reversed(range(8)):
+            if self.Ce[rl_center[i]] == 4:
+                cnt += 1
+                res_rl += cmb(7 - i, cnt)
+        res_fb = 0
+        cnt = 0
+        for i in reversed(range(8)):
+            if self.Ce[fb_center[i]] == 3:
+                cnt += 1
+                res_fb += cmb(7 - i, cnt)
+        res_ud = 0
+        cnt = 0
+        for i in reversed(range(8)):
+            if self.Ce[ud_center[i]] == 5:
+                cnt += 1
+                res_ud += cmb(7 - i, cnt)
+        return res_rl * 4900 + res_fb * 70 + res_ud
+    
+    def ce_phase1_idx(self):
+        res = 0
+        cnt = 0
+        for i in reversed(range(24)):
+            if self.Ce[i] == 2 or self.Ce[i] == 4:
+                cnt += 1
+                res += cmb(23 - i, cnt)
+        return res
+    
+    def ce_phase2_idx(self):
+        res = 0
+        cnt = 0
+        arr = [0, 1, 2, 3, 4, 5, 6, 7, 12, 13, 14, 15, 20, 21, 22, 23]
+        for i in reversed(range(16)):
+            if self.Ce[arr[i]] == 1 or self.Ce[arr[i]] == 3:
+                cnt += 1
+                res += cmb(15 - i, cnt)
+        return res
 
+def cmb(n, r):
+    return fac[n] // fac[r] // fac[n - r]
 
 # gather RL centers
 def phase_1(status, depth):
@@ -165,6 +207,8 @@ def phase_1(status, depth):
         if l_mov_type == mov // 3 or l3_mov_type == mov // 9:
             continue
         n_status = status.move(mov)
+        if len(ans[0]) + 1 + ce_phase1[n_status.ce_phase1_idx()] > depth:
+            continue
         ans[0].append(mov)
         if len(ans[0]) == depth:
             if set([n_status.Ce[i] for i in rl_center]) == set([2, 4]):
@@ -178,7 +222,7 @@ def phase_1(status, depth):
             ans[0].pop()
     return False
 
-# gather FB centers, clear parity, make columns on RL centers
+# gather FB centers, clear parity
 def phase_2(status, depth):
     global ans, puzzle
     l_mov_type = ans[1][-1] // 3 if ans[1] else -10
@@ -188,10 +232,11 @@ def phase_2(status, depth):
         if l_mov_type == mov // 3 or l3_mov_type == mov // 9:
             continue
         n_status = status.move(mov)
+        if len(ans[1]) + 1 + ce_phase2[n_status.ce_phase2_idx()] > depth:
+            continue
         ans[1].append(mov)
         if len(ans[1]) == depth:
-            rl_ok = [[2, 2, 2, 2], [2, 4, 4, 2], [4, 2, 2, 4], [4, 4, 4, 4]]
-            if set([n_status.Ce[i] for i in fb_center]) == set([1, 3]) and [n_status.Ce[i] for i in rl_center[:4]] in rl_ok and [n_status.Ce[i] for i in rl_center[4:]] in rl_ok and n_status.parity() == 0:
+            if set([n_status.Ce[i] for i in fb_center]) == set([1, 3]) and n_status.parity() == 0:
                 puzzle = n_status
                 return True
             else:
@@ -202,7 +247,7 @@ def phase_2(status, depth):
             ans[1].pop()
     return False
 
-# pair up edges
+# pair up edges, complete centers = complete reduction
 def phase_3(status, depth):
     global ans, puzzle
     l_mov_type = ans[2][-1] // 3 if ans[2] else -10
@@ -212,6 +257,8 @@ def phase_3(status, depth):
         if l_mov_type == mov // 3 or l3_mov_type == mov // 9:
             continue
         n_status = status.move(mov)
+        if len(ans[2]) + 1 + ce_phase3[n_status.ce_phase3_idx()] > depth:
+            continue
         ans[2].append(mov)
         if len(ans[2]) == depth:
             flag = True
@@ -220,7 +267,11 @@ def phase_3(status, depth):
                 if abs(tmp[0] - tmp[1]) != 1 or min(tmp) % 2:
                     flag = False
                     break
-            if flag:# and set([n_status.Ce[i] for i in fb_center[:4]]) == set([1]) and [n_status.Ce[i] for i in fb_center[4:]] in fb_ok:
+            for surface in range(6):
+                if set([n_status.Ce[i] for i in range(surface * 4, surface * 4 + 4)]) != set([surface]):
+                    flag = False
+                    break
+            if flag:
                 puzzle = n_status
                 return True
             else:
@@ -264,9 +315,21 @@ fac = [1 for _ in range(25)]
 for i in range(1, 25):
     fac[i] = fac[i - 1] * i
 
-ans = [[], [], [], [], []]
 #                  0    1     2     3     4      5      6    7     8     9    10    11    12    13     14     15   16    17    18   19    20    21    22     23     24   25    26
 move_candidate = ["R", "R2", "R'", "Rw", "Rw2", "Rw'", "L", "L2", "L'", "U", "U2", "U'", "Uw", "Uw2", "Uw'", "D", "D2", "D'", "F", "F2", "F'", "Fw", "Fw2", "Fw'", "B", "B2", "B'"]
+rl_center = [8, 9, 10, 11, 16, 17, 18, 19]
+fb_center = [4, 5, 6, 7, 12, 13, 14, 15]
+ud_center = [0, 1, 2, 3, 20, 21, 22, 23]
+
+
+with open('ce_phase1.csv', mode='r') as f:
+    ce_phase1 = [int(i) for i in f.readline().replace('\n', '').split(',')]
+with open('ce_phase2.csv', mode='r') as f:
+    ce_phase2 = [int(i) for i in f.readline().replace('\n', '').split(',')]
+with open('ce_phase3.csv', mode='r') as f:
+    ce_phase3 = [int(i) for i in f.readline().replace('\n', '').split(',')]
+
+ans = [[], [], [], [], []]
 scramble = [move_candidate.index(i) for i in input("scramble: ").split()]
 puzzle = Cube()
 for mov in scramble:
@@ -275,7 +338,6 @@ print('parity:', puzzle.parity())
 strt = time()
 
 # phase 1
-rl_center = [8, 9, 10, 11, 16, 17, 18, 19]
 if set([puzzle.Ce[i] for i in rl_center]) != set([2, 4]):
     for depth in range(1, 9):
         if phase_1(puzzle, depth):
@@ -287,7 +349,6 @@ for i in ans[0]:
 print('')
 
 # phase 2
-fb_center = [4, 5, 6, 7, 12, 13, 14, 15]
 if set([puzzle.Ce[i] for i in fb_center]) != set([1, 3]) or puzzle.parity():
     for depth in range(1, 15):
         if phase_2(puzzle, depth):
