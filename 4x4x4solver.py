@@ -141,26 +141,119 @@ class Cube:
             res_co *= 3
             res_co += self.Co[i]
         return res_cp, res_co
+    
+    def sgn_ep(self):
+        arr = [i for i in self.Ep]
+        res = 0
+        for i in range(24):
+            if arr[i] != i:
+                for j in range(i + 1, 24):
+                    if arr[j] == i:
+                        arr[i], arr[j] = arr[j], arr[i]
+                        res += 1
+                        break
+        return res % 2
 
 
-def dfs(status, depth):
-    global ans
+# ather RL centers
+def phase_1(status, depth):
+    global ans, puzzle
     l_mov_type = ans[-1] // 3 if ans else -10
     l3_mov_type = ans[-1] // 9 if len(ans) >= 3 and ans[-1] // 9 == ans[-2] // 9 == ans[-3] else -10
-    for mov in range(27):
+    lst = [0, 2, 3, 5, 6, 8, 9, 11, 12, 14, 15, 17, 18, 20, 21, 23, 24, 26]
+    for mov in lst:
         if l_mov_type == mov // 3 or l3_mov_type == mov // 9:
             continue
         n_status = status.move(mov)
-        cp_idx, co_idx = n_status.idx()
-        if len(ans) + 1 + max(cp[cp_idx], co[co_idx]) > depth:
-            continue
         ans.append(mov)
         if len(ans) == depth:
-            if n_status.Cp == solved.Cp and n_status.Co == solved.Co and n_status.Ep == solved.Ep and n_status.Ce == solved.Ce:
+            if set([n_status.Ce[i] for i in rl_center]) == set([2, 4]):
+                puzzle = n_status
                 return True
             else:
                 ans.pop()
-        elif dfs(n_status, depth):
+        elif phase_1(n_status, depth):
+            return True
+        else:
+            ans.pop()
+    return False
+
+# gather FB centers, clear OP
+def phase_2(status, depth):
+    global ans, puzzle
+    l_mov_type = ans[-1] // 3 if ans else -10
+    l3_mov_type = ans[-1] // 9 if len(ans) >= 3 and ans[-1] // 9 == ans[-2] // 9 == ans[-3] else -10
+    lst = [0, 2, 3, 5, 6, 8, 9, 11, 13, 15, 17, 18, 20, 22, 24, 26]
+    for mov in lst:
+        if l_mov_type == mov // 3 or l3_mov_type == mov // 9:
+            continue
+        n_status = status.move(mov)
+        ans.append(mov)
+        if len(ans) == depth:
+            if set([n_status.Ce[i] for i in fb_center]) == set([1, 3]) and n_status.sgn_ep() == 0:
+                puzzle = n_status
+                return True
+            else:
+                ans.pop()
+        elif phase_2(n_status, depth):
+            return True
+        else:
+            ans.pop()
+    return False
+
+# pair up 4 edges on BR, BL, FL, FR
+def phase_3(status, depth):
+    global ans, puzzle
+    l_mov_type = ans[-1] // 3 if ans else -10
+    l3_mov_type = ans[-1] // 9 if len(ans) >= 3 and ans[-1] // 9 == ans[-2] // 9 == ans[-3] else -10
+    lst = [1, 4, 7, 9, 11, 13, 15, 17, 18, 20, 22, 24, 26]
+    for mov in lst:
+        if l_mov_type == mov // 3 or l3_mov_type == mov // 9:
+            continue
+        n_status = status.move(mov)
+        ans.append(mov)
+        if len(ans) == depth:
+            flag_phase3 = True
+            for arr in phase3_edges:
+                tmp = [n_status.Ep[i] for i in arr]
+                if abs(tmp[0] - tmp[1]) != 1 or min(tmp) % 2:
+                    flag_phase3 = False
+                    break
+            if flag_phase3:
+                puzzle = n_status
+                return True
+            else:
+                ans.pop()
+        elif phase_3(n_status, depth):
+            return True
+        else:
+            ans.pop()
+    return False
+
+# pair up remaining edges
+def phase_3(status, depth):
+    global ans, puzzle
+    l_mov_type = ans[-1] // 3 if ans else -10
+    l3_mov_type = ans[-1] // 9 if len(ans) >= 3 and ans[-1] // 9 == ans[-2] // 9 == ans[-3] else -10
+    lst = [1, 4, 7, 9, 11, 13, 15, 17, 18, 20, 22, 24, 26]
+    for mov in lst:
+        if l_mov_type == mov // 3 or l3_mov_type == mov // 9:
+            continue
+        n_status = status.move(mov)
+        ans.append(mov)
+        if len(ans) == depth:
+            flag_phase3 = True
+            for arr in phase3_edges:
+                tmp = [n_status.Ep[i] for i in arr]
+                if abs(tmp[0] - tmp[1]) != 1 or min(tmp) % 2:
+                    flag_phase3 = False
+                    break
+            if flag_phase3:
+                puzzle = n_status
+                return True
+            else:
+                ans.pop()
+        elif phase_3(n_status, depth):
             return True
         else:
             ans.pop()
@@ -197,16 +290,44 @@ while que:
             que.append([n_status, num + 1, mov // 3, l_mov_type, l2_mov_type])
 '''
 ans = []
+#                  0    1     2     3     4      5      6    7     8     9    10    11    12    13     14     15   16    17    18   19    20    21    22     23     24   25    26
 move_candidate = ["R", "R2", "R'", "Rw", "Rw2", "Rw'", "L", "L2", "L'", "U", "U2", "U'", "Uw", "Uw2", "Uw'", "D", "D2", "D'", "F", "F2", "F'", "Fw", "Fw2", "Fw'", "B", "B2", "B'"]
 scramble = [move_candidate.index(i) for i in input("scramble: ").split()]
 puzzle = Cube()
 for mov in scramble:
     puzzle = puzzle.move(mov)
-
 strt = time()
-for depth in range(1, 10):
-    if dfs(puzzle, depth):
+
+rl_center = [8, 9, 10, 11, 16, 17, 18, 19]
+if set([puzzle.Ce[i] for i in rl_center]) != set([2, 4]):
+    for depth in range(1, 10):
+        if phase_1(puzzle, depth):
+            break
+
+for i in ans:
+    print(move_candidate[i], end=' ')
+print('')
+
+fb_center = [4, 5, 6, 7, 12, 13, 14, 15]
+if set([puzzle.Ce[i] for i in fb_center]) != set([1, 3]) or puzzle.sgn_ep() != 0:
+    for depth in range(len(ans) + 1, len(ans) + 10):
+        if phase_2(puzzle, depth):
+            break
+
+for i in ans:
+    print(move_candidate[i], end=' ')
+print('')
+
+phase3_edges = [[8, 9], [10, 11], [12, 13], [14, 15]]
+for arr in phase3_edges:
+    tmp = [puzzle.Ep[i] for i in arr]
+    if abs(tmp[0] - tmp[1]) != 1 or min(tmp) % 2:
+        flag_phase3 = False
         break
+if not flag_phase3:
+    for depth in range(len(ans) + 1, len(ans) + 10):
+        if phase_3(puzzle, depth):
+            break
 for i in ans:
     print(move_candidate[i], end=' ')
 print('')
