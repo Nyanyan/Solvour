@@ -142,7 +142,7 @@ class Cube:
             res_co += self.Co[i]
         return res_cp, res_co
     
-    def sgn_ep(self):
+    def parity(self):
         arr = [i for i in self.Ep]
         res = 0
         for i in range(24):
@@ -158,78 +158,79 @@ class Cube:
 # gather RL centers
 def phase_1(status, depth):
     global ans, puzzle
-    l_mov_type = ans[-1] // 3 if ans else -10
-    l3_mov_type = ans[-1] // 9 if len(ans) >= 3 and ans[-1] // 9 == ans[-2] // 9 == ans[-3] else -10
+    l_mov_type = ans[0][-1] // 3 if ans[0] else -10
+    l3_mov_type = ans[0][-1] // 9 if len(ans[0]) >= 3 and ans[0][-1] // 9 == ans[0][-2] // 9 == ans[0][-3] else -10
     lst = [0, 2, 3, 5, 6, 8, 9, 11, 12, 14, 15, 17, 18, 20, 21, 23, 24, 26]
     for mov in lst:
         if l_mov_type == mov // 3 or l3_mov_type == mov // 9:
             continue
         n_status = status.move(mov)
-        ans.append(mov)
-        if len(ans) == depth:
+        ans[0].append(mov)
+        if len(ans[0]) == depth:
             if set([n_status.Ce[i] for i in rl_center]) == set([2, 4]):
                 puzzle = n_status
                 return True
             else:
-                ans.pop()
+                ans[0].pop()
         elif phase_1(n_status, depth):
             return True
         else:
-            ans.pop()
+            ans[0].pop()
     return False
 
-# gather FB centers, clear OP
+# gather FB centers, clear parity, make columns on RL centers
 def phase_2(status, depth):
     global ans, puzzle
-    l_mov_type = ans[-1] // 3 if ans else -10
-    l3_mov_type = ans[-1] // 9 if len(ans) >= 3 and ans[-1] // 9 == ans[-2] // 9 == ans[-3] else -10
+    l_mov_type = ans[1][-1] // 3 if ans[1] else -10
+    l3_mov_type = ans[1][-1] // 9 if len(ans[1]) >= 3 and ans[1][-1] // 9 == ans[1][-2] // 9 == ans[1][-3] else -10
     lst = [0, 2, 3, 5, 6, 8, 9, 11, 13, 15, 17, 18, 20, 22, 24, 26]
     for mov in lst:
         if l_mov_type == mov // 3 or l3_mov_type == mov // 9:
             continue
         n_status = status.move(mov)
-        ans.append(mov)
-        if len(ans) == depth:
-            if set([n_status.Ce[i] for i in fb_center]) == set([1, 3]) and n_status.sgn_ep() == 0:
+        ans[1].append(mov)
+        if len(ans[1]) == depth:
+            rl_ok = [[2, 2, 2, 2], [2, 4, 4, 2], [4, 2, 2, 4], [4, 4, 4, 4]]
+            if set([n_status.Ce[i] for i in fb_center]) == set([1, 3]) and [n_status.Ce[i] for i in rl_center[:4]] in rl_ok and [n_status.Ce[i] for i in rl_center[4:]] in rl_ok and n_status.parity() == 0:
                 puzzle = n_status
                 return True
             else:
-                ans.pop()
+                ans[1].pop()
         elif phase_2(n_status, depth):
             return True
         else:
-            ans.pop()
+            ans[1].pop()
     return False
 
-# pair up 4 edges on BR, BL, FL, FR
+# pair up edges
 def phase_3(status, depth):
     global ans, puzzle
-    l_mov_type = ans[-1] // 3 if ans else -10
-    l3_mov_type = ans[-1] // 9 if len(ans) >= 3 and ans[-1] // 9 == ans[-2] // 9 == ans[-3] else -10
-    lst = [1, 4, 7, 9, 11, 13, 15, 17, 18, 20, 22, 24, 26]
+    l_mov_type = ans[2][-1] // 3 if ans[2] else -10
+    l3_mov_type = ans[2][-1] // 9 if len(ans[2]) >= 3 and ans[2][-1] // 9 == ans[2][-2] // 9 == ans[2][-3] else -10
+    lst = [0, 2, 4, 6, 8, 9, 11, 13, 15, 17, 18, 20, 22, 24, 26]
     for mov in lst:
         if l_mov_type == mov // 3 or l3_mov_type == mov // 9:
             continue
         n_status = status.move(mov)
-        ans.append(mov)
-        if len(ans) == depth:
-            flag_phase3 = True
-            for arr in phase3_edges:
+        ans[2].append(mov)
+        if len(ans[2]) == depth:
+            flag = True
+            for arr in edges:
                 tmp = [n_status.Ep[i] for i in arr]
                 if abs(tmp[0] - tmp[1]) != 1 or min(tmp) % 2:
-                    flag_phase3 = False
+                    flag = False
                     break
-            if flag_phase3:
+            if flag:# and set([n_status.Ce[i] for i in fb_center[:4]]) == set([1]) and [n_status.Ce[i] for i in fb_center[4:]] in fb_ok:
                 puzzle = n_status
                 return True
             else:
-                ans.pop()
+                ans[2].pop()
         elif phase_3(n_status, depth):
             return True
         else:
-            ans.pop()
+            ans[2].pop()
     return False
-
+'''
 # pair up remaining edges, solve centers
 def phase_4(status, depth):
     global ans, puzzle
@@ -258,10 +259,101 @@ def phase_4(status, depth):
         else:
             ans.pop()
     return False
-
+'''
 fac = [1 for _ in range(25)]
 for i in range(1, 25):
     fac[i] = fac[i - 1] * i
+
+ans = [[], [], [], [], []]
+#                  0    1     2     3     4      5      6    7     8     9    10    11    12    13     14     15   16    17    18   19    20    21    22     23     24   25    26
+move_candidate = ["R", "R2", "R'", "Rw", "Rw2", "Rw'", "L", "L2", "L'", "U", "U2", "U'", "Uw", "Uw2", "Uw'", "D", "D2", "D'", "F", "F2", "F'", "Fw", "Fw2", "Fw'", "B", "B2", "B'"]
+scramble = [move_candidate.index(i) for i in input("scramble: ").split()]
+puzzle = Cube()
+for mov in scramble:
+    puzzle = puzzle.move(mov)
+print('parity:', puzzle.parity())
+strt = time()
+
+# phase 1
+rl_center = [8, 9, 10, 11, 16, 17, 18, 19]
+if set([puzzle.Ce[i] for i in rl_center]) != set([2, 4]):
+    for depth in range(1, 9):
+        if phase_1(puzzle, depth):
+            break
+
+print('phase 1',end=' ')
+for i in ans[0]:
+    print(move_candidate[i], end=' ')
+print('')
+
+# phase 2
+fb_center = [4, 5, 6, 7, 12, 13, 14, 15]
+if set([puzzle.Ce[i] for i in fb_center]) != set([1, 3]) or puzzle.parity():
+    for depth in range(1, 15):
+        if phase_2(puzzle, depth):
+            break
+
+print('phase 2',end=' ')
+for i in ans[1]:
+    print(move_candidate[i], end=' ')
+print('')
+
+# phase 3
+edges = [[i * 2, i * 2 + 1] for i in range(12)]
+flag_phase3 = True
+for arr in edges:
+    tmp = [puzzle.Ep[i] for i in arr]
+    if abs(tmp[0] - tmp[1]) != 1 or min(tmp) % 2:
+        flag_phase3 = False
+        break
+if not flag_phase3:
+    for depth in range(1, 17):
+        if phase_3(puzzle, depth):
+            break
+
+print('phase 3',end=' ')
+for i in ans[2]:
+    print(move_candidate[i], end=' ')
+print('')
+'''
+# phase 4
+ud_center = [0, 1, 2, 3, 20, 21, 22, 23]
+phase4_edges = [[2, 3], [6, 7], [18, 19], [22, 23]]
+flag_phase4 = True
+for arr in phase4_edges:
+    tmp = [puzzle.Ep[i] for i in arr]
+    if abs(tmp[0] - tmp[1]) != 1 or min(tmp) % 2:
+        flag_phase4 = False
+        break
+if not flag_phase4 or [puzzle.Ce[i] for i in rl_center] != [2, 2, 2, 2, 4, 4, 4, 4] or [puzzle.Ce[i] for i in fb_center] != [1, 1, 1, 1, 3, 3, 3, 3] or [puzzle.Ce[i] for i in ud_center] != [0, 0, 0, 0, 5, 5, 5, 5]:
+    for depth in range(len(ans) + 1, len(ans) + 10):
+        if phase_4(puzzle, depth):
+            break
+
+print('phase 4',end=' ')
+for i in ans:
+    print(move_candidate[i], end=' ')
+print('')
+print('time:', time() - strt)
+'''
+'''
+root = tkinter.Tk()
+root.title("2x2x2solver")
+root.geometry("400x300")
+
+entry = [[None for _ in range(8)] for _ in range(6)]
+
+dic = {'w':'white', 'g':'green', 'r':'red', 'b':'blue', 'o':'magenta', 'y':'yellow'}
+
+for i in range(6):
+    for j in range(8):
+        if 1 < i < 4 or 1 < j < 4:
+            canvas.create_rectangle(j * grid, i * grid, (j + 1) * grid, (i + 1) * grid, fill = 'gray')
+            entry[i][j] = tkinter.Entry(width=2)
+            entry[i][j].place(x = j * grid, y = i * grid)
+'''
+
+
 '''
 cp = [1000 for _ in range(fac[8])]
 co = [1000 for _ in range(3 ** 8)]
@@ -288,87 +380,4 @@ while que:
             co[co_idx] = num + 1
         if flag:
             que.append([n_status, num + 1, mov // 3, l_mov_type, l2_mov_type])
-'''
-ans = []
-#                  0    1     2     3     4      5      6    7     8     9    10    11    12    13     14     15   16    17    18   19    20    21    22     23     24   25    26
-move_candidate = ["R", "R2", "R'", "Rw", "Rw2", "Rw'", "L", "L2", "L'", "U", "U2", "U'", "Uw", "Uw2", "Uw'", "D", "D2", "D'", "F", "F2", "F'", "Fw", "Fw2", "Fw'", "B", "B2", "B'"]
-scramble = [move_candidate.index(i) for i in input("scramble: ").split()]
-puzzle = Cube()
-for mov in scramble:
-    puzzle = puzzle.move(mov)
-strt = time()
-
-# phase 1
-rl_center = [8, 9, 10, 11, 16, 17, 18, 19]
-if set([puzzle.Ce[i] for i in rl_center]) != set([2, 4]):
-    for depth in range(1, 10):
-        if phase_1(puzzle, depth):
-            break
-
-for i in ans:
-    print(move_candidate[i], end=' ')
-print('')
-
-# phase 2
-fb_center = [4, 5, 6, 7, 12, 13, 14, 15]
-if set([puzzle.Ce[i] for i in fb_center]) != set([1, 3]) or puzzle.sgn_ep() != 0:
-    for depth in range(len(ans) + 1, len(ans) + 10):
-        if phase_2(puzzle, depth):
-            break
-
-for i in ans:
-    print(move_candidate[i], end=' ')
-print('')
-
-# phase 3
-phase3_edges = [[8, 9], [10, 11], [12, 13], [14, 15]]
-flag_phase3 = True
-for arr in phase3_edges:
-    tmp = [puzzle.Ep[i] for i in arr]
-    if abs(tmp[0] - tmp[1]) != 1 or min(tmp) % 2:
-        flag_phase3 = False
-        break
-if not flag_phase3:
-    for depth in range(len(ans) + 1, len(ans) + 10):
-        if phase_3(puzzle, depth):
-            break
-
-for i in ans:
-    print(move_candidate[i], end=' ')
-print('')
-
-# phase 4
-ud_center = [0, 1, 2, 3, 20, 21, 22, 23]
-phase4_edges = [[0, 1], [2, 3], [4, 5], [6, 7], [16, 17], [18, 19], [20, 21], [22, 23]]
-flag_phase4 = True
-for arr in phase4_edges:
-    tmp = [puzzle.Ep[i] for i in arr]
-    if abs(tmp[0] - tmp[1]) != 1 or min(tmp) % 2:
-        flag_phase4 = False
-        break
-if not flag_phase4 or [puzzle.Ce[i] for i in rl_center] != [2, 2, 2, 2, 4, 4, 4, 4] or [puzzle.Ce[i] for i in fb_center] != [1, 1, 1, 1, 3, 3, 3, 3] or [puzzle.Ce[i] for i in ud_center] != [0, 0, 0, 0, 5, 5, 5, 5]:
-    for depth in range(len(ans) + 1, len(ans) + 10):
-        if phase_4(puzzle, depth):
-            break
-
-for i in ans:
-    print(move_candidate[i], end=' ')
-print('')
-print('time:', time() - strt)
-
-'''
-root = tkinter.Tk()
-root.title("2x2x2solver")
-root.geometry("400x300")
-
-entry = [[None for _ in range(8)] for _ in range(6)]
-
-dic = {'w':'white', 'g':'green', 'r':'red', 'b':'blue', 'o':'magenta', 'y':'yellow'}
-
-for i in range(6):
-    for j in range(8):
-        if 1 < i < 4 or 1 < j < 4:
-            canvas.create_rectangle(j * grid, i * grid, (j + 1) * grid, (i + 1) * grid, fill = 'gray')
-            entry[i][j] = tkinter.Entry(width=2)
-            entry[i][j].place(x = j * grid, y = i * grid)
 '''
