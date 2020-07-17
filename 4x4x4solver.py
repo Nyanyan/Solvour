@@ -51,6 +51,8 @@ L 23 22 R
 '''
 
 import tkinter
+from collections import deque
+from time import time
 
 class Cube:
     def __init__(self):
@@ -125,6 +127,21 @@ class Cube:
         res.Ep = self.move_ep(mov)
         res.Ce = self.move_ce(mov)
         return res
+    
+    def idx(self): # Epの組み合わせが6e23くらいあるのでこれで枝刈りするのは無理
+        res_cp = 0
+        for i in range(8):
+            cnt = 0
+            for j in self.Cp[:i]:
+                if j < self.Cp[i]:
+                    cnt += 1
+            res_cp += fac[7 - i] * (self.Cp[i] - cnt)
+        res_co = 0
+        for i in range(8):
+            res_co *= 3
+            res_co += self.Co[i]
+        return res_cp, res_co
+
 
 def dfs(status, depth):
     global ans
@@ -134,6 +151,9 @@ def dfs(status, depth):
         if l_mov_type == mov // 3 or l3_mov_type == mov // 9:
             continue
         n_status = status.move(mov)
+        cp_idx, co_idx = n_status.idx()
+        if len(ans) + 1 + max(cp[cp_idx], co[co_idx]) > depth:
+            continue
         ans.append(mov)
         if len(ans) == depth:
             if n_status.Cp == solved.Cp and n_status.Co == solved.Co and n_status.Ep == solved.Ep and n_status.Ce == solved.Ce:
@@ -146,22 +166,51 @@ def dfs(status, depth):
             ans.pop()
     return False
 
-ans = []
+fac = [1 for _ in range(25)]
+for i in range(1, 25):
+    fac[i] = fac[i - 1] * i
+'''
+cp = [1000 for _ in range(fac[8])]
+co = [1000 for _ in range(3 ** 8)]
 solved = Cube()
+cp_idx, co_idx = solved.idx()
+cp[cp_idx] = 0
+co[co_idx] = 0
+que = deque([[solved, 0, -10, -10, -10]])
+while que:
+    #print(len(que))
+    status, num, l_mov_type, l2_mov_type, l3_mov_type = que.popleft()
+    mov_cut = l_mov_type // 9 if l_mov_type // 9 == l2_mov_type // 9 == l3_mov_type // 9 else -10
+    for mov in [0, 1, 2, 6, 7, 8, 9, 10, 11, 15, 16, 17, 18, 19, 20, 24, 25, 26]:
+        if l_mov_type == mov // 3 or mov_cut == mov // 9:
+            continue
+        n_status = status.move(mov)
+        cp_idx, co_idx = n_status.idx()
+        flag = False
+        if cp[cp_idx] == 1000:
+            flag = True
+            cp[cp_idx] = num + 1
+        if co[co_idx] == 1000:
+            flag = True
+            co[co_idx] = num + 1
+        if flag:
+            que.append([n_status, num + 1, mov // 3, l_mov_type, l2_mov_type])
+'''
+ans = []
 move_candidate = ["R", "R2", "R'", "Rw", "Rw2", "Rw'", "L", "L2", "L'", "U", "U2", "U'", "Uw", "Uw2", "Uw'", "D", "D2", "D'", "F", "F2", "F'", "Fw", "Fw2", "Fw'", "B", "B2", "B'"]
-scramble = [move_candidate.index(i) for i in input().split()]
-print(scramble)
+scramble = [move_candidate.index(i) for i in input("scramble: ").split()]
 puzzle = Cube()
 for mov in scramble:
     puzzle = puzzle.move(mov)
 
-for depth in range(1, 5):
+strt = time()
+for depth in range(1, 10):
     if dfs(puzzle, depth):
         break
-
 for i in ans:
     print(move_candidate[i], end=' ')
 print('')
+print('time:', time() - strt)
 
 '''
 root = tkinter.Tk()
