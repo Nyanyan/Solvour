@@ -231,31 +231,44 @@ class Cube:
                     res += cmb(15 - i, cnt)
         elif phase == 2:
             cnt = 0
+            res0 = 0
             for i in reversed(range(8)):
                 if self.Ce[rl_center[i]] == 4:
                     cnt += 1
-                    res += cmb(7 - i, cnt)
-            res *= 70
+                    res0 += cmb(7 - i, cnt)
+            res0 *= 70
             cnt = 0
             for i in reversed(range(8)):
                 if self.Ce[fb_center[i]] == 3:
                     cnt += 1
-                    res += cmb(7 - i, cnt)
-            res *= 70
+                    res0 += cmb(7 - i, cnt)
+            res0 *= 70
             cnt = 0
             for i in reversed(range(8)):
                 if self.Ce[ud_center[i]] == 5:
                     cnt += 1
-                    res += cmb(7 - i, cnt)
+                    res0 += cmb(7 - i, cnt)
+            res1 = [0, 0, 0]
+            for ii in range(3):
+                for i in range(8 * ii, 8 * (ii + 1)):
+                    cnt = self.Ep[i]
+                    for j in self.Ep[i + 1:8 * (ii + 1)]:
+                        if j < self.Ep[i]:
+                            cnt -= 1
+                    res1[ii] += fac[7 - i + 8 * ii] * (self.Ep[i] - cnt)
+            #print(res0)
+            res = [res0]
+            res.extend(res1)
             return res
         return res
 
-    def distance(self, phase, parity=None):
+    def distance(self, phase):
         if phase == 1:
-            return prunning[phase][parity][self.phase_idx(phase)]
+            return prunning[phase][self.sgn_ep()][self.phase_idx(phase)]
         elif phase == 2:
-            idx0, idx1 = self.phase_idx(phase) #idx0: center, idx1: edge
-            res = max(prunning[phase][0][idx0], prunning[phase][1][idx1])
+            idxes = self.phase_idx(phase) #idx0: center, idx1: edge
+            #print([prunning[phase][i][idxes[i]] for i in range(len(idxes))])
+            return max([prunning[phase][i][idxes[i]] for i in range(len(idxes))])
         else:
             return prunning[phase][self.phase_idx(phase)]
 
@@ -266,15 +279,13 @@ def cmb(n, r):
 def phase_search(phase, puzzle, depth):
     global path
     if depth == 0:
-        parity = puzzle.sgn_ep() if phase == 1 else None
-        if puzzle.distance(phase, parity) == 0:
+        if puzzle.distance(phase) == 0:
             return True
     else:
         l_twist_0 = path[-1] // 3 if len(path) else -10
         l_twist_1 = path[-2] // 3 if len(path) >= 2 and path[-1] // 12 == path[-2] // 12 else -10
         l_twist_2 = (path[-1] // 3 + 2 if (path[-1] // 3) % 4 == 1 else path[-1] // 3 - 2) if len(path) and (path[-1] // 3) % 2 == 1 else -10
-        parity = puzzle.sgn_ep() if phase == 1 else None
-        if puzzle.distance(phase, parity) <= depth:
+        if puzzle.distance(phase) <= depth:
             for twist in successor[phase]:
                 if twist // 3 == l_twist_0 or twist // 3 == l_twist_1 or twist // 3 == l_twist_2:
                     continue
@@ -287,7 +298,7 @@ def phase_search(phase, puzzle, depth):
 def solver(puzzle):
     global solution, path
     solution = []
-    for phase in range(2):
+    for phase in range(3):
         strt = time()
         for depth in range(20):
             path = []
@@ -300,31 +311,40 @@ def solver(puzzle):
                 solution.extend(path)
                 break
         print(time() - strt)
-        print('OP:', puzzle.sgn_ep())
+        #print('OP:', puzzle.sgn_ep())
 
 fac = [1 for _ in range(25)]
 for i in range(1, 25):
     fac[i] = fac[i - 1] * i
 
-solution = []
-path = []
+rl_center = [8, 9, 10, 11, 16, 17, 18, 19]
+fb_center = [4, 5, 6, 7, 12, 13, 14, 15]
+ud_center = [0, 1, 2, 3, 20, 21, 22, 23]
 #                  0    1     2     3     4      5      6    7     8     9     10     11     12   13    14    15    16     17     18   19   20     21    22     23     24   25    26    27    28     29     30   31    32    33    34     35
 move_candidate = ["R", "R2", "R'", "Rw", "Rw2", "Rw'", "L", "L2", "L'", "Lw", "Lw2", "Lw'", "U", "U2", "U'", "Uw", "Uw2", "Uw'", "D", "D2", "D'", "Dw", "Dw2", "Dw'", "F", "F2", "F'", "Fw", "Fw2", "Fw'", "B", "B2", "B'", "Bw", "Bw2", "Bw'"]
 successor = [
             [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35], # phase 0
             [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14,     16,     18, 19, 20,     22,     24, 25, 26,     28,     30, 31, 32,     34    ], # phase 1
+            [   1,       4,       7,       10,     12, 13, 14,     16,     18, 19, 20,     22,     24, 25, 26,     28,     30, 31, 32,     34    ], # phase 2
 ]
 
-prunning = [[[], []] for _ in range(8)]
-for phase in range(2):
-    if phase == 1:
+prunning = [None for _ in range(8)]
+for phase in range(3):
+    if phase == 1 or phase == 2:
+        line_len = 0
         with open('prunning' + str(phase) + '.csv', mode='r') as f:
-            for lin in range(2):
+            for line in f:
+                line_len += 1
+        prunning[phase] = [[] for _ in range(line_len)]
+        with open('prunning' + str(phase) + '.csv', mode='r') as f:
+            for lin in range(line_len):
                 prunning[phase][lin] = [int(i) for i in f.readline().replace('\n', '').split(',')]
     else:
         with open('prunning' + str(phase) + '.csv', mode='r') as f:
             prunning[phase] = [int(i) for i in f.readline().replace('\n', '').split(',')]
 
+solution = []
+path = []
 scramble = [move_candidate.index(i) for i in input("scramble: ").split()]
 puzzle = Cube()
 for mov in scramble:
