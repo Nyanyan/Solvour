@@ -143,16 +143,47 @@ class Cube:
         return res_cp, res_co
     '''
     def parity(self):
-        arr = [i for i in self.Ep]
+        res1 = 0
+        for i in range(12):
+            res1 *= 2
+            if self.Ep[i] % 2 != i % 2:
+                res1 += 1
+        res2 = 0
+        for i in range(12, 24):
+            res2 *= 2
+            if self.Ep[i] % 2 != i % 2:
+                res2 += 1
+        return res1, res2
+    
+    def sgn_ep(self):
         res = 0
+        arr = [i for i in self.Ep]
         for i in range(24):
             if arr[i] != i:
                 for j in range(i + 1, 24):
                     if arr[j] == i:
                         arr[i], arr[j] = arr[j], arr[i]
                         res += 1
-                        break
         return res % 2
+    
+    def ce_phase1_idx(self):
+        res = 0
+        cnt = 0
+        for i in reversed(range(24)):
+            if self.Ce[i] == 2 or self.Ce[i] == 4:
+                cnt += 1
+                res += cmb(23 - i, cnt)
+        return res
+    
+    def ce_phase2_idx(self):
+        res = 0
+        cnt = 0
+        arr = [0, 1, 2, 3, 4, 5, 6, 7, 12, 13, 14, 15, 20, 21, 22, 23]
+        for i in reversed(range(16)):
+            if self.Ce[arr[i]] == 1 or self.Ce[arr[i]] == 3:
+                cnt += 1
+                res += cmb(15 - i, cnt)
+        return res
     
     def ce_phase3_idx(self):
         res_rl = 0
@@ -175,24 +206,6 @@ class Cube:
                 res_ud += cmb(7 - i, cnt)
         return res_rl * 4900 + res_fb * 70 + res_ud
     
-    def ce_phase1_idx(self):
-        res = 0
-        cnt = 0
-        for i in reversed(range(24)):
-            if self.Ce[i] == 2 or self.Ce[i] == 4:
-                cnt += 1
-                res += cmb(23 - i, cnt)
-        return res
-    
-    def ce_phase2_idx(self):
-        res = 0
-        cnt = 0
-        arr = [0, 1, 2, 3, 4, 5, 6, 7, 12, 13, 14, 15, 20, 21, 22, 23]
-        for i in reversed(range(16)):
-            if self.Ce[arr[i]] == 1 or self.Ce[arr[i]] == 3:
-                cnt += 1
-                res += cmb(15 - i, cnt)
-        return res
 
 def cmb(n, r):
     return fac[n] // fac[r] // fac[n - r]
@@ -236,7 +249,7 @@ def phase_2(status, depth):
             continue
         ans[1].append(mov)
         if len(ans[1]) == depth:
-            if set([n_status.Ce[i] for i in fb_center]) == set([1, 3]) and n_status.parity() == 0:
+            if set([n_status.Ce[i] for i in fb_center]) == set([1, 3]) and n_status.sgn_ep() == 0:
                 puzzle = n_status
                 return True
             else:
@@ -257,7 +270,8 @@ def phase_3(status, depth):
         if l_mov_type == mov // 3 or l3_mov_type == mov // 9:
             continue
         n_status = status.move(mov)
-        if len(ans[2]) + 1 + ce_phase3[n_status.ce_phase3_idx()] > depth:
+        parity_idx = n_status.parity()
+        if len(ans[2]) + 1 + max(ce_phase3[n_status.ce_phase3_idx()], parity_phase2_1[parity_idx[0]], parity_phase2_2[parity_idx[1]]) > depth:
             continue
         ans[2].append(mov)
         if len(ans[2]) == depth:
@@ -267,11 +281,11 @@ def phase_3(status, depth):
                 if abs(tmp[0] - tmp[1]) != 1 or min(tmp) % 2:
                     flag = False
                     break
-            for surface in range(6):
+            for surface in range(5):
                 if set([n_status.Ce[i] for i in range(surface * 4, surface * 4 + 4)]) != set([surface]):
                     flag = False
                     break
-            if flag:
+            if flag and parity_idx == (0, 0):
                 puzzle = n_status
                 return True
             else:
@@ -326,6 +340,10 @@ with open('ce_phase1.csv', mode='r') as f:
     ce_phase1 = [int(i) for i in f.readline().replace('\n', '').split(',')]
 with open('ce_phase2.csv', mode='r') as f:
     ce_phase2 = [int(i) for i in f.readline().replace('\n', '').split(',')]
+with open('parity_phase2_1.csv', mode='r') as f:
+    parity_phase2_1 = [int(i) for i in f.readline().replace('\n', '').split(',')]
+with open('parity_phase2_2.csv', mode='r') as f:
+    parity_phase2_2 = [int(i) for i in f.readline().replace('\n', '').split(',')]
 with open('ce_phase3.csv', mode='r') as f:
     ce_phase3 = [int(i) for i in f.readline().replace('\n', '').split(',')]
 
@@ -335,6 +353,7 @@ puzzle = Cube()
 for mov in scramble:
     puzzle = puzzle.move(mov)
 print('parity:', puzzle.parity())
+print('sgn', puzzle.sgn_ep())
 strt = time()
 
 # phase 1
@@ -347,9 +366,10 @@ print('phase 1',end=' ')
 for i in ans[0]:
     print(move_candidate[i], end=' ')
 print('')
+print(time() - strt)
 
 # phase 2
-if set([puzzle.Ce[i] for i in fb_center]) != set([1, 3]) or puzzle.parity():
+if set([puzzle.Ce[i] for i in fb_center]) != set([1, 3]) or puzzle.sgn_ep():
     for depth in range(1, 15):
         if phase_2(puzzle, depth):
             break
@@ -358,6 +378,7 @@ print('phase 2',end=' ')
 for i in ans[1]:
     print(move_candidate[i], end=' ')
 print('')
+print(time() - strt)
 
 # phase 3
 edges = [[i * 2, i * 2 + 1] for i in range(12)]
@@ -367,15 +388,17 @@ for arr in edges:
     if abs(tmp[0] - tmp[1]) != 1 or min(tmp) % 2:
         flag_phase3 = False
         break
-if not flag_phase3:
+if (not flag_phase3) or puzzle.parity() != (0, 0):
     for depth in range(1, 17):
         if phase_3(puzzle, depth):
             break
+print(puzzle.parity())
 
 print('phase 3',end=' ')
 for i in ans[2]:
     print(move_candidate[i], end=' ')
 print('')
+print(time() - strt)
 '''
 # phase 4
 ud_center = [0, 1, 2, 3, 20, 21, 22, 23]

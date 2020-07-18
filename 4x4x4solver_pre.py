@@ -79,15 +79,36 @@ class Cube:
 
     def parity(self):
         arr = [i for i in self.Ep]
+        res1 = 0
+        for i in range(12):
+            res1 *= 2
+            if arr[i] % 2 != i % 2:
+                res1 += 1
+        res2 = 0
+        for i in range(12, 24):
+            res2 *= 2
+            if arr[i] % 2 != i % 2:
+                res2 += 1
+        return res1, res2
+    
+    def ce_phase1_idx(self):
         res = 0
-        for i in range(24):
-            if arr[i] != i:
-                for j in range(i + 1, 24):
-                    if arr[j] == i:
-                        arr[i], arr[j] = arr[j], arr[i]
-                        res += 1
-                        break
-        return res % 2
+        cnt = 0
+        for i in reversed(range(24)):
+            if self.Ce[i] == 2 or self.Ce[i] == 4:
+                cnt += 1
+                res += cmb(23 - i, cnt)
+        return res
+    
+    def ce_phase2_idx(self):
+        res = 0
+        cnt = 0
+        arr = [0, 1, 2, 3, 4, 5, 6, 7, 12, 13, 14, 15, 20, 21, 22, 23]
+        for i in reversed(range(16)):
+            if self.Ce[arr[i]] == 1 or self.Ce[arr[i]] == 3:
+                cnt += 1
+                res += cmb(15 - i, cnt)
+        return res
     
     def ce_phase3_idx(self):
         res_rl = 0
@@ -110,27 +131,6 @@ class Cube:
                 res_ud += cmb(7 - i, cnt)
         return res_rl * 4900 + res_fb * 70 + res_ud
     
-    def ce_phase1_idx(self):
-        res = 0
-        cnt = 0
-        for i in reversed(range(24)):
-            if self.Ce[i] == 2 or self.Ce[i] == 4:
-                cnt += 1
-                res += cmb(23 - i, cnt)
-        return res
-    
-    def ce_phase2_idx(self):
-        res = 0
-        cnt = 0
-        arr = [0, 1, 2, 3, 4, 5, 6, 7, 12, 13, 14, 15, 20, 21, 22, 23]
-        for i in reversed(range(16)):
-            if self.Ce[arr[i]] == 1 or self.Ce[arr[i]] == 3:
-                cnt += 1
-                res += cmb(15 - i, cnt)
-        return res
-    
-    def ep_phase3_idx(self):
-        
 
 def cmb(n, r):
     return fac[n] // fac[r] // fac[n - r]
@@ -175,6 +175,8 @@ with open('ce_phase1.csv', mode='w') as f:
     writer.writerow(ce_phase1)
 '''
 
+
+'''
 ce_phase2 = [1000 for _ in range(12870)]
 ce_phase2[solved.ce_phase2_idx()] = 0
 que = deque([[solved, 0, -10, -10, -10]])
@@ -201,6 +203,42 @@ while que:
 with open('ce_phase2.csv', mode='w') as f:
     writer = csv.writer(f, lineterminator='\n')
     writer.writerow(ce_phase2)
+'''
+
+parity_phase2_1 = [1000 for _ in range(4096)]
+parity_phase2_2 = [1000 for _ in range(4096)]
+parity_idx = solved.parity()
+parity_phase2_1[parity_idx[0]] = 0
+parity_phase2_2[parity_idx[1]] = 0
+que = deque([[solved, 0, -10, -10, -10]])
+cnt = 0
+while que:
+    cnt += 1
+    if cnt % 1000 == 0:
+        print(cnt)
+    #print(len(que))
+    status, num, l_mov, l2_mov, l3_mov = que.popleft()
+    l_mov_type = l_mov // 3
+    l3_mov_type = l_mov // 9 if l_mov // 9 == l2_mov // 9 == l3_mov // 9 else -10
+    lst = [0, 2, 3, 5, 6, 8, 9, 11, 12, 14, 15, 17, 18, 20, 21, 23, 24, 26]
+    for mov in lst:
+        if l_mov_type == mov // 3 or l3_mov_type == mov // 9:
+            continue
+        n_status = status.move(mov)
+        idx = n_status.parity()
+        if parity_phase2_1[idx[0]] < 1000 and parity_phase2_2[idx[1]] < 1000:
+            continue
+        parity_phase2_1[idx[0]] = min(parity_phase2_1[idx[0]], num + 1)
+        parity_phase2_2[idx[1]] = min(parity_phase2_2[idx[1]], num + 1)
+        que.append([n_status, num + 1, mov, l_mov, l2_mov])
+
+with open('parity_phase2_1.csv', mode='w') as f:
+    writer = csv.writer(f, lineterminator='\n')
+    writer.writerow(parity_phase2_1)
+with open('parity_phase2_2.csv', mode='w') as f:
+    writer = csv.writer(f, lineterminator='\n')
+    writer.writerow(parity_phase2_2)
+
 
 '''
 ce_phase3 = [1000 for _ in range(347970)]
