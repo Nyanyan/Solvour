@@ -199,7 +199,7 @@ class Cube:
             res1 = 0
             tmp = [i // 2 for i in self.Ep]
             arr = []
-            for i in range(12):
+            for i in range(4, 8):
                 tmp2 = []
                 for j in range(24):
                     if tmp[j] == i:
@@ -210,12 +210,65 @@ class Cube:
             #print(arr)
             arr.sort()
             #print(arr)
+            arr2 = [arr[i][1] // 2 for i in range(4)]
+            for i in arr2:
+                res1 *= 12
+                res1 += i
+        elif phase == 3:
+            cnt = 0
+            res0 = 0
+            for i in reversed(range(8)):
+                if self.Ce[rl_center[i]] == 4:
+                    cnt += 1
+                    res0 += cmb(7 - i, cnt)
+            res0 *= 70
+            cnt = 0
+            for i in reversed(range(8)):
+                if self.Ce[fb_center[i]] == 3:
+                    cnt += 1
+                    res0 += cmb(7 - i, cnt)
+            res0 *= 70
+            cnt = 0
+            for i in reversed(range(8)):
+                if self.Ce[ud_center[i]] == 5:
+                    cnt += 1
+                    res0 += cmb(7 - i, cnt)
+            res1 = 0
+            tmp = [i // 2 for i in self.Ep]
+            arr = []
+            for i in range(4, 8):
+                tmp2 = []
+                for j in range(24):
+                    if tmp[j] == i:
+                        tmp2.append(j)
+                if tmp2[0] % 2:
+                    tmp2[0], tmp2[1] = tmp2[1], tmp2[0]
+                arr.append(tmp2)
+            #print(arr)
+            arr.sort()
+            #print(arr)
+            arr2 = [arr[i][1] // 2 for i in range(4)]
+            for i in arr2:
+                res1 *= 12
+                res1 += i
+            '''
+            arr2 = [arr[i][1] // 2 for i in range(12)]
+            for i in range(12):
+                cnt = arr2[i]
+                for j in arr2[i + 1:]:
+                    if j < arr2[i]:
+                        cnt -= 1
+                res1 += fac[11 - i] * (arr2[i] - cnt)
+            '''
+            #print(res1)
+            '''
             arr2 = [arr[i][1] // 2 for i in [4, 5, 6, 7]]
             #print(arr2)
             for i in arr2:
                 res1 *= 12
                 res1 += i
             #print(res1)
+            '''
             return res0, res1
             '''
             res1 = [0, 0, 0]
@@ -297,11 +350,12 @@ successor = [
             [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35], # phase 0
             [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14,     16,     18, 19, 20,     22,     24, 25, 26,     28,     30, 31, 32,     34    ], # phase 1
             [0, 1, 2,    4,    6, 7, 8,    10,     12, 13, 14,     16,     18, 19, 20,     22,     24, 25, 26,     28,     30, 31, 32,     34    ], # phase 2
+            [   1,       4,       7,       10,     12, 13, 14,             18, 19, 20,                 25,         28,         31,         34    ], # phase 3
             ]
 solved = Cube()
 
 
-'''
+# phase3 1
 prunning = [100 for _ in range(343000)]
 que = deque([[solved, 0, -10, -10]])
 cnt = 0
@@ -334,8 +388,47 @@ while que:
 with open('prunning2.csv', mode='w') as f:
     writer = csv.writer(f, lineterminator='\n')
     writer.writerow(prunning)
-'''
 
+
+
+
+
+'''
+# phase2 1
+prunning = [100 for _ in range(343000)]
+que = deque([[solved, 0, -10, -10]])
+cnt = 0
+while que:
+    strt = time()
+    cnt += 1
+    if cnt % 1000 == 0:
+        tmp = prunning.count(100)
+        print(cnt, tmp, len(que))
+        if tmp == 0:
+            break
+    #print(prunning[:50])
+    status, num, l_mov, l2_mov = que.popleft()
+    l_twist_0 = l_mov // 3
+    l_twist_1 = l2_mov // 3 if l_mov // 12 == l2_mov // 12 else -10
+    l_twist_2 = (l_mov // 3 + 2 if (l_mov // 3) % 4 == 1 else l_mov // 3 - 2) if (l_mov // 3) % 2 == 1 else -10
+    for twist in successor[2]:
+        if l_twist_0 == twist // 3 or l_twist_1 == twist // 3 or l_twist_2 == twist // 3:
+            continue
+        n_status = status.move(twist)
+        idx = n_status.phase_idx(2)[0]        
+        if n_status.iscolumn() and prunning[idx] != 0:
+            #print('a')
+            prunning[idx] = 0
+            que.append([n_status, 0, twist, l_mov])
+        elif prunning[idx] > num + 1:
+            prunning[idx] = num + 1
+            que.append([n_status, num + 1, twist, l_mov])
+
+with open('prunning2.csv', mode='w') as f:
+    writer = csv.writer(f, lineterminator='\n')
+    writer.writerow(prunning)
+
+# phase2 2
 prunning = [100 for _ in range(22620)]
 prunning[solved.phase_idx(2)[1]] = 0
 que = deque([[solved, 0, -10, -10]])
@@ -363,7 +456,7 @@ while que:
 with open('prunning2.csv', mode='a') as f:
     writer = csv.writer(f, lineterminator='\n')
     writer.writerow(prunning)
-
+'''
 
 '''
 prunning_num = [735471, 12870, None]
