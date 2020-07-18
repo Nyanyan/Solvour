@@ -169,6 +169,13 @@ class Cube:
                 if self.Ce[i] == 2 or self.Ce[i] == 4:
                     cnt += 1
                     res += cmb(23 - i, cnt)
+        elif phase == 1:
+            cnt = 0
+            arr = [0, 1, 2, 3, 4, 5, 6, 7, 12, 13, 14, 15, 20, 21, 22, 23]
+            for i in reversed(range(16)):
+                if self.Ce[arr[i]] == 1 or self.Ce[arr[i]] == 3:
+                    cnt += 1
+                    res += cmb(15 - i, cnt)
         return res
 
 def cmb(n, r):
@@ -185,12 +192,14 @@ move_candidate = ["R", "R2", "R'", "Rw", "Rw2", "Rw'", "L", "L2", "L'", "Lw", "L
 successor = [
             [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35], # phase 0
             [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14,     16,     18, 19, 20,     22,     24, 25, 26,     28,     30, 31, 32,     34    ], # phase 1
-]
+            ]
 solved = Cube()
 
-prunning = [[100 for _ in range(735471)]]
-for phase in range(1):
-    prunning[phase][solved.phase0_idx()] = 0
+prunning_num = [735471, 12870]
+
+for phase in range(1, 2):
+    prunning = [100 for _ in range(prunning_num[phase])]
+    prunning[solved.phase_idx(phase)] = 0
     que = deque([[solved, 0, -10, -10]])
     cnt = 0
     while que:
@@ -206,15 +215,14 @@ for phase in range(1):
                 continue
             n_status = status.move(twist)
             idx = n_status.phase_idx(phase)
-            if prunning[phase][idx] < 100:
+            if prunning[idx] < 100:
                 continue
-            prunning[phase][idx] = num + 1
+            prunning[idx] = num + 1
             que.append([n_status, num + 1, twist, l_mov])
     
     with open('prunning' + str(phase) + '.csv', mode='w') as f:
         writer = csv.writer(f, lineterminator='\n')
-        writer.writerow(prunning[phase])
-    prunning[phase] = []
+        writer.writerow(prunning)
 
 
 '''
@@ -275,7 +283,7 @@ with open('ce_phase2.csv', mode='w') as f:
     writer = csv.writer(f, lineterminator='\n')
     writer.writerow(ce_phase2)
 '''
-
+'''
 parity_phase2_1 = [1000 for _ in range(4096)]
 parity_phase2_2 = [1000 for _ in range(4096)]
 parity_idx = solved.parity()
@@ -309,7 +317,7 @@ with open('parity_phase2_1.csv', mode='w') as f:
 with open('parity_phase2_2.csv', mode='w') as f:
     writer = csv.writer(f, lineterminator='\n')
     writer.writerow(parity_phase2_2)
-
+'''
 
 '''
 ce_phase3 = [1000 for _ in range(347970)]

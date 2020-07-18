@@ -220,6 +220,13 @@ class Cube:
                 if self.Ce[i] == 2 or self.Ce[i] == 4:
                     cnt += 1
                     res += cmb(23 - i, cnt)
+        elif phase == 1:
+            cnt = 0
+            arr = [0, 1, 2, 3, 4, 5, 6, 7, 12, 13, 14, 15, 20, 21, 22, 23]
+            for i in reversed(range(16)):
+                if self.Ce[arr[i]] == 1 or self.Ce[arr[i]] == 3:
+                    cnt += 1
+                    res += cmb(15 - i, cnt)
         return res
 
     def distance(self, phase):
@@ -240,7 +247,7 @@ def phase_search(phase, puzzle, depth):
         l_twist_2 = (path[-1] // 3 + 2 if (path[-1] // 3) % 4 == 1 else path[-1] // 3 - 2) if len(path) and (path[-1] // 3) % 2 == 1 else -10
         if puzzle.distance(phase) <= depth:
             for twist in successor[phase]:
-                if twist // 3 == l_twist_0 or twist // 9 == l_twist_1:
+                if twist // 3 == l_twist_0 or twist // 3 == l_twist_1 or twist // 3 == l_twist_2:
                     continue
                 n_puzzle = puzzle.move(twist)
                 path.append(twist)
@@ -251,16 +258,19 @@ def phase_search(phase, puzzle, depth):
 def solver(puzzle):
     global solution, path
     solution = []
-    for phase in range(1):
+    for phase in range(2):
+        strt = time()
         for depth in range(20):
             path = []
             if phase_search(phase, puzzle, depth):
-                print(phase, path)
+                for twist in path:
+                    puzzle = puzzle.move(twist)
+                print(phase, end=' ')
                 for i in path:
                     print(move_candidate[i], end=' ')
-                print('')
                 solution.extend(path)
                 break
+        print(time() - strt)
 
 fac = [1 for _ in range(25)]
 for i in range(1, 25):
@@ -276,18 +286,16 @@ successor = [
 ]
 
 prunning = [[] for _ in range(8)]
-for phase in range(1):
+for phase in range(2):
     with open('prunning' + str(phase) + '.csv', mode='r') as f:
-        prunning[0] = [int(i) for i in f.readline().replace('\n', '').split(',')]
+        prunning[phase] = [int(i) for i in f.readline().replace('\n', '').split(',')]
 
 scramble = [move_candidate.index(i) for i in input("scramble: ").split()]
 puzzle = Cube()
 for mov in scramble:
     puzzle = puzzle.move(mov)
-strt = time()
 solver(puzzle)
 print(solution)
-print(time() - strt)
 
 '''
 
