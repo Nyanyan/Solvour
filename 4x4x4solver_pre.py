@@ -1,6 +1,6 @@
-import tkinter
 from collections import deque, Counter
 import csv
+from time import time
 
 class Cube:
     def __init__(self):
@@ -162,6 +162,7 @@ class Cube:
         return res_rl * 4900 + res_fb * 70 + res_ud
 
     def phase_idx(self, phase):
+        global pp
         res = 0
         if phase == 0:
             cnt = 0
@@ -195,6 +196,28 @@ class Cube:
                 if self.Ce[ud_center[i]] == 5:
                     cnt += 1
                     res0 += cmb(7 - i, cnt)
+            res1 = 0
+            tmp = [i // 2 for i in self.Ep]
+            arr = []
+            for i in range(12):
+                tmp2 = []
+                for j in range(24):
+                    if tmp[j] == i:
+                        tmp2.append(j)
+                if tmp2[0] % 2:
+                    tmp2[0], tmp2[1] = tmp2[1], tmp2[0]
+                arr.append(tmp2)
+            #print(arr)
+            arr.sort()
+            #print(arr)
+            arr2 = [arr[i][1] // 2 for i in [4, 5, 6, 7]]
+            #print(arr2)
+            for i in arr2:
+                res1 *= 12
+                res1 += i
+            #print(res1)
+            return res0, res1
+            '''
             res1 = [0, 0, 0]
             for ii in range(3):
                 for i in range(8 * ii, 8 * (ii + 1)):
@@ -203,7 +226,10 @@ class Cube:
                         if j < self.Ep[i]:
                             cnt -= 1
                     res1[ii] += fac[7 - i + 8 * ii] * (self.Ep[i] - cnt)
-            
+            res = [res0]
+            res.extend(res1)
+            return res
+            '''
             '''
             res1 = 0
             tmp = [self.Ep[i] // 2 for i in [8, 9, 10, 11, 12, 13, 14, 15]]
@@ -241,10 +267,17 @@ class Cube:
                 #print(remain, res2)
             return res2
             '''
-            res = [res0]
-            res.extend(res1)
-            return res
         return res
+    
+    def iscolumn(self):
+        ng_arr = [[i, i + 2] for i in [4, 5, 8, 9, 12, 13, 16, 17]]
+        all_arr = [list(range(i, i + 4)) for i in range(4, 20, 4)]
+        for i in range(8):
+            if self.Ce[ng_arr[i][0]] == self.Ce[ng_arr[i][1]]:
+                if len(set([self.Ce[i] for i in all_arr[i // 2]])) != 1:
+                    return False
+        return True
+
 
 def cmb(n, r):
     return fac[n] // fac[r] // fac[n - r]
@@ -263,10 +296,76 @@ move_candidate = ["R", "R2", "R'", "Rw", "Rw2", "Rw'", "L", "L2", "L'", "Lw", "L
 successor = [
             [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35], # phase 0
             [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14,     16,     18, 19, 20,     22,     24, 25, 26,     28,     30, 31, 32,     34    ], # phase 1
-            [   1,       4,       7,       10,     12, 13, 14,     16,     18, 19, 20,     22,     24, 25, 26,     28,     30, 31, 32,     34    ], # phase 2
+            [0, 1, 2,    4,    6, 7, 8,    10,     12, 13, 14,     16,     18, 19, 20,     22,     24, 25, 26,     28,     30, 31, 32,     34    ], # phase 2
             ]
 solved = Cube()
 
+
+'''
+prunning = [100 for _ in range(343000)]
+que = deque([[solved, 0, -10, -10]])
+cnt = 0
+while que:
+    strt = time()
+    cnt += 1
+    if cnt % 1000 == 0:
+        tmp = prunning.count(100)
+        print(cnt, tmp, len(que))
+        if tmp == 0:
+            break
+    #print(prunning[:50])
+    status, num, l_mov, l2_mov = que.popleft()
+    l_twist_0 = l_mov // 3
+    l_twist_1 = l2_mov // 3 if l_mov // 12 == l2_mov // 12 else -10
+    l_twist_2 = (l_mov // 3 + 2 if (l_mov // 3) % 4 == 1 else l_mov // 3 - 2) if (l_mov // 3) % 2 == 1 else -10
+    for twist in successor[2]:
+        if l_twist_0 == twist // 3 or l_twist_1 == twist // 3 or l_twist_2 == twist // 3:
+            continue
+        n_status = status.move(twist)
+        idx = n_status.phase_idx(2)[0]        
+        if n_status.iscolumn() and prunning[idx] != 0:
+            #print('a')
+            prunning[idx] = 0
+            que.append([n_status, 0, twist, l_mov])
+        elif prunning[idx] > num + 1:
+            prunning[idx] = num + 1
+            que.append([n_status, num + 1, twist, l_mov])
+
+with open('prunning2.csv', mode='w') as f:
+    writer = csv.writer(f, lineterminator='\n')
+    writer.writerow(prunning)
+'''
+
+prunning = [100 for _ in range(22620)]
+prunning[solved.phase_idx(2)[1]] = 0
+que = deque([[solved, 0, -10, -10]])
+cnt = 0
+while que:
+    cnt += 1
+    if cnt % 1000 == 0:
+        tmp = prunning.count(100)
+        print(cnt, tmp, len(que))
+        if tmp == 0:
+            break
+    status, num, l_mov, l2_mov = que.popleft()
+    l_twist_0 = l_mov // 3
+    l_twist_1 = l2_mov // 3 if l_mov // 12 == l2_mov // 12 else -10
+    l_twist_2 = (l_mov // 3 + 2 if (l_mov // 3) % 4 == 1 else l_mov // 3 - 2) if (l_mov // 3) % 2 == 1 else -10
+    for twist in successor[2]:
+        if l_twist_0 == twist // 3 or l_twist_1 == twist // 3 or l_twist_2 == twist // 3:
+            continue
+        n_status = status.move(twist)
+        idx = n_status.phase_idx(2)[1]
+        if prunning[idx] > num + 1:
+            prunning[idx] = num + 1
+            que.append([n_status, num + 1, twist, l_mov])
+    
+with open('prunning2.csv', mode='a') as f:
+    writer = csv.writer(f, lineterminator='\n')
+    writer.writerow(prunning)
+
+
+'''
 prunning_num = [735471, 12870, None]
 
 for phase in range(2, 3):
@@ -274,21 +373,24 @@ for phase in range(2, 3):
         prunning = [[100 for _ in range(prunning_num[phase])] for _ in range(2)]
         prunning[0][solved.phase_idx(phase)] = 0
     elif phase == 2:
-        prunning = [[100 for _ in range(40320)] for _ in range(4)]
-        prunning[0] = [100 for _ in range(343000)]
+        prunning = [[], []]
+        prunning[0] = [100 for _ in range(70)]
+        prunning[1] = [100 for _ in range(20736)]
         idxes = solved.phase_idx(phase)
-        for i in range(4):
+        for i in range(2):
             prunning[i][idxes[i]] = 0
     else:
         prunning = [100 for _ in range(prunning_num[phase])]
         prunning[solved.phase_idx(phase)] = 0
+    
     que = deque([[solved, 0, -10, -10]])
     cnt = 0
     while que:
         cnt += 1
         if cnt % 1000 == 0:
-            tmp = [prunning[i].count(100) for i in range(1, len(prunning))]
-            print(cnt, tmp)
+            #tmp = [prunning[i].count(100) for i in range(len(prunning))]
+            #print(cnt, tmp)
+            print(prunning[0])
         status, num, l_mov, l2_mov = que.popleft()
         l_twist_0 = l_mov // 3
         l_twist_1 = l2_mov // 3 if l_mov // 12 == l2_mov // 12 else -10
@@ -305,19 +407,18 @@ for phase in range(2, 3):
                 prunning[parity][idx] = num + 1
                 que.append([n_status, num + 1, twist, l_mov])
             elif phase == 2:
-                flag = False
-                for i in range(4):
-                    if prunning[i][idx[i]] == 100:
-                        flag = True
-                        prunning[i][idx[i]] = num + 1
-                if flag:
+                if len(set([n_status.Ce[i] for i in [8, 11]])) == 1 and len(set([n_status.Ce[i] for i in [9, 10]])) == 1 and len(set([n_status.Ce[i] for i in [16, 19]])) == 1 and len(set([n_status.Ce[i] for i in [17, 18]])) == 1 and len(set([n_status.Ce[i] for i in [4, 7]])) == 1 and len(set([n_status.Ce[i] for i in [5, 6]])) == 1 and len(set([n_status.Ce[i] for i in [12, 15]])) == 1 and len(set([n_status.Ce[i] for i in [13, 14]])) == 1 and len(set([n_status.Ce[i] for i in [0, 3]])) == 1 and len(set([n_status.Ce[i] for i in [1, 2]])) == 1 and len(set([n_status.Ce[i] for i in [20, 23]])) == 1 and len(set([n_status.Ce[i] for i in [21, 22]])) == 1:
+                    prunning[0][idx[0]] = 0
+                    que.append([n_status, 0, twist, l_mov])
+                elif prunning[0][idx[0]] > num + 1:
+                    prunning[0][idx[0]] = num + 1
                     que.append([n_status, num + 1, twist, l_mov])
             else:
                 if prunning[idx] < 100:
                     continue
                 prunning[idx] = num + 1
                 que.append([n_status, num + 1, twist, l_mov])
-    
+
     if phase == 1 or phase == 2:
         with open('prunning' + str(phase) + '.csv', mode='w') as f:
             writer = csv.writer(f, lineterminator='\n')
@@ -327,7 +428,7 @@ for phase in range(2, 3):
         with open('prunning' + str(phase) + '.csv', mode='w') as f:
             writer = csv.writer(f, lineterminator='\n')
             writer.writerow(prunning)
-
+'''
 
 '''
 ce_phase1 = [1000 for _ in range(735471)]

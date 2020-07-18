@@ -248,25 +248,34 @@ class Cube:
                 if self.Ce[ud_center[i]] == 5:
                     cnt += 1
                     res0 += cmb(7 - i, cnt)
-            res1 = [0, 0, 0]
-            for ii in range(3):
-                for i in range(8 * ii, 8 * (ii + 1)):
-                    cnt = self.Ep[i]
-                    for j in self.Ep[i + 1:8 * (ii + 1)]:
-                        if j < self.Ep[i]:
-                            cnt -= 1
-                    res1[ii] += fac[7 - i + 8 * ii] * (self.Ep[i] - cnt)
-            #print(res0)
-            res = [res0]
-            res.extend(res1)
-            return res
+            res1 = 0
+            tmp = [i // 2 for i in self.Ep]
+            arr = []
+            for i in range(12):
+                tmp2 = []
+                for j in range(24):
+                    if tmp[j] == i:
+                        tmp2.append(j)
+                if tmp2[0] % 2:
+                    tmp2[0], tmp2[1] = tmp2[1], tmp2[0]
+                arr.append(tmp2)
+            #print(arr)
+            arr.sort()
+            #print(arr)
+            arr2 = [arr[i][1] // 2 for i in [4, 5, 6, 7]]
+            #print(arr2)
+            for i in arr2:
+                res1 *= 12
+                res1 += i
+            #print(res1)
+            return res0, res1
         return res
 
     def distance(self, phase):
         if phase == 1:
             return prunning[phase][self.sgn_ep()][self.phase_idx(phase)]
         elif phase == 2:
-            idxes = self.phase_idx(phase) #idx0: center, idx1: edge
+            idxes = self.phase_idx(phase)
             #print([prunning[phase][i][idxes[i]] for i in range(len(idxes))])
             return max([prunning[phase][i][idxes[i]] for i in range(len(idxes))])
         else:
@@ -278,6 +287,7 @@ def cmb(n, r):
 
 def phase_search(phase, puzzle, depth):
     global path
+    #print([move_candidate[i] for i in path], depth - puzzle.distance(phase))
     if depth == 0:
         if puzzle.distance(phase) == 0:
             return True
@@ -325,7 +335,7 @@ move_candidate = ["R", "R2", "R'", "Rw", "Rw2", "Rw'", "L", "L2", "L'", "Lw", "L
 successor = [
             [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35], # phase 0
             [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14,     16,     18, 19, 20,     22,     24, 25, 26,     28,     30, 31, 32,     34    ], # phase 1
-            [   1,       4,       7,       10,     12, 13, 14,     16,     18, 19, 20,     22,     24, 25, 26,     28,     30, 31, 32,     34    ], # phase 2
+            [0, 1, 2,    4,    6, 7, 8,    10,     12, 13, 14,     16,     18, 19, 20,     22,     24, 25, 26,     28,     30, 31, 32,     34    ], # phase 2
 ]
 
 prunning = [None for _ in range(8)]
