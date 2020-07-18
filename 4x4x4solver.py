@@ -210,6 +210,43 @@ class Cube:
 def cmb(n, r):
     return fac[n] // fac[r] // fac[n - r]
 
+def distance(phase, puzzle):
+    return 0
+
+def phase_search(phase, puzzle, depth):
+    global path
+    if depth == 0:
+        if distance(phase, puzzle) == 0:
+            return True
+    else:
+        l_twist_0 = path[-1] // 3 if path else -10
+        l_twist_1 = path[-1] // 9 if len(path) >= 3 and len(set(path[-3:])) == 1 else -10
+        if distance(phase, puzzle) <= depth:
+            for twist in successor[phase]:
+                if twist // 3 == l_twist_0 or twist // 9 == l_twist_1:
+                    continue
+                n_puzzle = status.move(twist)
+                path.append(twist)
+                if phase_search(phase, n_puzzle, depth - 1):
+                    return True
+                path.pop()
+
+def solver(puzzle):
+    global solution
+    solution = []
+    for phase in range(8):
+        for depth in range(20):
+            path = []
+            if phase_search(phase, puzzle, depth):
+                solution.extend(path)
+                break
+
+solution = []
+path = []
+
+
+'''
+
 # gather RL centers
 def phase_1(status, depth):
     global ans, puzzle
@@ -296,34 +333,7 @@ def phase_3(status, depth):
             ans[2].pop()
     return False
 '''
-# pair up remaining edges, solve centers
-def phase_4(status, depth):
-    global ans, puzzle
-    l_mov_type = ans[-1] // 3 if ans else -10
-    l3_mov_type = ans[-1] // 9 if len(ans) >= 3 and ans[-1] // 9 == ans[-2] // 9 == ans[-3] else -10
-    lst = [1, 4, 7, 9, 11, 15, 17, 19, 22, 25]
-    for mov in lst:
-        if l_mov_type == mov // 3 or l3_mov_type == mov // 9:
-            continue
-        n_status = status.move(mov)
-        ans.append(mov)
-        if len(ans) == depth:
-            flag_phase4 = True
-            for arr in phase4_edges:
-                tmp = [n_status.Ep[i] for i in arr]
-                if abs(tmp[0] - tmp[1]) != 1 or min(tmp) % 2:
-                    flag_phase4 = False
-                    break
-            if flag_phase4 and [n_status.Ce[i] for i in rl_center] == [2, 2, 2, 2, 4, 4, 4, 4] and [n_status.Ce[i] for i in fb_center] == [1, 1, 1, 1, 3, 3, 3, 3] and [n_status.Ce[i] for i in ud_center] == [0, 0, 0, 0, 5, 5, 5, 5]:
-                puzzle = n_status
-                return True
-            else:
-                ans.pop()
-        elif phase_4(n_status, depth):
-            return True
-        else:
-            ans.pop()
-    return False
+
 '''
 fac = [1 for _ in range(25)]
 for i in range(1, 25):
@@ -399,7 +409,7 @@ for i in ans[2]:
     print(move_candidate[i], end=' ')
 print('')
 print(time() - strt)
-'''
+
 # phase 4
 ud_center = [0, 1, 2, 3, 20, 21, 22, 23]
 phase4_edges = [[2, 3], [6, 7], [18, 19], [22, 23]]
