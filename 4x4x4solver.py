@@ -1,5 +1,5 @@
 '''
-Corner:
+Corner
    B
   0 1 
 L 2 3 R
@@ -21,8 +21,8 @@ L 6   3 R
     F
 
 Middle layer
-8   10   12   14
-9 F 11 R 13 B 15
+8   11   12   15
+9 F 10 R 13 B 14
 
 Bottom layer
      F
@@ -31,6 +31,7 @@ Bottom layer
 L 22   19 R
    21 20
      B
+
 
 Center
 top layer
@@ -52,6 +53,7 @@ L 23 22 R
 
 import tkinter
 from time import time
+import pandas as pd
 
 class Cube:
     def __init__(self):
@@ -83,18 +85,18 @@ class Cube:
         return res
     
     def move_ep(self, mov):
-        surface = [[[3, 12, 19, 11], [2, 13, 18, 10]], # R
-                   [[3, 12, 19, 11], [2, 13, 18, 10], [4, 1, 20, 17]],  # Rw
-                   [[7, 8, 23, 15], [6, 9, 22, 14]], # L
-                   [[7, 8, 23, 15], [6, 9, 22, 14], [0, 5, 16, 21]], # Lw
+        surface = [[[3, 12, 19, 10], [2, 13, 18, 11]], # R
+                   [[3, 12, 19, 10], [2, 13, 18, 11], [4, 1, 20, 17]],  # Rw
+                   [[7, 8, 23, 14], [6, 9, 22, 15]], # L
+                   [[7, 8, 23, 14], [6, 9, 22, 15], [0, 5, 16, 21]], # Lw
                    [[0, 2, 4, 6], [1, 3, 5, 7]], # U
-                   [[0, 2, 4, 6], [1, 3, 5, 7], [14, 12, 10, 8]], # Uw
+                   [[0, 2, 4, 6], [1, 3, 5, 7], [15, 12, 11, 8]], # Uw
                    [[16, 18, 20, 22], [17, 19, 21, 23]], # D
-                   [[16, 18, 20, 22], [17, 19, 21, 23], [9, 11, 13, 15]], # Dw
-                   [[5, 10, 17, 9], [4, 11, 16, 8]], # F
-                   [[5, 10, 17, 9], [4, 11, 16, 8], [6, 3, 18, 23]], # Fw
-                   [[1, 14, 21, 13], [0, 15, 20, 12]], # B
-                   [[1, 14, 21, 13], [0, 15, 20, 12], [2, 7, 22, 19]] # Bw
+                   [[16, 18, 20, 22], [17, 19, 21, 23], [9, 10, 13, 14]], # Dw
+                   [[5, 11, 17, 9], [4, 10, 16, 8]], # F
+                   [[5, 11, 17, 9], [4, 10, 16, 8], [6, 3, 18, 23]], # Fw
+                   [[1, 15, 21, 13], [0, 14, 20, 12]], # B
+                   [[1, 15, 21, 13], [0, 14, 20, 12], [2, 7, 22, 19]] # Bw
                    ]
         mov_type = mov // 3
         mov_amount = mov % 3
@@ -227,10 +229,35 @@ class Cube:
                 if self.Ce[arr[i]] == 1 or self.Ce[arr[i]] == 3:
                     cnt += 1
                     res += cmb(15 - i, cnt)
+        elif phase == 2:
+            cnt = 0
+            for i in reversed(range(8)):
+                if self.Ce[rl_center[i]] == 4:
+                    cnt += 1
+                    res += cmb(7 - i, cnt)
+            res *= 70
+            cnt = 0
+            for i in reversed(range(8)):
+                if self.Ce[fb_center[i]] == 3:
+                    cnt += 1
+                    res += cmb(7 - i, cnt)
+            res *= 70
+            cnt = 0
+            for i in reversed(range(8)):
+                if self.Ce[ud_center[i]] == 5:
+                    cnt += 1
+                    res += cmb(7 - i, cnt)
+            return res
         return res
 
-    def distance(self, phase):
-        return prunning[phase][self.phase_idx(phase)]
+    def distance(self, phase, parity=None):
+        if phase == 1:
+            return prunning[phase][parity][self.phase_idx(phase)]
+        elif phase == 2:
+            idx0, idx1 = self.phase_idx(phase) #idx0: center, idx1: edge
+            res = max(prunning[phase][0][idx0], prunning[phase][1][idx1])
+        else:
+            return prunning[phase][self.phase_idx(phase)]
 
 def cmb(n, r):
     return fac[n] // fac[r] // fac[n - r]
@@ -239,13 +266,15 @@ def cmb(n, r):
 def phase_search(phase, puzzle, depth):
     global path
     if depth == 0:
-        if puzzle.distance(phase) == 0:
+        parity = puzzle.sgn_ep() if phase == 1 else None
+        if puzzle.distance(phase, parity) == 0:
             return True
     else:
         l_twist_0 = path[-1] // 3 if len(path) else -10
         l_twist_1 = path[-2] // 3 if len(path) >= 2 and path[-1] // 12 == path[-2] // 12 else -10
         l_twist_2 = (path[-1] // 3 + 2 if (path[-1] // 3) % 4 == 1 else path[-1] // 3 - 2) if len(path) and (path[-1] // 3) % 2 == 1 else -10
-        if puzzle.distance(phase) <= depth:
+        parity = puzzle.sgn_ep() if phase == 1 else None
+        if puzzle.distance(phase, parity) <= depth:
             for twist in successor[phase]:
                 if twist // 3 == l_twist_0 or twist // 3 == l_twist_1 or twist // 3 == l_twist_2:
                     continue
@@ -271,6 +300,7 @@ def solver(puzzle):
                 solution.extend(path)
                 break
         print(time() - strt)
+        print('OP:', puzzle.sgn_ep())
 
 fac = [1 for _ in range(25)]
 for i in range(1, 25):
@@ -285,15 +315,21 @@ successor = [
             [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14,     16,     18, 19, 20,     22,     24, 25, 26,     28,     30, 31, 32,     34    ], # phase 1
 ]
 
-prunning = [[] for _ in range(8)]
+prunning = [[[], []] for _ in range(8)]
 for phase in range(2):
-    with open('prunning' + str(phase) + '.csv', mode='r') as f:
-        prunning[phase] = [int(i) for i in f.readline().replace('\n', '').split(',')]
+    if phase == 1:
+        with open('prunning' + str(phase) + '.csv', mode='r') as f:
+            for lin in range(2):
+                prunning[phase][lin] = [int(i) for i in f.readline().replace('\n', '').split(',')]
+    else:
+        with open('prunning' + str(phase) + '.csv', mode='r') as f:
+            prunning[phase] = [int(i) for i in f.readline().replace('\n', '').split(',')]
 
 scramble = [move_candidate.index(i) for i in input("scramble: ").split()]
 puzzle = Cube()
 for mov in scramble:
     puzzle = puzzle.move(mov)
+print('OP:', puzzle.sgn_ep())
 solver(puzzle)
 print(solution)
 

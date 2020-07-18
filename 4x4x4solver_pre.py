@@ -1,5 +1,5 @@
 import tkinter
-from collections import deque
+from collections import deque, Counter
 import csv
 
 class Cube:
@@ -32,18 +32,18 @@ class Cube:
         return res
     
     def move_ep(self, mov):
-        surface = [[[3, 12, 19, 11], [2, 13, 18, 10]], # R
-                   [[3, 12, 19, 11], [2, 13, 18, 10], [4, 1, 20, 17]],  # Rw
-                   [[7, 8, 23, 15], [6, 9, 22, 14]], # L
-                   [[7, 8, 23, 15], [6, 9, 22, 14], [0, 5, 16, 21]], # Lw
+        surface = [[[3, 12, 19, 10], [2, 13, 18, 11]], # R
+                   [[3, 12, 19, 10], [2, 13, 18, 11], [4, 1, 20, 17]],  # Rw
+                   [[7, 8, 23, 14], [6, 9, 22, 15]], # L
+                   [[7, 8, 23, 14], [6, 9, 22, 15], [0, 5, 16, 21]], # Lw
                    [[0, 2, 4, 6], [1, 3, 5, 7]], # U
-                   [[0, 2, 4, 6], [1, 3, 5, 7], [14, 12, 10, 8]], # Uw
+                   [[0, 2, 4, 6], [1, 3, 5, 7], [15, 12, 11, 8]], # Uw
                    [[16, 18, 20, 22], [17, 19, 21, 23]], # D
-                   [[16, 18, 20, 22], [17, 19, 21, 23], [9, 11, 13, 15]], # Dw
-                   [[5, 10, 17, 9], [4, 11, 16, 8]], # F
-                   [[5, 10, 17, 9], [4, 11, 16, 8], [6, 3, 18, 23]], # Fw
-                   [[1, 14, 21, 13], [0, 15, 20, 12]], # B
-                   [[1, 14, 21, 13], [0, 15, 20, 12], [2, 7, 22, 19]] # Bw
+                   [[16, 18, 20, 22], [17, 19, 21, 23], [9, 10, 13, 14]], # Dw
+                   [[5, 11, 17, 9], [4, 10, 16, 8]], # F
+                   [[5, 11, 17, 9], [4, 10, 16, 8], [6, 3, 18, 23]], # Fw
+                   [[1, 15, 21, 13], [0, 14, 20, 12]], # B
+                   [[1, 15, 21, 13], [0, 14, 20, 12], [2, 7, 22, 19]] # Bw
                    ]
         mov_type = mov // 3
         mov_amount = mov % 3
@@ -176,6 +176,61 @@ class Cube:
                 if self.Ce[arr[i]] == 1 or self.Ce[arr[i]] == 3:
                     cnt += 1
                     res += cmb(15 - i, cnt)
+        elif phase == 2:
+            cnt = 0
+            for i in reversed(range(8)):
+                if self.Ce[rl_center[i]] == 4:
+                    cnt += 1
+                    res += cmb(7 - i, cnt)
+            res *= 70
+            cnt = 0
+            for i in reversed(range(8)):
+                if self.Ce[fb_center[i]] == 3:
+                    cnt += 1
+                    res += cmb(7 - i, cnt)
+            res *= 70
+            cnt = 0
+            for i in reversed(range(8)):
+                if self.Ce[ud_center[i]] == 5:
+                    cnt += 1
+                    res += cmb(7 - i, cnt)
+            '''
+            res1 = 0
+            tmp = [self.Ep[i] // 2 for i in [8, 9, 10, 11, 12, 13, 14, 15]]
+            #print(tmp)
+            cntr = Counter(tmp)
+            arr = [0 for _ in range(8)]
+            idx = 1
+            for i in range(8):
+                if cntr[tmp[i]] == 2 and arr[i] == 0:
+                    for j in range(i, 8):
+                        if tmp[i] == tmp[j]:
+                            arr[j] = idx
+                    idx += 1
+            #print(arr)
+            pair = max(arr)
+            #print(pair)
+            remain = [2 for _ in range(pair + 1)]
+            remain[0] = 8 - 2 * pair
+            #print(remain)
+            strt = [0, 300, 600, 900, 1200]
+            res2 = strt[pair]
+            for i in range(8):
+                for j in range(arr[i]): # その場所にもしjがあったら
+                    if remain[j] == 0:
+                        continue
+                    tmp2 = 7 - i
+                    for k in range(pair + 1): # その下のパーツの入り方
+                        #print('tmp2', tmp2)
+                        tmp = remain[k] - 1 if j == k else remain[k]
+                        if tmp == 0:
+                            continue
+                        res2 += cmb(tmp2, tmp)
+                        tmp2 -= tmp
+                remain[arr[i]] -= 1
+                #print(remain, res2)
+            return res2
+            '''
         return res
 
 def cmb(n, r):
@@ -187,25 +242,36 @@ for i in range(1, 25):
 
 solution = []
 path = []
+rl_center = [8, 9, 10, 11, 16, 17, 18, 19]
+fb_center = [4, 5, 6, 7, 12, 13, 14, 15]
+ud_center = [0, 1, 2, 3, 20, 21, 22, 23]
 #                  0    1     2     3     4      5      6    7     8     9     10     11     12   13    14    15    16     17     18   19   20     21    22     23     24   25    26    27    28     29     30   31    32    33    34     35
 move_candidate = ["R", "R2", "R'", "Rw", "Rw2", "Rw'", "L", "L2", "L'", "Lw", "Lw2", "Lw'", "U", "U2", "U'", "Uw", "Uw2", "Uw'", "D", "D2", "D'", "Dw", "Dw2", "Dw'", "F", "F2", "F'", "Fw", "Fw2", "Fw'", "B", "B2", "B'", "Bw", "Bw2", "Bw'"]
 successor = [
             [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35], # phase 0
             [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14,     16,     18, 19, 20,     22,     24, 25, 26,     28,     30, 31, 32,     34    ], # phase 1
+            [   1,       4,       7,       10,     12, 13, 14,     16,     18, 19, 20,     22,     24, 25, 26,     28,     30, 31, 32,     34    ], # phase 3
             ]
 solved = Cube()
 
-prunning_num = [735471, 12870]
+prunning_num = [735471, 12870, None]
 
-for phase in range(1, 2):
-    prunning = [100 for _ in range(prunning_num[phase])]
-    prunning[solved.phase_idx(phase)] = 0
+for phase in range(2, 3):
+    if phase == 1:
+        prunning = [[100 for _ in range(prunning_num[phase])] for _ in range(2)]
+        prunning[0][solved.phase_idx(phase)] = 0
+    elif phase == 2:
+        prunning = [[100 for _ in range(1500)], [100 for _ in range(343000)]]
+        prunning[solved.phase_idx(phase)] = 0
+    else:
+        prunning = [100 for _ in range(prunning_num[phase])]
+        prunning[solved.phase_idx(phase)] = 0
     que = deque([[solved, 0, -10, -10]])
     cnt = 0
     while que:
         cnt += 1
         if cnt % 1000 == 0:
-            print(cnt)
+            print(cnt, [prunning[i].count(100) for i in range(len(prunning))])
         status, num, l_mov, l2_mov = que.popleft()
         l_twist_0 = l_mov // 3
         l_twist_1 = l2_mov // 3 if l_mov // 12 == l2_mov // 12 else -10
@@ -215,14 +281,28 @@ for phase in range(1, 2):
                 continue
             n_status = status.move(twist)
             idx = n_status.phase_idx(phase)
-            if prunning[idx] < 100:
-                continue
-            prunning[idx] = num + 1
+            '''
+            if phase == 1:
+                parity = n_status.sgn_ep()
+                if prunning[parity][idx] < 100:
+                    continue
+                prunning[parity][idx] = num + 1
+            else:
+                if prunning[idx] < 100:
+                    continue
+                prunning[idx] = num + 1
+            '''
             que.append([n_status, num + 1, twist, l_mov])
     
-    with open('prunning' + str(phase) + '.csv', mode='w') as f:
-        writer = csv.writer(f, lineterminator='\n')
-        writer.writerow(prunning)
+    if phase == 1:
+        with open('prunning' + str(phase) + '.csv', mode='w') as f:
+            writer = csv.writer(f, lineterminator='\n')
+            for i in range(len(prunning)):
+                writer.writerow(prunning[i])
+    else:
+        with open('prunning' + str(phase) + '.csv', mode='w') as f:
+            writer = csv.writer(f, lineterminator='\n')
+            writer.writerow(prunning)
 
 
 '''
