@@ -51,7 +51,6 @@ L 23 22 R
 '''
 
 import tkinter
-from collections import deque
 from time import time
 
 class Cube:
@@ -62,19 +61,19 @@ class Cube:
         self.Ce = [i // 4 for i in range(24)]
     
     def move_cp(self, mov):
-        surface = [[3, 1, 7, 5], [3, 1, 7, 5], [0, 2, 4, 6], [0, 1, 3, 2], [0, 1, 3, 2], [4, 5, 7, 6], [2, 3, 5, 4], [2, 3, 5, 4], [1, 0, 6, 7]]
+        surface = [[3, 1, 7, 5], [0, 2, 4, 6], [0, 1, 3, 2], [4, 5, 7, 6], [2, 3, 5, 4], [1, 0, 6, 7]]
         res = [i for i in self.Cp]
-        mov_type = mov // 3
+        mov_type = mov // 6
         mov_amount = mov % 3
         for i in range(4):
             res[surface[mov_type][(i + mov_amount + 1) % 4]] = self.Cp[surface[mov_type][i]]
         return res
     
     def move_co(self, mov):
-        surface = [[3, 1, 7, 5], [3, 1, 7, 5], [0, 2, 4, 6], [0, 1, 3, 2], [0, 1, 3, 2], [4, 5, 7, 6], [2, 3, 5, 4], [2, 3, 5, 4], [1, 0, 6, 7]]
+        surface = [[3, 1, 7, 5], [0, 2, 4, 6], [0, 1, 3, 2], [4, 5, 7, 6], [2, 3, 5, 4], [1, 0, 6, 7]]
         pls = [1, 2, 1, 2]
         res = [i for i in self.Co]
-        mov_type = mov // 3
+        mov_type = mov // 6
         mov_amount = mov % 3
         for i in range(4):
             res[surface[mov_type][(i + mov_amount + 1) % 4]] = self.Co[surface[mov_type][i]]
@@ -87,12 +86,16 @@ class Cube:
         surface = [[[3, 12, 19, 11], [2, 13, 18, 10]], # R
                    [[3, 12, 19, 11], [2, 13, 18, 10], [4, 1, 20, 17]],  # Rw
                    [[7, 8, 23, 15], [6, 9, 22, 14]], # L
+                   [[7, 8, 23, 15], [6, 9, 22, 14], [0, 5, 16, 21]], # Lw
                    [[0, 2, 4, 6], [1, 3, 5, 7]], # U
                    [[0, 2, 4, 6], [1, 3, 5, 7], [14, 12, 10, 8]], # Uw
                    [[16, 18, 20, 22], [17, 19, 21, 23]], # D
+                   [[16, 18, 20, 22], [17, 19, 21, 23], [9, 11, 13, 15]], # Dw
                    [[5, 10, 17, 9], [4, 11, 16, 8]], # F
                    [[5, 10, 17, 9], [4, 11, 16, 8], [6, 3, 18, 23]], # Fw
-                   [[1, 14, 21, 13], [0, 15, 20, 12]]] # B
+                   [[1, 14, 21, 13], [0, 15, 20, 12]], # B
+                   [[1, 14, 21, 13], [0, 15, 20, 12], [2, 7, 22, 19]] # Bw
+                   ]
         mov_type = mov // 3
         mov_amount = mov % 3
         res = [i for i in self.Ep]
@@ -105,12 +108,15 @@ class Cube:
         surface = [[[8, 9, 10, 11]], # R
                    [[8, 9, 10, 11], [2, 12, 22, 6], [1, 15, 21, 5]], # Rw
                    [[16, 17, 18, 19]], # L
+                   [[16, 17, 18, 19], [0, 4, 20, 14], [3, 7, 23, 13]], # Lw
                    [[0, 1, 2, 3]], # U
                    [[0, 1, 2, 3], [13, 9, 5, 17], [12, 8, 4, 16]], # Uw
                    [[20, 21, 22, 23]], # D
+                   [[20, 21, 22, 23], [7, 11, 15, 19], [6, 10, 14, 18]], # Dw
                    [[4, 5, 6, 7]], # F
                    [[4, 5, 6, 7], [3, 8, 21, 18], [2, 11, 20, 17]], # Fw
-                   [[12, 13, 14, 15]] # B
+                   [[12, 13, 14, 15]], # B
+                   [[12, 13, 14, 15], [1, 16, 23, 10], [0, 19, 22, 9]] # Bw
                    ]
         mov_type = mov // 3
         mov_amount = mov % 3
@@ -166,7 +172,7 @@ class Cube:
                         res += 1
         return res % 2
     
-    def ce_phase1_idx(self):
+    def phase0_idx(self):
         res = 0
         cnt = 0
         for i in reversed(range(24)):
@@ -175,7 +181,7 @@ class Cube:
                 res += cmb(23 - i, cnt)
         return res
     
-    def ce_phase2_idx(self):
+    def phase1_idx(self):
         res = 0
         cnt = 0
         arr = [0, 1, 2, 3, 4, 5, 6, 7, 12, 13, 14, 15, 20, 21, 22, 23]
@@ -185,7 +191,7 @@ class Cube:
                 res += cmb(15 - i, cnt)
         return res
     
-    def ce_phase3_idx(self):
+    def ce_phase2_idx(self):
         res_rl = 0
         cnt = 0
         for i in reversed(range(8)):
@@ -206,44 +212,82 @@ class Cube:
                 res_ud += cmb(7 - i, cnt)
         return res_rl * 4900 + res_fb * 70 + res_ud
     
+    def phase_idx(self, phase):
+        res = 0
+        if phase == 0:
+            cnt = 0
+            for i in reversed(range(24)):
+                if self.Ce[i] == 2 or self.Ce[i] == 4:
+                    cnt += 1
+                    res += cmb(23 - i, cnt)
+        return res
+
+    def distance(self, phase):
+        return prunning[phase][self.phase_idx(phase)]
 
 def cmb(n, r):
     return fac[n] // fac[r] // fac[n - r]
 
-def distance(phase, puzzle):
-    return 0
 
 def phase_search(phase, puzzle, depth):
     global path
     if depth == 0:
-        if distance(phase, puzzle) == 0:
+        if puzzle.distance(phase) == 0:
             return True
     else:
-        l_twist_0 = path[-1] // 3 if path else -10
-        l_twist_1 = path[-1] // 9 if len(path) >= 3 and len(set(path[-3:])) == 1 else -10
-        if distance(phase, puzzle) <= depth:
+        l_twist_0 = path[-1] // 3 if len(path) else -10
+        l_twist_1 = path[-2] // 3 if len(path) >= 2 and path[-1] // 12 == path[-2] // 12 else -10
+        l_twist_2 = (path[-1] // 3 + 2 if (path[-1] // 3) % 4 == 1 else path[-1] // 3 - 2) if len(path) and (path[-1] // 3) % 2 == 1 else -10
+        if puzzle.distance(phase) <= depth:
             for twist in successor[phase]:
                 if twist // 3 == l_twist_0 or twist // 9 == l_twist_1:
                     continue
-                n_puzzle = status.move(twist)
+                n_puzzle = puzzle.move(twist)
                 path.append(twist)
                 if phase_search(phase, n_puzzle, depth - 1):
                     return True
                 path.pop()
 
 def solver(puzzle):
-    global solution
+    global solution, path
     solution = []
-    for phase in range(8):
+    for phase in range(1):
         for depth in range(20):
             path = []
             if phase_search(phase, puzzle, depth):
+                print(phase, path)
+                for i in path:
+                    print(move_candidate[i], end=' ')
+                print('')
                 solution.extend(path)
                 break
 
+fac = [1 for _ in range(25)]
+for i in range(1, 25):
+    fac[i] = fac[i - 1] * i
+
 solution = []
 path = []
+#                  0    1     2     3     4      5      6    7     8     9     10     11     12   13    14    15    16     17     18   19   20     21    22     23     24   25    26    27    28     29     30   31    32    33    34     35
+move_candidate = ["R", "R2", "R'", "Rw", "Rw2", "Rw'", "L", "L2", "L'", "Lw", "Lw2", "Lw'", "U", "U2", "U'", "Uw", "Uw2", "Uw'", "D", "D2", "D'", "Dw", "Dw2", "Dw'", "F", "F2", "F'", "Fw", "Fw2", "Fw'", "B", "B2", "B'", "Bw", "Bw2", "Bw'"]
+successor = [
+            [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35], # phase 0
+            [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14,     16,     18, 19, 20,     22,     24, 25, 26,     28,     30, 31, 32,     34    ], # phase 1
+]
 
+prunning = [[] for _ in range(8)]
+for phase in range(1):
+    with open('prunning' + str(phase) + '.csv', mode='r') as f:
+        prunning[0] = [int(i) for i in f.readline().replace('\n', '').split(',')]
+
+scramble = [move_candidate.index(i) for i in input("scramble: ").split()]
+puzzle = Cube()
+for mov in scramble:
+    puzzle = puzzle.move(mov)
+strt = time()
+solver(puzzle)
+print(solution)
+print(time() - strt)
 
 '''
 
@@ -335,9 +379,6 @@ def phase_3(status, depth):
 '''
 
 '''
-fac = [1 for _ in range(25)]
-for i in range(1, 25):
-    fac[i] = fac[i - 1] * i
 
 #                  0    1     2     3     4      5      6    7     8     9    10    11    12    13     14     15   16    17    18   19    20    21    22     23     24   25    26
 move_candidate = ["R", "R2", "R'", "Rw", "Rw2", "Rw'", "L", "L2", "L'", "U", "U2", "U'", "Uw", "Uw2", "Uw'", "D", "D2", "D'", "F", "F2", "F'", "Fw", "Fw2", "Fw'", "B", "B2", "B'"]
