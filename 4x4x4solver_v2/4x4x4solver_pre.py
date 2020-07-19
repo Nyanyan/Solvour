@@ -309,9 +309,9 @@ while que:
         if prunning[idx] == 100:
             prunning[idx] = num + 1
             que.append([n_status, num + 1, twist, l_mov])
-    with open('prunning0.csv', mode='w') as f:
-        writer = csv.writer(f, lineterminator='\n')
-        writer.writerow(prunning)
+with open('prunning0.csv', mode='w') as f:
+    writer = csv.writer(f, lineterminator='\n')
+    writer.writerow(prunning)
 
 
 # phase1 FBUD center
@@ -448,7 +448,7 @@ print('phase 2 2/2')
 prunning = [[100 for _ in range(665280)] for _ in range(2)]
 _, idx1, idx2 = solved.phase_idx(2)
 prunning[0][idx1] = 0
-prunning[0][idx2] = 0
+prunning[1][idx2] = 0
 que = deque([[solved, 0, -10, -10]])
 cnt = 0
 cnt1 = 0
@@ -558,137 +558,3 @@ while que:
 with open('prunning3.csv', mode='a') as f:
     writer = csv.writer(f, lineterminator='\n')
     writer.writerow(prunning)
-
-
-
-
-
-
-
-
-
-
-
-'''
-ce_phase1 = [1000 for _ in range(735471)]
-ce_phase1[solved.ce_phase1_idx()] = 0
-que = deque([[solved, 0, -10, -10, -10]])
-cnt = 0
-while que:
-    cnt += 1
-    if cnt % 1000 == 0:
-        print(cnt)
-    #print(len(que))
-    status, num, l_mov, l2_mov, l3_mov = que.popleft()
-    l_mov_type = l_mov // 3
-    l3_mov_type = l_mov // 9 if l_mov // 9 == l2_mov // 9 == l3_mov // 9 else -10
-    lst = [0, 2, 3, 5, 6, 8, 9, 11, 12, 14, 15, 17, 18, 20, 21, 23, 24, 26]
-    for mov in lst:
-        if l_mov_type == mov // 3 or l3_mov_type == mov // 9:
-            continue
-        n_status = status.move(mov)
-        idx = n_status.ce_phase1_idx()
-        if ce_phase1[idx] < 1000:
-            continue
-        ce_phase1[idx] = num + 1
-        que.append([n_status, num + 1, mov, l_mov, l2_mov])
-
-with open('ce_phase1.csv', mode='w') as f:
-    writer = csv.writer(f, lineterminator='\n')
-    writer.writerow(ce_phase1)
-'''
-
-
-'''
-ce_phase2 = [1000 for _ in range(12870)]
-ce_phase2[solved.ce_phase2_idx()] = 0
-que = deque([[solved, 0, -10, -10, -10]])
-cnt = 0
-while que:
-    cnt += 1
-    if cnt % 1000 == 0:
-        print(cnt)
-    #print(len(que))
-    status, num, l_mov, l2_mov, l3_mov = que.popleft()
-    l_mov_type = l_mov // 3
-    l3_mov_type = l_mov // 9 if l_mov // 9 == l2_mov // 9 == l3_mov // 9 else -10
-    lst = [0, 2, 3, 5, 6, 8, 9, 11, 13, 15, 17, 18, 20, 22, 24, 26]
-    for mov in lst:
-        if l_mov_type == mov // 3 or l3_mov_type == mov // 9:
-            continue
-        n_status = status.move(mov)
-        idx = n_status.ce_phase2_idx()
-        if ce_phase2[idx] < 1000:
-            continue
-        ce_phase2[idx] = num + 1
-        que.append([n_status, num + 1, mov, l_mov, l2_mov])
-
-with open('ce_phase2.csv', mode='w') as f:
-    writer = csv.writer(f, lineterminator='\n')
-    writer.writerow(ce_phase2)
-'''
-'''
-parity_phase2_1 = [1000 for _ in range(4096)]
-parity_phase2_2 = [1000 for _ in range(4096)]
-parity_idx = solved.parity()
-parity_phase2_1[parity_idx[0]] = 0
-parity_phase2_2[parity_idx[1]] = 0
-que = deque([[solved, 0, -10, -10, -10]])
-cnt = 0
-while que:
-    cnt += 1
-    if cnt % 1000 == 0:
-        print(cnt)
-    #print(len(que))
-    status, num, l_mov, l2_mov, l3_mov = que.popleft()
-    l_mov_type = l_mov // 3
-    l3_mov_type = l_mov // 9 if l_mov // 9 == l2_mov // 9 == l3_mov // 9 else -10
-    lst = [0, 2, 3, 5, 6, 8, 9, 11, 12, 14, 15, 17, 18, 20, 21, 23, 24, 26]
-    for mov in lst:
-        if l_mov_type == mov // 3 or l3_mov_type == mov // 9:
-            continue
-        n_status = status.move(mov)
-        idx = n_status.parity()
-        if parity_phase2_1[idx[0]] < 1000 and parity_phase2_2[idx[1]] < 1000:
-            continue
-        parity_phase2_1[idx[0]] = min(parity_phase2_1[idx[0]], num + 1)
-        parity_phase2_2[idx[1]] = min(parity_phase2_2[idx[1]], num + 1)
-        que.append([n_status, num + 1, mov, l_mov, l2_mov])
-
-with open('parity_phase2_1.csv', mode='w') as f:
-    writer = csv.writer(f, lineterminator='\n')
-    writer.writerow(parity_phase2_1)
-with open('parity_phase2_2.csv', mode='w') as f:
-    writer = csv.writer(f, lineterminator='\n')
-    writer.writerow(parity_phase2_2)
-'''
-
-'''
-ce_phase3 = [1000 for _ in range(347970)]
-ce_phase3[solved.ce_phase3_idx()] = 0
-
-que = deque([[solved, 0, -10, -10, -10]])
-cnt = 0
-while que:
-    cnt += 1
-    if cnt % 1000 == 0:
-        print(cnt)
-    #print(len(que))
-    status, num, l_mov, l2_mov, l3_mov = que.popleft()
-    l_mov_type = l_mov // 3
-    l3_mov_type = l_mov // 9 if l_mov // 9 == l2_mov // 9 == l3_mov // 9 else -10
-    lst = [0, 2, 4, 6, 8, 9, 11, 13, 15, 17, 18, 20, 22, 24, 26]
-    for mov in lst:
-        if l_mov_type == mov // 3 or l3_mov_type == mov // 9:
-            continue
-        n_status = status.move(mov)
-        idx = n_status.ce_phase3_idx()
-        if ce_phase3[idx] < 1000:
-            continue
-        ce_phase3[idx] = num + 1
-        que.append([n_status, num + 1, mov, l_mov, l2_mov])
-
-with open('ce_phase3.csv', mode='w') as f:
-    writer = csv.writer(f, lineterminator='\n')
-    writer.writerow(ce_phase3)
-'''
