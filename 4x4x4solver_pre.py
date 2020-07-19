@@ -215,16 +215,32 @@ class Cube:
                         break
             res1 = 0
             tmp = [4, 5, 6, 7]
-            arr1 = [tmp.index(self.Ep[i] // 2) + 1 if self.Ep[i] // 2 in tmp else 0 for i in range(1, 24, 2)]
-            arr2 = [tmp.index(self.Ep[i] // 2) + 1 if self.Ep[i] // 2 in tmp else 0 for i in range(0, 23, 2)]
-            #print(arr1, [self.Ep[i] for i in range(1, 24, 2)])
-            #print(arr2, [self.Ep[i] for i in range(0, 23, 2)])
-            arr3 = [[-1, -1] for _ in range(4)]
-            for i in range(1, 5):
-                arr3[i - 1][0] = arr1.index(i)
-                arr3[i - 1][1] = arr2.index(i)
-            arr3.sort()
+            arr1 = [self.Ep[i] // 2 for i in range(1, 24, 2)]
+            arr2 = [self.Ep[i] // 2 for i in range(0, 23, 2)]
+            #print(arr1)
+            #print(arr2)
+            arr3 = [-1 for _ in range(12)]
+            for i in range(12):
+                arr3[i] = arr2.index(arr1[i])
             #print(arr3)
+            res1 = 0
+            for i in range(6):
+                cnt = arr3[i]
+                for j in arr3[:i]:
+                    if j < arr3[i]:
+                        cnt -= 1
+                res1 += cnt * cmb(11 - i, 5 - i)
+            #print(res1)
+            res2 = 0
+            for i in range(6, 12):
+                cnt = arr3[i]
+                for j in arr3[6:i]:
+                    if j < arr3[i]:
+                        cnt -= 1
+                res2 += cnt * cmb(11 - i + 6, 5 - i + 6)
+            #print(res1, res2)
+            #print('')
+            '''
             arr4 = [i[0] for i in arr3]
             arr5 = [i[1] for i in arr3]
             #print(arr4)
@@ -239,8 +255,7 @@ class Cube:
             for i in range(4):
                 res1 += arr5[i] * cmb(11 - i, 3 - i)
             #print(res1)
-
-            #print('')
+            '''
             '''
             cnt = 0
             for i in range(11):
@@ -258,7 +273,13 @@ class Cube:
                     if cnt == 4 or i - cnt == 7:
                         break
             '''
-            return res0, res1
+            '''
+            if res1 >= 8217:
+                print('res1', res1)
+            if res2 >= 8217:
+                print('res2', res2)
+            '''
+            return res0, res1, res2
         elif phase == 3:
             cnt = 0
             res0 = 0
@@ -463,6 +484,12 @@ class Cube:
                     return False
         return True
         '''
+    
+    def edge_paired_4(self):
+        for i in range(4, 8):
+            if self.Ep[i * 2] // 2 != self.Ep[i * 2 + 1] // 2:
+                return False
+        return True
 
 
 def cmb(n, r):
@@ -487,7 +514,7 @@ solved = Cube()
 
 
 
-
+'''
 prunning_num = [735471, 12870]
 for phase in range(1, 2):
     if phase == 1:
@@ -543,6 +570,7 @@ for phase in range(1, 2):
 '''
 
 
+'''
 # phase2 1 Ce
 prunning = [100 for _ in range(343000)]
 que = deque([[solved, 0, -10, -10]])
@@ -566,7 +594,7 @@ while que:
         if n_status.iscolumn() and prunning[idx] != 0:
             #print('a')
             prunning[idx] = 0
-            que.append([n_status, 0, twist, l_mov])
+            que.append([n_status, 0, -10, -10])
         elif prunning[idx] > num + 1:
             prunning[idx] = num + 1
             que.append([n_status, num + 1, twist, l_mov])
@@ -574,20 +602,22 @@ while que:
 with open('prunning2.csv', mode='w') as f:
     writer = csv.writer(f, lineterminator='\n')
     writer.writerow(prunning)
-
+'''
 
 # phase2 2 Ep
-prunning = [100 for _ in range(245025)]
-prunning[solved.phase_idx(2)[1]] = 0
+prunning = [[100 for _ in range(8218)] for _ in range(2)]
+_, idx1, idx2 = solved.phase_idx(2)
+prunning[0][idx1] = 0
+prunning[0][idx2] = 0
 que = deque([[solved, 0, -10, -10]])
 cnt = 0
+cnt1 = 0
+cnt2 = 0
 while que:
     cnt += 1
     if cnt % 1000 == 0:
-        tmp = prunning.count(100)
-        print(cnt, tmp, len(que))
-        if tmp == 0:
-            break
+        tmp = [prunning[i].count(100) for i in range(len(prunning))]
+        print(cnt, cnt1, cnt2, tmp, sum(prunning[0]), sum(prunning[1]), len(que))
     status, num, l_mov, l2_mov = que.popleft()
     l_twist_0 = l_mov // 3
     l_twist_1 = l2_mov // 3 if l_mov // 12 == l2_mov // 12 else -10
@@ -596,15 +626,30 @@ while que:
         if l_twist_0 == twist // 3 or l_twist_1 == twist // 3 or l_twist_2 == twist // 3:
             continue
         n_status = status.move(twist)
-        idx = n_status.phase_idx(2)[1]
-        if prunning[idx] > num + 1:
-            prunning[idx] = num + 1
-            que.append([n_status, num + 1, twist, l_mov])
+        _, idx1, idx2 = n_status.phase_idx(2)
+        if n_status.edge_paired_4():
+            if prunning[0][idx1] != 0 or prunning[1][idx2] != 0:
+                prunning[0][idx1] = 0
+                prunning[1][idx2] = 0
+                cnt1 += 1
+                que.append([n_status, 0, -10, -10])
+        else:
+            flag = False
+            if prunning[0][idx1] > num + 1:
+                prunning[0][idx1] = num + 1
+                flag = True
+            if prunning[1][idx2] > num + 1:
+                prunning[1][idx2] = num + 1
+                flag = True
+            if flag:
+                cnt2 += 1
+                que.append([n_status, num + 1, twist, l_mov])
     
 with open('prunning2.csv', mode='a') as f:
     writer = csv.writer(f, lineterminator='\n')
-    writer.writerow(prunning)
-'''
+    for i in range(2):
+        writer.writerow(prunning[i])
+
 
 '''
 

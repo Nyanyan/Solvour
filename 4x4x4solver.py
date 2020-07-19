@@ -165,6 +165,7 @@ class Cube:
         return res1, res2
     '''
     def sgn(self):
+        '''
         res = 0
         arr = [i for i in self.Ep]
         for i in range(24):
@@ -174,6 +175,11 @@ class Cube:
                         arr[i], arr[j] = arr[j], arr[i]
                         res += 1
         res %= 2
+        '''
+        res = 0
+        for i in range(24):
+            if i % 2 != self.Ep[i] % 2:
+                res += 1
         #print((self.Ce[8] == self.Ce[11] and self.Ce[16] == self.Ce[19]), (self.Ce[8] == self.Ce[9] and self.Ce[16] == self.Ce[17]), (self.Ce[8] == self.Ce[10] and self.Ce[16] == self.Ce[18]))
         if (self.Ce[8] == self.Ce[11] and self.Ce[16] == self.Ce[19]) or (self.Ce[8] == self.Ce[9] and self.Ce[16] == self.Ce[17]) or (self.Ce[8] == self.Ce[10] == self.Ce[16] == self.Ce[18]):
             res2 = 0
@@ -269,25 +275,33 @@ class Cube:
                     if cnt == 4 or i - cnt == 3:
                         break
             res1 = 0
-            #tmp = [i // 2 for i in self.Ep]
-            arr1 = [1 if self.Ep[i] in [9, 11, 13, 15] else 0 for i in range(1, 24, 2)]
-            arr2 = [1 if self.Ep[i] in [8, 10, 12, 14] else 0 for i in range(0, 23, 2)]
-            cnt = 0
-            for i in range(11):
-                if arr1[i] == 1:
-                    res1 += cmb(11 - i, 4 - cnt)
-                    cnt += 1
-                    if cnt == 4 or i - cnt == 7:
-                        break
-            res1 *= 495
-            cnt = 0
-            for i in range(11):
-                if arr2[i] == 1:
-                    res1 += cmb(11 - i, 4 - cnt)
-                    cnt += 1
-                    if cnt == 4 or i - cnt == 7:
-                        break
-            return res0, res1
+            tmp = [4, 5, 6, 7]
+            arr1 = [self.Ep[i] // 2 for i in range(1, 24, 2)]
+            arr2 = [self.Ep[i] // 2 for i in range(0, 23, 2)]
+            print(arr1)
+            print(arr2)
+            arr3 = [-1 for _ in range(12)]
+            for i in range(12):
+                arr3[i] = arr2.index(arr1[i])
+            #print(arr3)
+            res1 = 0
+            for i in range(6):
+                cnt = arr3[i]
+                for j in arr3[:i]:
+                    if j < arr3[i]:
+                        cnt -= 1
+                res1 += cnt * cmb(11 - i, 5 - i)
+            #print(res1)
+            res2 = 0
+            for i in range(6, 12):
+                cnt = arr3[i]
+                for j in arr3[6:i]:
+                    if j < arr3[i]:
+                        cnt -= 1
+                res2 += cnt * cmb(11 - i + 6, 5 - i + 6)
+            #print(res1, res2)
+            #print('')
+            return res0, res1, res2
         elif phase == 3:
             cnt = 0
             res0 = 0
@@ -380,7 +394,7 @@ def phase_search(phase, puzzle, depth):
 
 '''
 phase 0: gather RL centers on RL faces
-phase 1: gather FB centers on FB faces and clear edge and center parity
+phase 1: gather FB centers on FB faces, clear edge and center parity and make low edge to low place, high to high
 phase 2: make center column and pair up 4 edges on middle layer
 '''
 
