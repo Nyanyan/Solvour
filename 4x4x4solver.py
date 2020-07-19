@@ -175,11 +175,11 @@ class Cube:
                         arr[i], arr[j] = arr[j], arr[i]
                         res += 1
         res %= 2
-        '''
         res = 0
         for i in range(24):
             if i % 2 != self.Ep[i] % 2:
                 res += 1
+        '''
         #print((self.Ce[8] == self.Ce[11] and self.Ce[16] == self.Ce[19]), (self.Ce[8] == self.Ce[9] and self.Ce[16] == self.Ce[17]), (self.Ce[8] == self.Ce[10] and self.Ce[16] == self.Ce[18]))
         if (self.Ce[8] == self.Ce[11] and self.Ce[16] == self.Ce[19]) or (self.Ce[8] == self.Ce[9] and self.Ce[16] == self.Ce[17]) or (self.Ce[8] == self.Ce[10] == self.Ce[16] == self.Ce[18]):
             res2 = 0
@@ -356,9 +356,7 @@ class Cube:
                 arr2_p[i] = arr2_tmp.index(arr2_p[i])
             arr3 = [-1 for _ in range(8)]
             for i in range(8):
-                for j in range(8):
-                    if arr1_p[i] == arr2_p[j]:
-                        arr3[i] = j
+                arr3[i] = arr2_p.index(arr1_p[i])
             for i in range(7):
                 cnt = arr3[i]
                 for j in arr3[i + 1:]:
@@ -371,7 +369,7 @@ class Cube:
     def distance(self, phase):
         idxes = self.phase_idx(phase)
         '''
-        if phase == 2:
+        if phase == 3:
             print([prunning[phase][i][idxes[i]] for i in range(len(idxes))])
             print(idxes)
         '''
@@ -407,26 +405,28 @@ def phase_search(phase, puzzle, depth):
 phase 0: gather RL centers on RL faces
 phase 1: gather FB centers on FB faces, clear edge and center parity and make low edge to low place, high to high
 phase 2: make center column and pair up 4 edges on middle layer
+phase 3: complete center and edge pairing
 '''
 
 def solver(puzzle):
     global solution, path
     solution = []
-    for phase in range(3):
+    for phase in range(4):
         strt = time()
         for depth in range(20):
-            print('         ', depth)
+            print(depth, end=' ')
             path = []
             if phase_search(phase, puzzle, depth):
                 for twist in path:
                     puzzle = puzzle.move(twist)
-                print(phase, end=' ')
+                print('')
+                print('phase', phase, end=' ')
                 for i in path:
                     print(move_candidate[i], end=' ')
                 solution.extend(path)
                 break
         print(time() - strt)
-        print('OP:', puzzle.sgn())
+        #print('OP:', puzzle.sgn())
 
 fac = [1 for _ in range(25)]
 for i in range(1, 25):
@@ -442,7 +442,7 @@ successor = [
 ]
 
 prunning = [None for _ in range(8)]
-for phase in range(3):
+for phase in range(4):
     line_len = 0
     with open('prunning' + str(phase) + '.csv', mode='r') as f:
         for line in f:
