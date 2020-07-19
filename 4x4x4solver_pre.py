@@ -162,174 +162,276 @@ class Cube:
         return res_rl * 4900 + res_fb * 70 + res_ud
 
     def phase_idx(self, phase):
-        global pp
         res = 0
+        rl_center = [8, 9, 10, 11, 16, 17, 18, 19]
+        fb_center = [4, 5, 6, 7, 12, 13, 14, 15]
+        ud_center = [0, 1, 2, 3, 20, 21, 22, 23]
         if phase == 0:
             cnt = 0
-            for i in reversed(range(24)):
+            for i in range(23):
                 if self.Ce[i] == 2 or self.Ce[i] == 4:
+                    res += cmb(23 - i, 8 - cnt)
                     cnt += 1
-                    res += cmb(23 - i, cnt)
+                    if cnt == 8 or i - cnt == 15:
+                        break
         elif phase == 1:
             cnt = 0
             arr = [0, 1, 2, 3, 4, 5, 6, 7, 12, 13, 14, 15, 20, 21, 22, 23]
-            for i in reversed(range(16)):
+            for i in range(15):
                 if self.Ce[arr[i]] == 1 or self.Ce[arr[i]] == 3:
+                    res += cmb(15 - i, 8 - cnt)
                     cnt += 1
-                    res += cmb(15 - i, cnt)
+                    if cnt == 8 or i - cnt == 7:
+                        break
         elif phase == 2:
             cnt = 0
             res0 = 0
-            for i in reversed(range(8)):
+            for i in range(7):
                 if self.Ce[rl_center[i]] == 4:
+                    res0 += cmb(7 - i, 4 - cnt)
                     cnt += 1
-                    res0 += cmb(7 - i, cnt)
+                    if cnt == 4 or i - cnt == 3:
+                        break
             res0 *= 70
             cnt = 0
-            for i in reversed(range(8)):
+            for i in range(7):
                 if self.Ce[fb_center[i]] == 3:
+                    res0 += cmb(7 - i, 4 - cnt)
                     cnt += 1
-                    res0 += cmb(7 - i, cnt)
+                    if cnt == 4 or i - cnt == 3:
+                        break
             res0 *= 70
             cnt = 0
-            for i in reversed(range(8)):
+            for i in range(7):
                 if self.Ce[ud_center[i]] == 5:
+                    res0 += cmb(7 - i, 4 - cnt)
                     cnt += 1
-                    res0 += cmb(7 - i, cnt)
+                    if cnt == 4 or i - cnt == 3:
+                        break
             res1 = 0
-            tmp = [i // 2 for i in self.Ep]
-            arr = []
-            for i in range(4, 8):
-                tmp2 = []
-                for j in range(24):
-                    if tmp[j] == i:
-                        tmp2.append(j)
-                if tmp2[0] % 2:
-                    tmp2[0], tmp2[1] = tmp2[1], tmp2[0]
-                arr.append(tmp2)
-            #print(arr)
-            arr.sort()
-            #print(arr)
-            arr2 = [arr[i][1] // 2 for i in range(4)]
-            for i in arr2:
-                res1 *= 12
-                res1 += i
+            #tmp = [i // 2 for i in self.Ep]
+            arr1 = [1 if self.Ep[i] in [9, 11, 13, 15] else 0 for i in range(1, 24, 2)]
+            arr2 = [1 if self.Ep[i] in [8, 10, 12, 14] else 0 for i in range(0, 23, 2)]
+            cnt = 0
+            for i in range(11):
+                if arr1[i] == 1:
+                    res1 += cmb(11 - i, 4 - cnt)
+                    cnt += 1
+                    if cnt == 4 or i - cnt == 7:
+                        break
+            res1 *= 495
+            cnt = 0
+            for i in range(11):
+                if arr2[i] == 1:
+                    res1 += cmb(11 - i, 4 - cnt)
+                    cnt += 1
+                    if cnt == 4 or i - cnt == 7:
+                        break
+            return res0, res1
         elif phase == 3:
             cnt = 0
             res0 = 0
-            for i in reversed(range(8)):
+            for i in range(7):
                 if self.Ce[rl_center[i]] == 4:
+                    res0 += cmb(7 - i, 4 - cnt)
                     cnt += 1
-                    res0 += cmb(7 - i, cnt)
+                    if cnt == 4 or i - cnt == 3:
+                        break
             res0 *= 70
             cnt = 0
-            for i in reversed(range(8)):
+            for i in range(7):
                 if self.Ce[fb_center[i]] == 3:
+                    res0 += cmb(7 - i, 4 - cnt)
                     cnt += 1
-                    res0 += cmb(7 - i, cnt)
+                    if cnt == 4 or i - cnt == 3:
+                        break
             res0 *= 70
             cnt = 0
-            for i in reversed(range(8)):
+            for i in range(7):
                 if self.Ce[ud_center[i]] == 5:
+                    res0 += cmb(7 - i, 4 - cnt)
                     cnt += 1
-                    res0 += cmb(7 - i, cnt)
+                    if cnt == 4 or i - cnt == 3:
+                        break
             res1 = 0
-            tmp = [i // 2 for i in self.Ep]
-            arr = []
-            for i in range(4, 8):
-                tmp2 = []
-                for j in range(24):
-                    if tmp[j] == i:
-                        tmp2.append(j)
-                if tmp2[0] % 2:
-                    tmp2[0], tmp2[1] = tmp2[1], tmp2[0]
-                arr.append(tmp2)
-            #print(arr)
-            arr.sort()
-            #print(arr)
-            arr2 = [arr[i][1] // 2 for i in range(4)]
-            for i in arr2:
-                res1 *= 12
-                res1 += i
-            '''
-            arr2 = [arr[i][1] // 2 for i in range(12)]
-            for i in range(12):
-                cnt = arr2[i]
-                for j in arr2[i + 1:]:
-                    if j < arr2[i]:
+            arr1 = [0, 2, 4, 6, 16, 18, 20, 22]
+            arr1_p = [self.Ep[i] for i in arr1]
+            arr2 = [1, 3, 5, 7, 17, 19, 21, 23]
+            arr2_p = [self.Ep[i] for i in arr2]
+            arr1_tmp = sorted(arr1_p)
+            for i in range(8):
+                arr1_p[i] = arr1_tmp.index(arr1_p[i])
+            arr2_tmp = sorted(arr2_p)
+            for i in range(8):
+                arr2_p[i] = arr2_tmp.index(arr2_p[i])
+            arr3 = [-1 for _ in range(8)]
+            for i in range(8):
+                for j in range(8):
+                    if arr1_p[i] == arr2_p[j]:
+                        arr3[i] = j
+            for i in range(7):
+                cnt = arr3[i]
+                for j in arr3[i + 1:]:
+                    if j < arr3[i]:
                         cnt -= 1
-                res1 += fac[11 - i] * (arr2[i] - cnt)
-            '''
-            #print(res1)
-            '''
-            arr2 = [arr[i][1] // 2 for i in [4, 5, 6, 7]]
-            #print(arr2)
-            for i in arr2:
-                res1 *= 12
-                res1 += i
-            #print(res1)
-            '''
+                res1 += fac[7 - i] * (arr3[i] - cnt)
             return res0, res1
-            '''
-            res1 = [0, 0, 0]
-            for ii in range(3):
-                for i in range(8 * ii, 8 * (ii + 1)):
-                    cnt = self.Ep[i]
-                    for j in self.Ep[i + 1:8 * (ii + 1)]:
-                        if j < self.Ep[i]:
-                            cnt -= 1
-                    res1[ii] += fac[7 - i + 8 * ii] * (self.Ep[i] - cnt)
-            res = [res0]
-            res.extend(res1)
-            return res
-            '''
-            '''
-            res1 = 0
-            tmp = [self.Ep[i] // 2 for i in [8, 9, 10, 11, 12, 13, 14, 15]]
-            #print(tmp)
-            cntr = Counter(tmp)
-            arr = [0 for _ in range(8)]
-            idx = 1
-            for i in range(8):
-                if cntr[tmp[i]] == 2 and arr[i] == 0:
-                    for j in range(i, 8):
-                        if tmp[i] == tmp[j]:
-                            arr[j] = idx
-                    idx += 1
-            #print(arr)
-            pair = max(arr)
-            #print(pair)
-            remain = [2 for _ in range(pair + 1)]
-            remain[0] = 8 - 2 * pair
-            #print(remain)
-            strt = [0, 300, 600, 900, 1200]
-            res2 = strt[pair]
-            for i in range(8):
-                for j in range(arr[i]): # その場所にもしjがあったら
-                    if remain[j] == 0:
-                        continue
-                    tmp2 = 7 - i
-                    for k in range(pair + 1): # その下のパーツの入り方
-                        #print('tmp2', tmp2)
-                        tmp = remain[k] - 1 if j == k else remain[k]
-                        if tmp == 0:
-                            continue
-                        res2 += cmb(tmp2, tmp)
-                        tmp2 -= tmp
-                remain[arr[i]] -= 1
-                #print(remain, res2)
-            return res2
-            '''
         return res
+    '''
+    arr = []
+    for i in [4, 5, 6, 7]:
+        tmp2 = []
+        for j in range(24):
+            if tmp[j] == i:
+                tmp2.append(j)
+        if tmp2[0] % 2:
+            tmp2[0], tmp2[1] = tmp2[1], tmp2[0]
+        arr.append(tmp2)
+    arr1 = [i[0] for i in arr]
+    arr2 = [i[1] for i in arr]
+    #print(arr)
+    #arr.sort()
+    #print(arr)
+    arr2 = [arr[i][1] // 2 for i in range(4)]
+    #print(arr2)
+    for i in arr2:
+        res1 *= 12
+        res1 += i
+    #print(res1)
+    '''
+    '''
+    cnt = 0
+    res0 = 0
+    for i in reversed(range(8)):
+        if self.Ce[rl_center[i]] == 4:
+            cnt += 1
+            res0 += cmb(7 - i, cnt)
+    res0 *= 70
+    cnt = 0
+    for i in reversed(range(8)):
+        if self.Ce[fb_center[i]] == 3:
+            cnt += 1
+            res0 += cmb(7 - i, cnt)
+    res0 *= 70
+    cnt = 0
+    for i in reversed(range(8)):
+        if self.Ce[ud_center[i]] == 5:
+            cnt += 1
+            res0 += cmb(7 - i, cnt)
+    res1 = 0
+    tmp = [i // 2 for i in self.Ep]
+    arr = []
+    for i in [0, 1, 2, 3, 8, 9, 10, 11]:
+        tmp2 = []
+        for j in range(24):
+            if tmp[j] == i:
+                tmp2.append(j)
+        if tmp2[0] % 2:
+            tmp2[0], tmp2[1] = tmp2[1], tmp2[0]
+        arr.append(tmp2)
+    #print(arr)
+    arr.sort()
+    #print(arr)
+    arr2 = [arr[i][1] // 2 for i in range(8)]
+    for i in range(8):
+        if arr2[i] > 3:
+            arr2[i] -= 4
+    #print(arr2)
+    for i in range(8):
+        cnt = arr2[i]
+        for j in arr2[i + 1:]:
+            if j < arr2[i]:
+                cnt -= 1
+        res1 += fac[7 - i] * (arr2[i] - cnt)
+    return res0, res1
+    '''
+    '''
+    arr2 = [arr[i][1] // 2 for i in range(12)]
+    for i in range(12):
+        cnt = arr2[i]
+        for j in arr2[i + 1:]:
+            if j < arr2[i]:
+                cnt -= 1
+        res1 += fac[11 - i] * (arr2[i] - cnt)
+    '''
+    #print(res1)
+    '''
+    arr2 = [arr[i][1] // 2 for i in [4, 5, 6, 7]]
+    #print(arr2)
+    for i in arr2:
+        res1 *= 12
+        res1 += i
+    #print(res1)
+    '''
+    '''
+    res1 = [0, 0, 0]
+    for ii in range(3):
+        for i in range(8 * ii, 8 * (ii + 1)):
+            cnt = self.Ep[i]
+            for j in self.Ep[i + 1:8 * (ii + 1)]:
+                if j < self.Ep[i]:
+                    cnt -= 1
+            res1[ii] += fac[7 - i + 8 * ii] * (self.Ep[i] - cnt)
+    res = [res0]
+    res.extend(res1)
+    return res
+    '''
+    '''
+    res1 = 0
+    tmp = [self.Ep[i] // 2 for i in [8, 9, 10, 11, 12, 13, 14, 15]]
+    #print(tmp)
+    cntr = Counter(tmp)
+    arr = [0 for _ in range(8)]
+    idx = 1
+    for i in range(8):
+        if cntr[tmp[i]] == 2 and arr[i] == 0:
+            for j in range(i, 8):
+                if tmp[i] == tmp[j]:
+                    arr[j] = idx
+            idx += 1
+    #print(arr)
+    pair = max(arr)
+    #print(pair)
+    remain = [2 for _ in range(pair + 1)]
+    remain[0] = 8 - 2 * pair
+    #print(remain)
+    strt = [0, 300, 600, 900, 1200]
+    res2 = strt[pair]
+    for i in range(8):
+        for j in range(arr[i]): # その場所にもしjがあったら
+            if remain[j] == 0:
+                continue
+            tmp2 = 7 - i
+            for k in range(pair + 1): # その下のパーツの入り方
+                #print('tmp2', tmp2)
+                tmp = remain[k] - 1 if j == k else remain[k]
+                if tmp == 0:
+                    continue
+                res2 += cmb(tmp2, tmp)
+                tmp2 -= tmp
+        remain[arr[i]] -= 1
+        #print(remain, res2)
+    return res2
+    '''
+    #return res
     
     def iscolumn(self):
-        ng_arr = [[i, i + 2] for i in [4, 5, 8, 9, 12, 13, 16, 17]]
-        all_arr = [list(range(i, i + 4)) for i in range(4, 20, 4)]
-        for i in range(8):
+        ng_arr = [[i, i + 2] for i in [0, 1, 4, 5, 8, 9, 12, 13, 16, 17, 20, 21]]
+        all_arr = [list(range(i, i + 4)) for i in range(0, 24, 4)]
+        arr = [[4, 7], [5, 6], [8, 11], [9, 10], [12, 15], [13, 14], [16, 19], [17, 18]]
+        return_val = True
+        for m_arr in arr:
+            if self.Ce[m_arr[0]] != self.Ce[m_arr[1]]:
+                return_val = False
+                break
+        return return_val
+        '''
+        for i in range(12):
             if self.Ce[ng_arr[i][0]] == self.Ce[ng_arr[i][1]]:
                 if len(set([self.Ce[i] for i in all_arr[i // 2]])) != 1:
                     return False
         return True
+        '''
 
 
 def cmb(n, r):
@@ -341,9 +443,6 @@ for i in range(1, 25):
 
 solution = []
 path = []
-rl_center = [8, 9, 10, 11, 16, 17, 18, 19]
-fb_center = [4, 5, 6, 7, 12, 13, 14, 15]
-ud_center = [0, 1, 2, 3, 20, 21, 22, 23]
 #                  0    1     2     3     4      5      6    7     8     9     10     11     12   13    14    15    16     17     18   19   20     21    22     23     24   25    26    27    28     29     30   31    32    33    34     35
 move_candidate = ["R", "R2", "R'", "Rw", "Rw2", "Rw'", "L", "L2", "L'", "Lw", "Lw2", "Lw'", "U", "U2", "U'", "Uw", "Uw2", "Uw'", "D", "D2", "D'", "Dw", "Dw2", "Dw'", "F", "F2", "F'", "Fw", "Fw2", "Fw'", "B", "B2", "B'", "Bw", "Bw2", "Bw'"]
 successor = [
@@ -355,46 +454,65 @@ successor = [
 solved = Cube()
 
 
-# phase3 1
-prunning = [100 for _ in range(343000)]
-que = deque([[solved, 0, -10, -10]])
-cnt = 0
-while que:
-    strt = time()
-    cnt += 1
-    if cnt % 1000 == 0:
-        tmp = prunning.count(100)
-        print(cnt, tmp, len(que))
-        if tmp == 0:
-            break
-    #print(prunning[:50])
-    status, num, l_mov, l2_mov = que.popleft()
-    l_twist_0 = l_mov // 3
-    l_twist_1 = l2_mov // 3 if l_mov // 12 == l2_mov // 12 else -10
-    l_twist_2 = (l_mov // 3 + 2 if (l_mov // 3) % 4 == 1 else l_mov // 3 - 2) if (l_mov // 3) % 2 == 1 else -10
-    for twist in successor[2]:
-        if l_twist_0 == twist // 3 or l_twist_1 == twist // 3 or l_twist_2 == twist // 3:
-            continue
-        n_status = status.move(twist)
-        idx = n_status.phase_idx(2)[0]        
-        if n_status.iscolumn() and prunning[idx] != 0:
-            #print('a')
-            prunning[idx] = 0
-            que.append([n_status, 0, twist, l_mov])
-        elif prunning[idx] > num + 1:
-            prunning[idx] = num + 1
-            que.append([n_status, num + 1, twist, l_mov])
-
-with open('prunning2.csv', mode='w') as f:
-    writer = csv.writer(f, lineterminator='\n')
-    writer.writerow(prunning)
 
 
+
+prunning_num = [735471, 12870]
+for phase in range(2):
+    if phase == 1:
+        prunning = [[100 for _ in range(prunning_num[phase])] for _ in range(2)]
+        prunning[0][solved.phase_idx(phase)] = 0
+    else:
+        prunning = [100 for _ in range(prunning_num[phase])]
+        prunning[solved.phase_idx(phase)] = 0
+    
+    que = deque([[solved, 0, -10, -10]])
+    cnt = 0
+    while que:
+        cnt += 1
+        if cnt % 1000 == 0:
+            if phase == 0:
+                tmp = prunning.count(100)
+                print(cnt, tmp, len(que))
+            else:
+                tmp = [prunning[i].count(100) for i in range(2)]
+                print(cnt, tmp, len(que))
+            #print(prunning[0])
+        status, num, l_mov, l2_mov = que.popleft()
+        l_twist_0 = l_mov // 3
+        l_twist_1 = l2_mov // 3 if l_mov // 12 == l2_mov // 12 else -10
+        l_twist_2 = (l_mov // 3 + 2 if (l_mov // 3) % 4 == 1 else l_mov // 3 - 2) if (l_mov // 3) % 2 == 1 else -10
+        for twist in successor[phase]:
+            if l_twist_0 == twist // 3 or l_twist_1 == twist // 3 or l_twist_2 == twist // 3:
+                continue
+            n_status = status.move(twist)
+            idx = n_status.phase_idx(phase)
+            if phase == 1:
+                parity = n_status.sgn_ep()
+                if prunning[parity][idx] < 100:
+                    continue
+                prunning[parity][idx] = num + 1
+                que.append([n_status, num + 1, twist, l_mov])
+            else:
+                if prunning[idx] < 100:
+                    continue
+                prunning[idx] = num + 1
+                que.append([n_status, num + 1, twist, l_mov])
+
+    if phase == 1:
+        with open('prunning' + str(phase) + '.csv', mode='w') as f:
+            writer = csv.writer(f, lineterminator='\n')
+            for i in range(len(prunning)):
+                writer.writerow(prunning[i])
+    else:
+        with open('prunning' + str(phase) + '.csv', mode='w') as f:
+            writer = csv.writer(f, lineterminator='\n')
+            writer.writerow(prunning)
 
 
 
 '''
-# phase2 1
+# phase2 1 Ce
 prunning = [100 for _ in range(343000)]
 que = deque([[solved, 0, -10, -10]])
 cnt = 0
@@ -404,8 +522,6 @@ while que:
     if cnt % 1000 == 0:
         tmp = prunning.count(100)
         print(cnt, tmp, len(que))
-        if tmp == 0:
-            break
     #print(prunning[:50])
     status, num, l_mov, l2_mov = que.popleft()
     l_twist_0 = l_mov // 3
@@ -428,8 +544,9 @@ with open('prunning2.csv', mode='w') as f:
     writer = csv.writer(f, lineterminator='\n')
     writer.writerow(prunning)
 
-# phase2 2
-prunning = [100 for _ in range(22620)]
+
+# phase2 2 Ep
+prunning = [100 for _ in range(245025)]
 prunning[solved.phase_idx(2)[1]] = 0
 que = deque([[solved, 0, -10, -10]])
 cnt = 0
@@ -456,72 +573,82 @@ while que:
 with open('prunning2.csv', mode='a') as f:
     writer = csv.writer(f, lineterminator='\n')
     writer.writerow(prunning)
+
+
+
+
+# phase3 1 Ce
+prunning = [100 for _ in range(343000)]
+que = deque([[solved, 0, -10, -10]])
+prunning[solved.phase_idx(3)[0]] = 0
+cnt = 0
+while que:
+    strt = time()
+    cnt += 1
+    if cnt % 1000 == 0:
+        tmp = prunning.count(100)
+        print(cnt, tmp, len(que))
+        if tmp == 0:
+            break
+    status, num, l_mov, l2_mov = que.popleft()
+    l_twist_0 = l_mov // 3
+    l_twist_1 = l2_mov // 3 if l_mov // 12 == l2_mov // 12 else -10
+    l_twist_2 = (l_mov // 3 + 2 if (l_mov // 3) % 4 == 1 else l_mov // 3 - 2) if (l_mov // 3) % 2 == 1 else -10
+    for twist in successor[3]:
+        if l_twist_0 == twist // 3 or l_twist_1 == twist // 3 or l_twist_2 == twist // 3:
+            continue
+        n_status = status.move(twist)
+        idx = n_status.phase_idx(3)[1]
+        if prunning[idx] > num + 1:
+            prunning[idx] = num + 1
+            que.append([n_status, num + 1, twist, l_mov])
+
+with open('prunning3.csv', mode='w') as f:
+    writer = csv.writer(f, lineterminator='\n')
+    writer.writerow(prunning)
+
+
+# phase3 1 Ep
+prunning = [100 for _ in range(40320)]
+que = deque([[solved, 0, -10, -10]])
+prunning[solved.phase_idx(3)[1]] = 0
+cnt = 0
+while que:
+    strt = time()
+    cnt += 1
+    if cnt % 1000 == 0:
+        tmp = prunning.count(100)
+        print(cnt, tmp, len(que))
+        if tmp == 0:
+            break
+    #print(prunning[:50])
+    status, num, l_mov, l2_mov = que.popleft()
+    l_twist_0 = l_mov // 3
+    l_twist_1 = l2_mov // 3 if l_mov // 12 == l2_mov // 12 else -10
+    l_twist_2 = (l_mov // 3 + 2 if (l_mov // 3) % 4 == 1 else l_mov // 3 - 2) if (l_mov // 3) % 2 == 1 else -10
+    for twist in successor[3]:
+        if l_twist_0 == twist // 3 or l_twist_1 == twist // 3 or l_twist_2 == twist // 3:
+            continue
+        n_status = status.move(twist)
+        idx = n_status.phase_idx(3)[1]
+        if prunning[idx] > num + 1:
+            prunning[idx] = num + 1
+            que.append([n_status, num + 1, twist, l_mov])
+
+with open('prunning3.csv', mode='a') as f:
+    writer = csv.writer(f, lineterminator='\n')
+    writer.writerow(prunning)
 '''
 
-'''
-prunning_num = [735471, 12870, None]
 
-for phase in range(2, 3):
-    if phase == 1:
-        prunning = [[100 for _ in range(prunning_num[phase])] for _ in range(2)]
-        prunning[0][solved.phase_idx(phase)] = 0
-    elif phase == 2:
-        prunning = [[], []]
-        prunning[0] = [100 for _ in range(70)]
-        prunning[1] = [100 for _ in range(20736)]
-        idxes = solved.phase_idx(phase)
-        for i in range(2):
-            prunning[i][idxes[i]] = 0
-    else:
-        prunning = [100 for _ in range(prunning_num[phase])]
-        prunning[solved.phase_idx(phase)] = 0
-    
-    que = deque([[solved, 0, -10, -10]])
-    cnt = 0
-    while que:
-        cnt += 1
-        if cnt % 1000 == 0:
-            #tmp = [prunning[i].count(100) for i in range(len(prunning))]
-            #print(cnt, tmp)
-            print(prunning[0])
-        status, num, l_mov, l2_mov = que.popleft()
-        l_twist_0 = l_mov // 3
-        l_twist_1 = l2_mov // 3 if l_mov // 12 == l2_mov // 12 else -10
-        l_twist_2 = (l_mov // 3 + 2 if (l_mov // 3) % 4 == 1 else l_mov // 3 - 2) if (l_mov // 3) % 2 == 1 else -10
-        for twist in successor[phase]:
-            if l_twist_0 == twist // 3 or l_twist_1 == twist // 3 or l_twist_2 == twist // 3:
-                continue
-            n_status = status.move(twist)
-            idx = n_status.phase_idx(phase)
-            if phase == 1:
-                parity = n_status.sgn_ep()
-                if prunning[parity][idx] < 100:
-                    continue
-                prunning[parity][idx] = num + 1
-                que.append([n_status, num + 1, twist, l_mov])
-            elif phase == 2:
-                if len(set([n_status.Ce[i] for i in [8, 11]])) == 1 and len(set([n_status.Ce[i] for i in [9, 10]])) == 1 and len(set([n_status.Ce[i] for i in [16, 19]])) == 1 and len(set([n_status.Ce[i] for i in [17, 18]])) == 1 and len(set([n_status.Ce[i] for i in [4, 7]])) == 1 and len(set([n_status.Ce[i] for i in [5, 6]])) == 1 and len(set([n_status.Ce[i] for i in [12, 15]])) == 1 and len(set([n_status.Ce[i] for i in [13, 14]])) == 1 and len(set([n_status.Ce[i] for i in [0, 3]])) == 1 and len(set([n_status.Ce[i] for i in [1, 2]])) == 1 and len(set([n_status.Ce[i] for i in [20, 23]])) == 1 and len(set([n_status.Ce[i] for i in [21, 22]])) == 1:
-                    prunning[0][idx[0]] = 0
-                    que.append([n_status, 0, twist, l_mov])
-                elif prunning[0][idx[0]] > num + 1:
-                    prunning[0][idx[0]] = num + 1
-                    que.append([n_status, num + 1, twist, l_mov])
-            else:
-                if prunning[idx] < 100:
-                    continue
-                prunning[idx] = num + 1
-                que.append([n_status, num + 1, twist, l_mov])
 
-    if phase == 1 or phase == 2:
-        with open('prunning' + str(phase) + '.csv', mode='w') as f:
-            writer = csv.writer(f, lineterminator='\n')
-            for i in range(len(prunning)):
-                writer.writerow(prunning[i])
-    else:
-        with open('prunning' + str(phase) + '.csv', mode='w') as f:
-            writer = csv.writer(f, lineterminator='\n')
-            writer.writerow(prunning)
-'''
+
+
+
+
+
+
+
 
 '''
 ce_phase1 = [1000 for _ in range(735471)]
