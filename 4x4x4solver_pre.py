@@ -110,23 +110,6 @@ class Cube:
                 res2 += 1
         return res1, res2
     '''
-    def sgn(self):
-        '''
-        res = 0
-        arr = [i for i in self.Ep]
-        for i in range(24):
-            if arr[i] != i:
-                for j in range(i + 1, 24):
-                    if arr[j] == i:
-                        arr[i], arr[j] = arr[j], arr[i]
-                        res += 1
-        res %= 2
-        '''
-        if (self.Ce[8] == self.Ce[11] and self.Ce[16] == self.Ce[19]) or (self.Ce[8] == self.Ce[9] and self.Ce[16] == self.Ce[17]) or (self.Ce[8] == self.Ce[10] == self.Ce[16] == self.Ce[18]):
-            res2 = 0
-        else:
-            res2 = 1
-        return res2
     '''
     def phase0_idx(self):
         res = 0
@@ -481,6 +464,23 @@ class Cube:
     return res2
     '''
     #return res
+    def sgn(self):
+        '''
+        res = 0
+        arr = [i for i in self.Ep]
+        for i in range(24):
+            if arr[i] != i:
+                for j in range(i + 1, 24):
+                    if arr[j] == i:
+                        arr[i], arr[j] = arr[j], arr[i]
+                        res += 1
+        res %= 2
+        '''
+        if (self.Ce[8] == self.Ce[11] and self.Ce[16] == self.Ce[19]) or (self.Ce[8] == self.Ce[9] and self.Ce[16] == self.Ce[17]) or (self.Ce[8] == self.Ce[10] == self.Ce[16] == self.Ce[18]):
+            res2 = 0
+        else:
+            res2 = 1
+        return res2
     
     def iscolumn(self):
         ng_arr = [[i, i + 2] for i in [0, 1, 4, 5, 8, 9, 12, 13, 16, 17, 20, 21]]
@@ -536,11 +536,19 @@ solution = []
 path = []
 #                  0    1     2     3     4      5      6    7     8     9     10     11     12   13    14    15    16     17     18   19   20     21    22     23     24   25    26    27    28     29     30   31    32    33    34     35
 move_candidate = ["R", "R2", "R'", "Rw", "Rw2", "Rw'", "L", "L2", "L'", "Lw", "Lw2", "Lw'", "U", "U2", "U'", "Uw", "Uw2", "Uw'", "D", "D2", "D'", "Dw", "Dw2", "Dw'", "F", "F2", "F'", "Fw", "Fw2", "Fw'", "B", "B2", "B'", "Bw", "Bw2", "Bw'"]
+'''
 successor = [
             [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35], # phase 0
             [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14,     16,     18, 19, 20,     22,     24, 25, 26,     28,     30, 31, 32,     34    ], # phase 1
             [   1,       4,       7,       10,     12, 13, 14,     16,     18, 19, 20,     22,     24, 25, 26,     28,     30, 31, 32,     34    ], # phase 2
             [   1,       4,       7,       10,     12, 13, 14,             18, 19, 20,                 25,         28,         31,         34    ], # phase 3
+            ]
+'''
+successor = [
+            [0, 1, 2, 3, 4, 5, 6, 7, 8,            12, 13, 14, 15, 16, 17, 18, 19, 20,             24, 25, 26, 27, 28, 29, 30, 31, 32            ], # phase 0
+            [0, 1, 2, 3, 4, 5, 6, 7, 8,            12, 13, 14,     16,     18, 19, 20,             24, 25, 26,     28,     30, 31, 32,           ], # phase 1
+            [   1,       4,       7,               12, 13, 14,     16,     18, 19, 20,             24, 25, 26,     28,     30, 31, 32,           ], # phase 2
+            [   1,       4,       7,               12, 13, 14,             18, 19, 20,                 25,         28,         31,               ], # phase 3
             ]
 solved = Cube()
 
@@ -715,10 +723,11 @@ while que:
             continue
         n_status = status.move(twist)
         idx = n_status.phase_idx(2)[0]        
-        if n_status.iscolumn() and prunning[idx] != 0:
-            #print('a')
-            prunning[idx] = 0
-            que.append([n_status, 0, -10, -10])
+        if n_status.iscolumn():
+            if prunning[idx] != 0:
+                #print('a')
+                prunning[idx] = 0
+                que.append([n_status, 0, -10, -10])
         elif prunning[idx] > num + 1:
             prunning[idx] = num + 1
             que.append([n_status, num + 1, twist, l_mov])
