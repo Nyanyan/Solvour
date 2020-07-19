@@ -306,7 +306,7 @@ class Cube:
                 for j in arr3[:i]:
                     if j < arr3[i]:
                         cnt -= 1
-                res1 += cnt * cmb(11 - i, 5 - i)
+                res1 += cnt * cmb(11 - i, 5 - i) * fac[5 - i]
             #print(res1)
             res2 = 0
             for i in range(6, 12):
@@ -314,7 +314,7 @@ class Cube:
                 for j in arr3[6:i]:
                     if j < arr3[i]:
                         cnt -= 1
-                res2 += cnt * cmb(11 - i + 6, 5 - i + 6)
+                res2 += cnt * cmb(11 - i + 6, 5 - i + 6) * fac[5 - i + 6]
             #print(res1, res2)
             #print('')
             return res0, res1, res2
@@ -373,7 +373,7 @@ class Cube:
         '''
         if phase == 2:
             print([prunning[phase][i][idxes[i]] for i in range(len(idxes))])
-            print(idxes[0])
+            print(idxes)
         '''
         return max([prunning[phase][i][idxes[i]] for i in range(len(idxes))])
 
@@ -415,7 +415,7 @@ def solver(puzzle):
     for phase in range(3):
         strt = time()
         for depth in range(20):
-            #print('         ', depth)
+            print('         ', depth)
             path = []
             if phase_search(phase, puzzle, depth):
                 for twist in path:

@@ -181,6 +181,7 @@ class Cube:
                     cnt += 1
                     if cnt == 8 or i - cnt == 15:
                         break
+            return res
         elif phase == 1:
             cnt = 0
             arr = [0, 1, 2, 3, 4, 5, 6, 7, 12, 13, 14, 15, 20, 21, 22, 23] # FBUDセンター
@@ -246,7 +247,7 @@ class Cube:
                 for j in arr3[:i]:
                     if j < arr3[i]:
                         cnt -= 1
-                res1 += cnt * cmb(11 - i, 5 - i)
+                res1 += cnt * cmb(11 - i, 5 - i) * fac[5 - i]
             #print(res1)
             res2 = 0
             for i in range(6, 12):
@@ -254,7 +255,7 @@ class Cube:
                 for j in arr3[6:i]:
                     if j < arr3[i]:
                         cnt -= 1
-                res2 += cnt * cmb(11 - i + 6, 5 - i + 6)
+                res2 += cnt * cmb(11 - i + 6, 5 - i + 6) * fac[5 - i + 6]
             #print(res1, res2)
             #print('')
             '''
@@ -345,7 +346,6 @@ class Cube:
                         cnt -= 1
                 res1 += fac[7 - i] * (arr3[i] - cnt)
             return res0, res1
-        return res
     '''
     arr = []
     for i in [4, 5, 6, 7]:
@@ -506,6 +506,7 @@ class Cube:
         for i in range(4, 8):
             if self.Ep[i * 2] // 2 != self.Ep[i * 2 + 1] // 2:
                 return False
+        #print(self.Ep[8:16])
         return True
 
 
@@ -678,7 +679,7 @@ with open('prunning1.csv', mode='a') as f:
     writer.writerow(prunning)
 '''
 
-
+'''
 # phase2 1 Ce
 prunning = [100 for _ in range(343000)]
 que = deque([[solved, 0, -10, -10]])
@@ -710,10 +711,10 @@ while que:
 with open('prunning2.csv', mode='w') as f:
     writer = csv.writer(f, lineterminator='\n')
     writer.writerow(prunning)
-
-
+'''
+'''
 # phase2 2 Ep
-prunning = [[100 for _ in range(8218)] for _ in range(2)]
+prunning = [[100 for _ in range(665280)] for _ in range(2)]
 _, idx1, idx2 = solved.phase_idx(2)
 prunning[0][idx1] = 0
 prunning[0][idx2] = 0
@@ -725,7 +726,7 @@ while que:
     cnt += 1
     if cnt % 1000 == 0:
         tmp = [prunning[i].count(100) for i in range(len(prunning))]
-        print(cnt, cnt1, cnt2, tmp, sum(prunning[0]), sum(prunning[1]), len(que))
+        print(cnt, cnt1, cnt2, tmp, len(que))
     status, num, l_mov, l2_mov = que.popleft()
     l_twist_0 = l_mov // 3
     l_twist_1 = l2_mov // 3 if l_mov // 12 == l2_mov // 12 else -10
@@ -752,14 +753,14 @@ while que:
             if flag:
                 cnt2 += 1
                 que.append([n_status, num + 1, twist, l_mov])
-    
+
 with open('prunning2.csv', mode='a') as f:
     writer = csv.writer(f, lineterminator='\n')
     for i in range(2):
         writer.writerow(prunning[i])
-
-
 '''
+
+
 
 # phase3 1 Ce
 prunning = [100 for _ in range(343000)]
@@ -822,7 +823,6 @@ while que:
 with open('prunning3.csv', mode='a') as f:
     writer = csv.writer(f, lineterminator='\n')
     writer.writerow(prunning)
-'''
 
 
 
