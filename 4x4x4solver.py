@@ -240,15 +240,31 @@ class Cube:
                     cnt += 1
                     if cnt == 8 or i - cnt == 15:
                         break
+            return [res]
         elif phase == 1:
             cnt = 0
-            arr = [0, 1, 2, 3, 4, 5, 6, 7, 12, 13, 14, 15, 20, 21, 22, 23]
+            arr = [0, 1, 2, 3, 4, 5, 6, 7, 12, 13, 14, 15, 20, 21, 22, 23] # FBUD centers
             for i in range(15):
                 if self.Ce[arr[i]] == 1 or self.Ce[arr[i]] == 3:
                     res += cmb(15 - i, 8 - cnt)
                     cnt += 1
                     if cnt == 8 or i - cnt == 7:
                         break
+            res2 = 0
+            cnt = 0
+            arr = [8, 9, 10, 11, 16, 17, 18, 19] # RL centers
+            for i in range(8):
+                if self.Ce[arr[i]] == 2:
+                    res2 += cmb(7 - i, 4 - cnt)
+                    cnt += 1
+                    if cnt == 4 or i - cnt == 3:
+                        break
+            res3 = 0
+            for i in range(23): # low & high edge
+                res3 *= 2
+                if self.Ep[i] % 2 != i % 2:
+                    res3 += 1
+            return res, res2, res3
         elif phase == 2:
             cnt = 0
             res0 = 0
@@ -278,8 +294,8 @@ class Cube:
             tmp = [4, 5, 6, 7]
             arr1 = [self.Ep[i] // 2 for i in range(1, 24, 2)]
             arr2 = [self.Ep[i] // 2 for i in range(0, 23, 2)]
-            print(arr1)
-            print(arr2)
+            #print(arr1)
+            #print(arr2)
             arr3 = [-1 for _ in range(12)]
             for i in range(12):
                 arr3[i] = arr2.index(arr1[i])
@@ -350,21 +366,16 @@ class Cube:
                         cnt -= 1
                 res1 += fac[7 - i] * (arr3[i] - cnt)
             return res0, res1
-        return res
+        
 
     def distance(self, phase):
-        if phase == 1:
-            return prunning[phase][self.sgn()][self.phase_idx(phase)]
-        elif phase == 2 or phase == 3:
-            idxes = self.phase_idx(phase)
-            '''
-            if phase == 2:
-                print([prunning[phase][i][idxes[i]] for i in range(len(idxes))])
-                print(idxes[0])
-            '''
-            return max([prunning[phase][i][idxes[i]] for i in range(len(idxes))])
-        else:
-            return prunning[phase][self.phase_idx(phase)]
+        idxes = self.phase_idx(phase)
+        '''
+        if phase == 2:
+            print([prunning[phase][i][idxes[i]] for i in range(len(idxes))])
+            print(idxes[0])
+        '''
+        return max([prunning[phase][i][idxes[i]] for i in range(len(idxes))])
 
 def cmb(n, r):
     return fac[n] // fac[r] // fac[n - r]
@@ -432,18 +443,14 @@ successor = [
 
 prunning = [None for _ in range(8)]
 for phase in range(3):
-    if phase == 1 or phase == 2 or phase == 3:
-        line_len = 0
-        with open('prunning' + str(phase) + '.csv', mode='r') as f:
-            for line in f:
-                line_len += 1
-        prunning[phase] = [[] for _ in range(line_len)]
-        with open('prunning' + str(phase) + '.csv', mode='r') as f:
-            for lin in range(line_len):
-                prunning[phase][lin] = [int(i) for i in f.readline().replace('\n', '').split(',')]
-    else:
-        with open('prunning' + str(phase) + '.csv', mode='r') as f:
-            prunning[phase] = [int(i) for i in f.readline().replace('\n', '').split(',')]
+    line_len = 0
+    with open('prunning' + str(phase) + '.csv', mode='r') as f:
+        for line in f:
+            line_len += 1
+    prunning[phase] = [[] for _ in range(line_len)]
+    with open('prunning' + str(phase) + '.csv', mode='r') as f:
+        for lin in range(line_len):
+            prunning[phase][lin] = [int(i) for i in f.readline().replace('\n', '').split(',')]
 
 solution = []
 path = []
