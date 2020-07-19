@@ -150,6 +150,7 @@ class Cube:
             res_co += self.Co[i]
         return res_cp, res_co
     '''
+    '''
     def parity(self):
         res1 = 0
         for i in range(12):
@@ -162,8 +163,8 @@ class Cube:
             if self.Ep[i] % 2 != i % 2:
                 res2 += 1
         return res1, res2
-    
-    def sgn_ep(self):
+    '''
+    def sgn(self):
         res = 0
         arr = [i for i in self.Ep]
         for i in range(24):
@@ -172,8 +173,14 @@ class Cube:
                     if arr[j] == i:
                         arr[i], arr[j] = arr[j], arr[i]
                         res += 1
-        return res % 2
-    
+        res %= 2
+        #print((self.Ce[8] == self.Ce[11] and self.Ce[16] == self.Ce[19]), (self.Ce[8] == self.Ce[9] and self.Ce[16] == self.Ce[17]), (self.Ce[8] == self.Ce[10] and self.Ce[16] == self.Ce[18]))
+        if (self.Ce[8] == self.Ce[11] and self.Ce[16] == self.Ce[19]) or (self.Ce[8] == self.Ce[9] and self.Ce[16] == self.Ce[17]) or (self.Ce[8] == self.Ce[10] == self.Ce[16] == self.Ce[18]):
+            res2 = 0
+        else:
+            res2 = 1
+        return res * 2 + res2
+    '''
     def phase0_idx(self):
         res = 0
         cnt = 0
@@ -213,7 +220,7 @@ class Cube:
                 cnt += 1
                 res_ud += cmb(7 - i, cnt)
         return res_rl * 4900 + res_fb * 70 + res_ud
-    
+    '''
     def phase_idx(self, phase):
         res = 0
         rl_center = [8, 9, 10, 11, 16, 17, 18, 19]
@@ -333,11 +340,11 @@ class Cube:
 
     def distance(self, phase):
         if phase == 1:
-            return prunning[phase][self.sgn_ep()][self.phase_idx(phase)]
+            return prunning[phase][self.sgn()][self.phase_idx(phase)]
         elif phase == 2 or phase == 3:
             idxes = self.phase_idx(phase)
             '''
-            if phase == 3:
+            if phase == 2:
                 print([prunning[phase][i][idxes[i]] for i in range(len(idxes))])
                 print(idxes[0])
             '''
@@ -371,13 +378,19 @@ def phase_search(phase, puzzle, depth):
                     return True
                 path.pop()
 
+'''
+phase 0: gather RL centers on RL faces
+phase 1: gather FB centers on FB faces and clear edge and center parity
+phase 2: make center column and pair up 4 edges on middle layer
+'''
+
 def solver(puzzle):
     global solution, path
     solution = []
     for phase in range(3):
         strt = time()
         for depth in range(20):
-            print('         ', depth)
+            #print('         ', depth)
             path = []
             if phase_search(phase, puzzle, depth):
                 for twist in path:
@@ -388,7 +401,7 @@ def solver(puzzle):
                 solution.extend(path)
                 break
         print(time() - strt)
-        #print('OP:', puzzle.sgn_ep())
+        print('OP:', puzzle.sgn())
 
 fac = [1 for _ in range(25)]
 for i in range(1, 25):
@@ -399,7 +412,7 @@ move_candidate = ["R", "R2", "R'", "Rw", "Rw2", "Rw'", "L", "L2", "L'", "Lw", "L
 successor = [
             [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35], # phase 0
             [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14,     16,     18, 19, 20,     22,     24, 25, 26,     28,     30, 31, 32,     34    ], # phase 1
-            [0, 1, 2,    4,    6, 7, 8,    10,     12, 13, 14,     16,     18, 19, 20,     22,     24, 25, 26,     28,     30, 31, 32,     34    ], # phase 2
+            [   1,       4,       7,       10,     12, 13, 14,     16,     18, 19, 20,     22,     24, 25, 26,     28,     30, 31, 32,     34    ], # phase 2
             [   1,       4,       7,       10,     12, 13, 14,             18, 19, 20,                 25,         28,         31,         34    ], # phase 3
 ]
 
@@ -424,7 +437,7 @@ scramble = [move_candidate.index(i) for i in input("scramble: ").split()]
 puzzle = Cube()
 for mov in scramble:
     puzzle = puzzle.move(mov)
-print('OP:', puzzle.sgn_ep())
+print('OP:', puzzle.sgn())
 solver(puzzle)
 print(solution)
 

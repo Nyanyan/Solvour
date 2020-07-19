@@ -96,7 +96,7 @@ class Cube:
             res_co *= 3
             res_co += self.Co[i]
         return res_cp, res_co
-    '''
+    
     def parity(self):
         res1 = 0
         for i in range(12):
@@ -109,8 +109,8 @@ class Cube:
             if self.Ep[i] % 2 != i % 2:
                 res2 += 1
         return res1, res2
-    
-    def sgn_ep(self):
+    '''
+    def sgn(self):
         res = 0
         arr = [i for i in self.Ep]
         for i in range(24):
@@ -119,8 +119,13 @@ class Cube:
                     if arr[j] == i:
                         arr[i], arr[j] = arr[j], arr[i]
                         res += 1
-        return res % 2
-    
+        res %= 2
+        if (self.Ce[8] == self.Ce[11] and self.Ce[16] == self.Ce[19]) or (self.Ce[8] == self.Ce[9] and self.Ce[16] == self.Ce[17]) or (self.Ce[8] == self.Ce[10] == self.Ce[16] == self.Ce[18]):
+            res2 = 0
+        else:
+            res2 = 1
+        return res * 2 + res2
+    '''
     def phase0_idx(self):
         res = 0
         cnt = 0
@@ -160,7 +165,7 @@ class Cube:
                 cnt += 1
                 res_ud += cmb(7 - i, cnt)
         return res_rl * 4900 + res_fb * 70 + res_ud
-
+    '''
     def phase_idx(self, phase):
         res = 0
         rl_center = [8, 9, 10, 11, 16, 17, 18, 19]
@@ -209,12 +214,37 @@ class Cube:
                     if cnt == 4 or i - cnt == 3:
                         break
             res1 = 0
-            #tmp = [i // 2 for i in self.Ep]
-            arr1 = [1 if self.Ep[i] in [9, 11, 13, 15] else 0 for i in range(1, 24, 2)]
-            arr2 = [1 if self.Ep[i] in [8, 10, 12, 14] else 0 for i in range(0, 23, 2)]
+            tmp = [4, 5, 6, 7]
+            arr1 = [tmp.index(self.Ep[i] // 2) + 1 if self.Ep[i] // 2 in tmp else 0 for i in range(1, 24, 2)]
+            arr2 = [tmp.index(self.Ep[i] // 2) + 1 if self.Ep[i] // 2 in tmp else 0 for i in range(0, 23, 2)]
+            #print(arr1, [self.Ep[i] for i in range(1, 24, 2)])
+            #print(arr2, [self.Ep[i] for i in range(0, 23, 2)])
+            arr3 = [[-1, -1] for _ in range(4)]
+            for i in range(1, 5):
+                arr3[i - 1][0] = arr1.index(i)
+                arr3[i - 1][1] = arr2.index(i)
+            arr3.sort()
+            #print(arr3)
+            arr4 = [i[0] for i in arr3]
+            arr5 = [i[1] for i in arr3]
+            #print(arr4)
+            #print(arr5)
+            arr4_marked = -1
+            for i in range(3):
+                for j in range(arr4_marked + 1, arr4[i]):
+                    res1 += cmb(11 - j, 3 - i)
+                arr4_marked = arr4[i]
+            #print(res1)
+            res1 *= 495
+            for i in range(4):
+                res1 += arr5[i] * cmb(11 - i, 3 - i)
+            #print(res1)
+
+            #print('')
+            '''
             cnt = 0
             for i in range(11):
-                if arr1[i] == 1:
+                if arr1[i] != 0:
                     res1 += cmb(11 - i, 4 - cnt)
                     cnt += 1
                     if cnt == 4 or i - cnt == 7:
@@ -227,6 +257,7 @@ class Cube:
                     cnt += 1
                     if cnt == 4 or i - cnt == 7:
                         break
+            '''
             return res0, res1
         elif phase == 3:
             cnt = 0
@@ -448,7 +479,7 @@ move_candidate = ["R", "R2", "R'", "Rw", "Rw2", "Rw'", "L", "L2", "L'", "Lw", "L
 successor = [
             [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35], # phase 0
             [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14,     16,     18, 19, 20,     22,     24, 25, 26,     28,     30, 31, 32,     34    ], # phase 1
-            [0, 1, 2,    4,    6, 7, 8,    10,     12, 13, 14,     16,     18, 19, 20,     22,     24, 25, 26,     28,     30, 31, 32,     34    ], # phase 2
+            [   1,       4,       7,       10,     12, 13, 14,     16,     18, 19, 20,     22,     24, 25, 26,     28,     30, 31, 32,     34    ], # phase 2
             [   1,       4,       7,       10,     12, 13, 14,             18, 19, 20,                 25,         28,         31,         34    ], # phase 3
             ]
 solved = Cube()
@@ -458,9 +489,9 @@ solved = Cube()
 
 
 prunning_num = [735471, 12870]
-for phase in range(2):
+for phase in range(1, 2):
     if phase == 1:
-        prunning = [[100 for _ in range(prunning_num[phase])] for _ in range(2)]
+        prunning = [[100 for _ in range(prunning_num[phase])] for _ in range(4)]
         prunning[0][solved.phase_idx(phase)] = 0
     else:
         prunning = [100 for _ in range(prunning_num[phase])]
@@ -475,7 +506,7 @@ for phase in range(2):
                 tmp = prunning.count(100)
                 print(cnt, tmp, len(que))
             else:
-                tmp = [prunning[i].count(100) for i in range(2)]
+                tmp = [prunning[i].count(100) for i in range(4)]
                 print(cnt, tmp, len(que))
             #print(prunning[0])
         status, num, l_mov, l2_mov = que.popleft()
@@ -488,7 +519,7 @@ for phase in range(2):
             n_status = status.move(twist)
             idx = n_status.phase_idx(phase)
             if phase == 1:
-                parity = n_status.sgn_ep()
+                parity = n_status.sgn()
                 if prunning[parity][idx] < 100:
                     continue
                 prunning[parity][idx] = num + 1
@@ -509,9 +540,9 @@ for phase in range(2):
             writer = csv.writer(f, lineterminator='\n')
             writer.writerow(prunning)
 
-
-
 '''
+
+
 # phase2 1 Ce
 prunning = [100 for _ in range(343000)]
 que = deque([[solved, 0, -10, -10]])
@@ -573,9 +604,9 @@ while que:
 with open('prunning2.csv', mode='a') as f:
     writer = csv.writer(f, lineterminator='\n')
     writer.writerow(prunning)
+'''
 
-
-
+'''
 
 # phase3 1 Ce
 prunning = [100 for _ in range(343000)]
