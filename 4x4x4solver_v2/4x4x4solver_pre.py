@@ -411,6 +411,8 @@ with open('prunning1.csv', mode='a') as f:
 # phase2 1 Ce
 print('phase 2 1/2')
 prunning = [100 for _ in range(343000)]
+idx = n_status.phase_idx(2)[0]
+prunning[idx] = 0
 que = deque([[solved, 0, -10, -10]])
 cnt = 0
 while que:
@@ -428,7 +430,7 @@ while que:
         if l_twist_0 == twist // 3 or l_twist_1 == twist // 3 or l_twist_2 == twist // 3:
             continue
         n_status = status.move(twist)
-        idx = n_status.phase_idx(2)[0]        
+        idx = n_status.phase_idx(2)[0]
         if n_status.iscolumn():
             if prunning[idx] != 0:
                 #print('a')

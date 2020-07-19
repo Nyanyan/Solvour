@@ -327,7 +327,7 @@ def solver(puzzle):
             if phase_search(phase, puzzle, depth):
                 for twist in path:
                     puzzle = puzzle.move(twist)
-                print('')
+                #print('')
                 print('phase', phase, end=' ')
                 for i in path:
                     print(move_candidate[i], end=' ')
