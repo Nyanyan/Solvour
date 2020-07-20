@@ -276,12 +276,16 @@ class Cube:
 
     def distance(self, phase):
         idxes = self.phase_idx(phase)
+        return_val = max([prunning[phase][i][idxes[i]] for i in range(len(idxes))])
+        if phase == 3 and return_val == 0 and self.ep_parity() != 0:
+            return_val = 1
         '''
-        if phase == 3:
+        if phase == 2:
             print([prunning[phase][i][idxes[i]] for i in range(len(idxes))])
             print(idxes)
+            print(return_val)
         '''
-        return max([prunning[phase][i][idxes[i]] for i in range(len(idxes))])
+        return return_val
     
     def ep_parity(self):
         res = 0
