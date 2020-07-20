@@ -152,7 +152,7 @@ class Cube:
             return [res]
         elif phase == 1:
             cnt = 0
-            arr = [0, 1, 2, 3, 4, 5, 6, 7, 12, 13, 14, 15, 20, 21, 22, 23] # FBUD centers
+            arr = [0, 1, 2, 3, 4, 5, 6, 7, 12, 13, 14, 15, 20, 21, 22, 23] # FBUDセンター
             for i in range(15):
                 if self.Ce[arr[i]] == 1 or self.Ce[arr[i]] == 3:
                     res += cmb(15 - i, 8 - cnt)
@@ -161,7 +161,7 @@ class Cube:
                         break
             res2 = 0
             cnt = 0
-            arr = [8, 9, 10, 11, 16, 17, 18, 19] # RL centers
+            arr = [8, 9, 10, 11, 16, 17, 18, 19] # RLセンター
             for i in range(8):
                 if self.Ce[arr[i]] == 2:
                     res2 += cmb(7 - i, 4 - cnt)
@@ -169,11 +169,16 @@ class Cube:
                     if cnt == 4 or i - cnt == 3:
                         break
             res3 = 0
-            for i in range(23): # low & high edge
+            for i in range(12):
                 res3 *= 2
                 if self.Ep[i] % 2 != i % 2:
                     res3 += 1
-            return res, res2, res3
+            res4 = 0
+            for i in range(12, 24):
+                res4 *= 2
+                if self.Ep[i] % 2 != i % 2:
+                    res4 += 1
+            return res, res2, res3, res4
         elif phase == 2:
             cnt = 0
             res0 = 0
@@ -260,7 +265,7 @@ class Cube:
             arr3 = [-1 for _ in range(8)]
             for i in range(8):
                 arr3[i] = arr2_p.index(arr1_p[i])
-            print(arr3)
+            #print(arr3)
             for i in range(7):
                 cnt = arr3[i]
                 for j in arr3[i + 1:]:
@@ -277,6 +282,18 @@ class Cube:
             print(idxes)
         '''
         return max([prunning[phase][i][idxes[i]] for i in range(len(idxes))])
+    
+    def ep_parity(self):
+        res = 0
+        arr = [i for i in self.Ep]
+        for i in range(24):
+            if arr[i] != i:
+                for j in range(i + 1, 24):
+                    if arr[j] == i:
+                        arr[i], arr[j] = arr[j], arr[i]
+                        res += 1
+        res %= 4
+        return res
 
 def cmb(n, r):
     return fac[n] // fac[r] // fac[n - r]
@@ -306,9 +323,9 @@ def phase_search(phase, puzzle, depth):
 
 '''
 phase 0: gather RL centers on RL faces
-phase 1: gather FB centers on FB faces, clear edge and center parity and make low edge to low place, high to high
-phase 2: make center column and pair up 4 edges on middle layer
-phase 3: complete center and edge pairing
+phase 1: gather FB centers on FB faces, clear center parity and separate low & high edges
+phase 2: make center columns and pair up 4 edges on the middle layer, clear edge parity
+phase 3: complete center and edge pairing, which means complete reduction
 '''
 
 def solver(puzzle):
@@ -326,9 +343,10 @@ def solver(puzzle):
                 print('phase', phase, end=' ')
                 for i in path:
                     print(move_candidate[i], end=' ')
+                print('   ',end='')
                 solution.extend(path)
                 break
-        print(time() - strt)
+        print(time() - strt, puzzle.ep_parity())
         #print('OP:', puzzle.sgn())
 
 fac = [1 for _ in range(25)]

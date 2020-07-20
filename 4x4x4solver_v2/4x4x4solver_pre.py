@@ -116,11 +116,16 @@ class Cube:
                     if cnt == 4 or i - cnt == 3:
                         break
             res3 = 0
-            for i in range(23):
+            for i in range(12):
                 res3 *= 2
                 if self.Ep[i] % 2 != i % 2:
                     res3 += 1
-            return res, res2, res3
+            res4 = 0
+            for i in range(12, 24):
+                res4 *= 2
+                if self.Ep[i] % 2 != i % 2:
+                    res4 += 1
+            return res, res2, res3, res4
         elif phase == 2:
             cnt = 0
             res0 = 0
@@ -262,6 +267,11 @@ class Cube:
                         res += 1
         res %= 4
         return res
+    
+    def edge_separated(self):
+        if set([self.Ep[i] // 2 for i in range(0, 24, 2)]) == set([self.Ep[i] // 2 for i in range(1, 24, 2)]):
+            return True
+        return False
 
 
 def cmb(n, r):
@@ -377,20 +387,21 @@ while que:
 with open('prunning1.csv', mode='a') as f:
     writer = csv.writer(f, lineterminator='\n')
     writer.writerow(prunning)
-
+'''
 
 
 # phase1 low & high edges
 print('phase 1 3/3')
-prunning = [100 for _ in range(8388608)] #cmb(8, 4)
-prunning[solved.phase_idx(1)[2]] = 0
+prunning = [[100 for _ in range(8192)] for _ in range(2)]
+prunning[0][solved.phase_idx(1)[2]] = 0
+prunning[1][solved.phase_idx(1)[3]] = 0
 que = deque([[solved, 0, -10, -10]])
 cnt = 0
 while que:
     cnt += 1
     if cnt % 1000 == 0:
-        tmp = prunning.count(100)
-        print(cnt, tmp, len(que))
+        #tmp = prunning.count(100)
+        print(cnt, len(que))
     status, num, l_mov, l2_mov = que.popleft()
     l_twist_0 = l_mov // 3
     l_twist_1 = l2_mov // 3 if l_mov // 12 == l2_mov // 12 else -10
@@ -399,17 +410,24 @@ while que:
         if l_twist_0 == twist // 3 or l_twist_1 == twist // 3 or l_twist_2 == twist // 3:
             continue
         n_status = status.move(twist)
-        idx = n_status.phase_idx(1)[2]
-        if prunning[idx] > num + 1:
-            prunning[idx] = num + 1
+        _, _, idx1, idx2 = n_status.phase_idx(1)
+        flag = False
+        if prunning[0][idx1] > num + 1:
+            prunning[0][idx1] = num + 1
+            flag = True
+        if prunning[1][idx2] > num + 1:
+            prunning[1][idx2] = num + 1
+            flag = True
+        if flag:
             que.append([n_status, num + 1, twist, l_mov])
 
 with open('prunning1.csv', mode='a') as f:
     writer = csv.writer(f, lineterminator='\n')
-    writer.writerow(prunning)
+    for i in range(2):
+        writer.writerow(prunning[i])
 
 
-
+'''
 # phase2 1 Ce
 print('phase 2 1/2')
 prunning = [100 for _ in range(343000)]
@@ -445,7 +463,7 @@ while que:
 with open('prunning2.csv', mode='w') as f:
     writer = csv.writer(f, lineterminator='\n')
     writer.writerow(prunning)
-
+'''
 
 # phase2 2 Ep
 print('phase 2 2/2')
@@ -455,13 +473,11 @@ prunning[0][idx1] = 0
 prunning[1][idx2] = 0
 que = deque([[solved, 0, -10, -10]])
 cnt = 0
-cnt1 = 0
-cnt2 = 0
 while que:
     cnt += 1
     if cnt % 1000 == 0:
-        tmp = [prunning[i].count(100) for i in range(len(prunning))]
-        print(cnt, cnt1, cnt2, tmp, len(que))
+        #tmp = [prunning[i].count(100) for i in range(len(prunning))]
+        print(cnt, len(que))
     status, num, l_mov, l2_mov = que.popleft()
     l_twist_0 = l_mov // 3
     l_twist_1 = l2_mov // 3 if l_mov // 12 == l2_mov // 12 else -10
@@ -475,7 +491,6 @@ while que:
             if prunning[0][idx1] != 0 or prunning[1][idx2] != 0:
                 prunning[0][idx1] = 0
                 prunning[1][idx2] = 0
-                cnt1 += 1
                 que.append([n_status, 0, -10, -10])
         else:
             flag = False
@@ -486,7 +501,6 @@ while que:
                 prunning[1][idx2] = num + 1
                 flag = True
             if flag:
-                cnt2 += 1
                 que.append([n_status, num + 1, twist, l_mov])
 
 with open('prunning2.csv', mode='a') as f:
@@ -496,7 +510,7 @@ with open('prunning2.csv', mode='a') as f:
 
 
 
-
+'''
 # phase3 1 Ce
 print('phase 3 1/2')
 prunning = [100 for _ in range(343000)]
@@ -525,7 +539,7 @@ while que:
 with open('prunning3.csv', mode='w') as f:
     writer = csv.writer(f, lineterminator='\n')
     writer.writerow(prunning)
-'''
+
 
 # phase3 1 Ep
 print('phase 3 2/2')
@@ -562,3 +576,34 @@ while que:
 with open('prunning3.csv', mode='a') as f:
     writer = csv.writer(f, lineterminator='\n')
     writer.writerow(prunning)
+'''
+
+
+'''ボツ
+# phase1 4 edge parity
+prunning = [100 for _ in range(4)]
+prunning[solved.phase_idx(1)[3]] = 0
+que = deque([[solved, 0, -10, -10]])
+cnt = 0
+while que:
+    cnt += 1
+    if cnt % 1000 == 0:
+        #tmp = prunning.count(100)
+        print(cnt, len(que))
+    status, num, l_mov, l2_mov = que.popleft()
+    l_twist_0 = l_mov // 3
+    l_twist_1 = l2_mov // 3 if l_mov // 12 == l2_mov // 12 else -10
+    l_twist_2 = (l_mov // 3 + 2 if (l_mov // 3) % 4 == 1 else l_mov // 3 - 2) if (l_mov // 3) % 2 == 1 else -10
+    for twist in successor[1]:
+        if l_twist_0 == twist // 3 or l_twist_1 == twist // 3 or l_twist_2 == twist // 3:
+            continue
+        n_status = status.move(twist)
+        idx = n_status.phase_idx(1)[3]
+        if prunning[idx] > num + 1:
+            prunning[idx] = num + 1
+            que.append([n_status, num + 1, twist, l_mov])
+
+with open('prunning1.csv', mode='a') as f:
+    writer = csv.writer(f, lineterminator='\n')
+    writer.writerow(prunning)
+'''
