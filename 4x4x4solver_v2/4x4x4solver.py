@@ -371,6 +371,9 @@ class Cube:
             #print(self.Ep)
         if phase == 3 and return_val == 0 and self.pp_parity():
             return_val = 10 # the minimum number of moves to solve OP or PP (or DP) that I know (this number may be bigger actually)
+        if return_val == 100:
+            print([prunning[phase][i][idxes[i]] for i in range(len(idxes))])
+            print(idxes)
         '''
         if phase == 5 and return_val == 0 and self.check_eo() == True:
             return_val = 10
