@@ -91,7 +91,7 @@ class Cube:
                     cnt += 1
                     if cnt == 8 or i - cnt == 15:
                         break
-            return res
+            return res * 2 + self.ce_parity()
         elif phase == 1:
             cnt = 0
             arr = [0, 1, 2, 3, 20, 21, 22, 23, 4, 5, 6, 7, 12, 13, 14, 15] # FBUD centers
@@ -101,6 +101,7 @@ class Cube:
                     cnt += 1
                     if cnt == 8 or i - cnt == 7:
                         break
+            '''
             res2 = 0
             cnt = 0
             arr = [8, 9, 10, 11, 16, 17, 18, 19] # RL centers
@@ -110,6 +111,7 @@ class Cube:
                     cnt += 1
                     if cnt == 4 or i - cnt == 3:
                         break
+            '''
             res3 = 0
             for i in range(23):
                 res3 *= 2
@@ -122,10 +124,11 @@ class Cube:
                 if self.Ep[i] % 2 != i % 2:
                     res4 += 1
             '''
-            return res * 70 + res2, res3
+            return res, res3
         elif phase == 2:
-            cnt = 0
             res0 = 0
+            '''
+            cnt = 0
             for i in range(7):
                 if self.Ce[rl_center[i]] == 4:
                     res0 += cmb(7 - i, 4 - cnt)
@@ -133,6 +136,7 @@ class Cube:
                     if cnt == 4 or i - cnt == 3:
                         break
             res0 *= 70
+            '''
             cnt = 0
             for i in range(7):
                 if self.Ce[fb_center[i]] == 3:
@@ -339,19 +343,19 @@ successor = [
 
 
 
-'''
+
 # phase 0
 solved = Cube()
 print('phase 0 1/1')
-prunning = [100 for _ in range(735471)]
+prunning = [100 for _ in range(1471000)]
 prunning[solved.phase_idx(0)] = 0
 que = deque([[solved, 0, -10, -10]])
 cnt = 0
 while que:
     cnt += 1
-    if cnt % 1000 == 0:
-        tmp = prunning.count(100)
-        print(cnt, tmp, len(que))
+    if cnt % 10000 == 0:
+        #tmp = prunning.count(100)
+        print(cnt, len(que))
         #print(prunning[0])
     status, num, l_mov, l2_mov = que.popleft()
     l_twist_0 = l_mov // 3
@@ -368,12 +372,12 @@ while que:
 with open('prunning0.csv', mode='w') as f:
     writer = csv.writer(f, lineterminator='\n')
     writer.writerow(prunning)
-'''
-'''
+
+
 # phase1 center
 solved = Cube()
 print('phase 1 1/2')
-prunning = [100 for _ in range(900970)]
+prunning = [100 for _ in range(12871)]
 prunning[solved.phase_idx(1)[0]] = 0
 que = deque([[solved, 0, -10, -10]])
 cnt = 0
@@ -392,7 +396,7 @@ while que:
         n_status = status.move(twist)
         idx = n_status.phase_idx(1)[0]
         #print(idx)
-        if idx < 70 and n_status.ce_parity() == 0:
+        if idx == 0: # and n_status.ce_parity() == 0:
             if prunning[idx] != 0:
                 prunning[idx] = 0
                 que.append([n_status, 0, -10, -10])
@@ -403,8 +407,8 @@ while que:
 with open('prunning1.csv', mode='w') as f:
     writer = csv.writer(f, lineterminator='\n')
     writer.writerow(prunning)
-'''
 
+'''
 # phase1 low & high edges
 solved = Cube()
 print('phase 1 2/2')
@@ -433,15 +437,13 @@ while que:
 with open('prunning1.csv', mode='a') as f:
     writer = csv.writer(f, lineterminator='\n')
     writer.writerow(prunning)
-    #for i in range(2):
-    #    writer.writerow(prunning[i])
-
+'''
 
 '''
 # phase2 1 Ce
 solved = Cube()
 print('phase 2 1/2')
-prunning = [100 for _ in range(343000)]
+prunning = [100 for _ in range(4900)]
 idx = solved.phase_idx(2)[0]
 prunning[idx] = 0
 que = deque([[solved, 0, -10, -10]])
@@ -449,9 +451,9 @@ cnt = 0
 while que:
     strt = time()
     cnt += 1
-    if cnt % 1000 == 0:
-        tmp = prunning.count(100)
-        print(cnt, tmp, len(que))
+    if cnt % 10000 == 0:
+        #tmp = prunning.count(100)
+        print(cnt, len(que))
     #print(prunning[:50])
     status, num, l_mov, l2_mov = que.popleft()
     l_twist_0 = l_mov // 3
@@ -661,7 +663,7 @@ with open('prunning4.csv', mode='a') as f:
 '''
 
 
-'''
+
 # phase5 1 CP
 solved = Cube()
 print('phase 5 1/2')
@@ -732,7 +734,12 @@ with open('prunning5.csv', mode='a') as f:
     writer = csv.writer(f, lineterminator='\n')
     for i in range(2):
         writer.writerow(prunning[i])
-'''
+
+
+
+
+
+
 
 
 

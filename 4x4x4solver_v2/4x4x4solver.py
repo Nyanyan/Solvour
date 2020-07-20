@@ -143,7 +143,7 @@ class Cube:
                     cnt += 1
                     if cnt == 8 or i - cnt == 15:
                         break
-            return [res]
+            return [res * 2 + self.ce_parity()]
         elif phase == 1:
             cnt = 0
             arr = [0, 1, 2, 3, 20, 21, 22, 23, 4, 5, 6, 7, 12, 13, 14, 15] # FBUD centers
@@ -153,6 +153,7 @@ class Cube:
                     cnt += 1
                     if cnt == 8 or i - cnt == 7:
                         break
+            '''
             res2 = 0
             cnt = 0
             arr = [8, 9, 10, 11, 16, 17, 18, 19] # RL centers
@@ -162,6 +163,7 @@ class Cube:
                     cnt += 1
                     if cnt == 4 or i - cnt == 3:
                         break
+            '''
             res3 = 0
             for i in range(23):
                 res3 *= 2
@@ -174,10 +176,11 @@ class Cube:
                 if self.Ep[i] % 2 != i % 2:
                     res4 += 1
             '''
-            return res * 70 + res2, res3
+            return res, res3
         elif phase == 2:
-            cnt = 0
             res0 = 0
+            '''
+            cnt = 0
             for i in range(7):
                 if self.Ce[rl_center[i]] == 4:
                     res0 += cmb(7 - i, 4 - cnt)
@@ -185,6 +188,7 @@ class Cube:
                     if cnt == 4 or i - cnt == 3:
                         break
             res0 *= 70
+            '''
             cnt = 0
             for i in range(7):
                 if self.Ce[fb_center[i]] == 3:
@@ -258,10 +262,17 @@ class Cube:
             arr1_p = [self.Ep[i] // 2 for i in arr1]
             arr2 = [1, 3, 5, 7, 17, 19, 21, 23]
             arr2_p = [self.Ep[i]// 2 for i in arr2]
+            '''
+            arr1_tmp = sorted(arr1_p)
+            for i in range(8):
+                arr1_p[i] = arr1_tmp.index(arr1_p[i])
+            arr2_tmp = sorted(arr2_p)
+            for i in range(8):
+                arr2_p[i] = arr2_tmp.index(arr2_p[i])
+            '''
             arr3 = [-1 for _ in range(8)]
             for i in range(8):
                 arr3[i] = arr2_p.index(arr1_p[i])
-            #print(arr3)
             for i in range(7):
                 cnt = arr3[i]
                 for j in arr3[i + 1:]:
@@ -315,17 +326,36 @@ class Cube:
                 res2 += fac[5 - i + 6] * cnt * cmb(11 - i + 6, 5 - i + 6)
             return res0, res1, res2
     
-    def ep_parity(self):
-        res = 0
-        arr = [i for i in self.Ep]
-        for i in range(24):
-            if arr[i] != i:
-                for j in range(i + 1, 24):
-                    if arr[j] == i:
-                        arr[i], arr[j] = arr[j], arr[i]
+    def ce_parity(self):
+        if (self.Ce[8] == self.Ce[11] and self.Ce[9] == self.Ce[10] and self.Ce[16] == self.Ce[19] and self.Ce[17] == self.Ce[18]) or (self.Ce[8] == self.Ce[9] and self.Ce[10] == self.Ce[11] and self.Ce[16] == self.Ce[17] and self.Ce[18] == self.Ce[19]) or (self.Ce[8] == self.Ce[10] == self.Ce[16] == self.Ce[18]):
+            res2 = 0
+        else:
+            res2 = 1
+        return res2
+    
+    def pp_parity(self): # this is PP checker, if 1, there is PP, although not-proved
+        #arr = [[self.Ep[i] // 2, False] for i in range(0, 24, 2)]
+        '''
+        for i in range(12):
+            if arr[i][0] != i:
+                for j in range(i + 1, 12):
+                    if arr[j][0] == i:
+                        arr[i][0], arr[j][0] = arr[j][0], arr[i][0]
                         res += 1
-        res %= 4
-        return res
+                        arr[j][1] = True
+            elif arr[i][1]:
+                res += 1
+        '''
+        ep = [self.Ep[i] // 2 for i in range(0, 24, 2)]
+        cp = [i for i in self.Cp]
+        res1 = pp_ep_p(ep, 0)
+        res2 = pp_cp_p(cp, 0)
+        #if (res1 + res2) % 2 == 0:
+            #print(res1, res2)
+            #print([self.Ep[i] // 2 for i in range(0, 24, 2)])
+            #print(self.Cp)
+            #return 0
+        return (res1 + res2) % 2
     
     def check_eo(self):
         for i in range(0, 24, 2):
@@ -336,7 +366,10 @@ class Cube:
     def distance(self, phase):
         idxes = self.phase_idx(phase)
         return_val = max([prunning[phase][i][idxes[i]] for i in range(len(idxes))])
-        if phase == 3 and return_val == 0 and self.ep_parity() != 0:
+        #if phase == 3 and return_val == 0:
+            #print(self.ep_parity())
+            #print(self.Ep)
+        if phase == 3 and return_val == 0 and self.pp_parity():
             return_val = 10 # the minimum number of moves to solve OP or PP (or DP) that I know (this number may be bigger actually)
         '''
         if phase == 5 and return_val == 0 and self.check_eo() == True:
@@ -346,9 +379,30 @@ class Cube:
         if phase == 2:
             print([prunning[phase][i][idxes[i]] for i in range(len(idxes))])
             print(idxes)
-            print(return_val)
+            #print(return_val)
+            print(self.Ce)
         '''
         return return_val
+
+def pp_ep_p(arr, res):
+    for i in range(12):
+        if arr[i] != i:
+            for j in range(12):
+                if arr[j] == i:
+                    arr[i], arr[j] = arr[j], arr[i]
+                    res += 1
+                    return pp_ep_p(arr, res)
+    return res
+
+def pp_cp_p(arr, res):
+    for i in range(8):
+        if arr[i] != i:
+            for j in range(8):
+                if arr[j] == i:
+                    arr[i], arr[j] = arr[j], arr[i]
+                    res += 1
+                    return pp_cp_p(arr, res)
+    return res
 
 def cmb(n, r):
     return fac[n] // fac[r] // fac[n - r]
@@ -378,8 +432,8 @@ def phase_search(phase, puzzle, depth):
 
 '''
 --- Reduction phase ---
-phase 0: gather RL centers on RL faces
-phase 1: gather FB centers on FB faces, clear center parity(RL centers) and separate low & high edges
+phase 0: gather RL centers on RL faces, clear RL center parity
+phase 1: gather FB centers on FB faces and separate low & high edges
 phase 2: make center columns and pair up 4 edges on the middle layer
 phase 3: complete center, edge pairing and clear edge parity, which means complete reduction
 --- 3x3x3 phase ---
@@ -391,6 +445,7 @@ def solver(puzzle):
     global solution, path
     solution = []
     for phase in range(6):
+        #print('phase is', phase)
         strt = time()
         for depth in range(15):
             #print(depth)
