@@ -254,18 +254,13 @@ class Cube:
                         break
             res1 = 0
             arr1 = [0, 2, 4, 6, 16, 18, 20, 22]
-            arr1_p = [self.Ep[i] for i in arr1]
+            arr1_p = [self.Ep[i] // 2 for i in arr1]
             arr2 = [1, 3, 5, 7, 17, 19, 21, 23]
-            arr2_p = [self.Ep[i] for i in arr2]
-            arr1_tmp = sorted(arr1_p)
-            for i in range(8):
-                arr1_p[i] = arr1_tmp.index(arr1_p[i])
-            arr2_tmp = sorted(arr2_p)
-            for i in range(8):
-                arr2_p[i] = arr2_tmp.index(arr2_p[i])
+            arr2_p = [self.Ep[i]// 2 for i in arr2]
             arr3 = [-1 for _ in range(8)]
             for i in range(8):
                 arr3[i] = arr2_p.index(arr1_p[i])
+            print(arr3)
             for i in range(7):
                 cnt = arr3[i]
                 for j in arr3[i + 1:]:

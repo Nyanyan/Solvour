@@ -201,15 +201,17 @@ class Cube:
                         break
             res1 = 0
             arr1 = [0, 2, 4, 6, 16, 18, 20, 22]
-            arr1_p = [self.Ep[i] for i in arr1]
+            arr1_p = [self.Ep[i] // 2 for i in arr1]
             arr2 = [1, 3, 5, 7, 17, 19, 21, 23]
-            arr2_p = [self.Ep[i] for i in arr2]
+            arr2_p = [self.Ep[i]// 2 for i in arr2]
+            '''
             arr1_tmp = sorted(arr1_p)
             for i in range(8):
                 arr1_p[i] = arr1_tmp.index(arr1_p[i])
             arr2_tmp = sorted(arr2_p)
             for i in range(8):
                 arr2_p[i] = arr2_tmp.index(arr2_p[i])
+            '''
             arr3 = [-1 for _ in range(8)]
             for i in range(8):
                 arr3[i] = arr2_p.index(arr1_p[i])
@@ -222,7 +224,7 @@ class Cube:
             return res0, res1
     
     def ce_parity(self):
-        if (self.Ce[8] == self.Ce[11] and self.Ce[16] == self.Ce[19]) or (self.Ce[8] == self.Ce[9] and self.Ce[16] == self.Ce[17]) or (self.Ce[8] == self.Ce[10] == self.Ce[16] == self.Ce[18]):
+        if (self.Ce[8] == self.Ce[11] and self.Ce[9] == self.Ce[10] and self.Ce[16] == self.Ce[19] and self.Ce[17] == self.Ce[18]) or (self.Ce[8] == self.Ce[9] and self.Ce[10] == self.Ce[11] and self.Ce[16] == self.Ce[17] and self.Ce[18] == self.Ce[19]) or (self.Ce[8] == self.Ce[10] == self.Ce[16] == self.Ce[18]):
             res2 = 0
         else:
             res2 = 1
@@ -284,7 +286,7 @@ solved = Cube()
 
 
 
-
+'''
 # phase 0
 print('phase 0 1/1')
 prunning = [100 for _ in range(735471)]
@@ -411,7 +413,7 @@ with open('prunning1.csv', mode='a') as f:
 # phase2 1 Ce
 print('phase 2 1/2')
 prunning = [100 for _ in range(343000)]
-idx = n_status.phase_idx(2)[0]
+idx = solved.phase_idx(2)[0]
 prunning[idx] = 0
 que = deque([[solved, 0, -10, -10]])
 cnt = 0
@@ -523,7 +525,7 @@ while que:
 with open('prunning3.csv', mode='w') as f:
     writer = csv.writer(f, lineterminator='\n')
     writer.writerow(prunning)
-
+'''
 
 # phase3 1 Ep
 print('phase 3 2/2')
