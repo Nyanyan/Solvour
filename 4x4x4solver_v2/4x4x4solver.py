@@ -72,7 +72,7 @@ class Cube:
     
     def move_co(self, mov):
         surface = [[3, 1, 7, 5], [0, 2, 4, 6], [0, 1, 3, 2], [4, 5, 7, 6], [2, 3, 5, 4], [1, 0, 6, 7]]
-        pls = [1, 2, 1, 2]
+        pls = [2, 1, 2, 1]
         res = [i for i in self.Co]
         mov_type = mov // 6
         mov_amount = mov % 3
@@ -269,19 +269,21 @@ class Cube:
                         cnt -= 1
                 res1 += fac[7 - i] * (arr3[i] - cnt)
             return res0, res1
-
-    def distance(self, phase):
-        idxes = self.phase_idx(phase)
-        return_val = max([prunning[phase][i][idxes[i]] for i in range(len(idxes))])
-        if phase == 3 and return_val == 0 and self.ep_parity() != 0:
-            return_val = 6 # the minimum number of moves to solve OP or PP (or DP) that I know (this number may be bigger actually)
-        '''
-        if phase == 2:
-            print([prunning[phase][i][idxes[i]] for i in range(len(idxes))])
-            print(idxes)
-            print(return_val)
-        '''
-        return return_val
+        elif phase == 4:
+            res0 = 0
+            for i in self.Co[:7]:
+                res0 *= 3
+                res0 += i
+            res1 = 0
+            for i in [0, 2, 4, 6, 16, 18, 20, 22]:
+                res1 *= 3
+                if self.Ep[i] // 2 in {0, 1, 2, 3, 8, 9, 10, 11}:
+                    tmp = self.Ep[i] % 2
+                    res1 += tmp
+                else:
+                    res1 += 2
+            #print(res0, res1)
+            return res0, res1
     
     def ep_parity(self):
         res = 0
@@ -294,6 +296,22 @@ class Cube:
                         res += 1
         res %= 4
         return res
+    
+    def distance(self, phase):
+        idxes = self.phase_idx(phase)
+        return_val = max([prunning[phase][i][idxes[i]] for i in range(len(idxes))])
+        if phase == 3 and return_val == 0 and self.ep_parity() != 0:
+            return_val = 6 # the minimum number of moves to solve OP or PP (or DP) that I know (this number may be bigger actually)
+        '''
+        if phase == 2:
+            print([prunning[phase][i][idxes[i]] for i in range(len(idxes))])
+            print(idxes)
+            print(return_val)
+        '''
+        if phase == 4 and return_val == 0:
+            print(self.Co)
+            print(self.Ep)
+        return return_val
 
 def cmb(n, r):
     return fac[n] // fac[r] // fac[n - r]
@@ -331,7 +349,7 @@ phase 3: complete center, edge pairing and clear edge parity, which means comple
 def solver(puzzle):
     global solution, path
     solution = []
-    for phase in range(4):
+    for phase in range(5):
         strt = time()
         for depth in range(15):
             #print(depth)
@@ -360,11 +378,12 @@ successor = [
             [0, 1, 2, 3, 4, 5, 6, 7, 8,            12, 13, 14,     16,     18, 19, 20,             24, 25, 26,     28,     30, 31, 32            ], # phase 1
             [   1,       4,       7,               12, 13, 14,     16,     18, 19, 20,             24, 25, 26,     28,     30, 31, 32            ], # phase 2
             [   1,       4,       7,               12, 13, 14,             18, 19, 20,                 25,         28,         31,               ], # phase 3
+            [0,    2,          6,    8,            12, 13, 14,             18, 19, 20,             24,     26,             30,     32            ], # phase 4
             ]
 
 prunning = [None for _ in range(8)]
-prun_len = [1, 2, 3, 2]
-for phase in range(4):
+prun_len = [1, 2, 3, 2, 2]
+for phase in range(5):
     prunning[phase] = [[] for _ in range(prun_len[phase])]
     with open('prunning' + str(phase) + '.csv', mode='r') as f:
         for lin in range(prun_len[phase]):
