@@ -53,14 +53,13 @@ L 23 22 R
 
 import tkinter
 from time import time
-import pandas as pd
 
 class Cube:
-    def __init__(self):
-        self.Cp = [i for i in range(8)]
-        self.Co = [0 for _ in range(8)]
-        self.Ep = [i for i in range(24)]
-        self.Ce = [i // 4 for i in range(24)]
+    def __init__(self, cp=list(range(8)), co=[0 for _ in range(8)], ep=list(range(24)), ce=[i // 4 for i in range(24)]):
+        self.Cp = cp
+        self.Co = co
+        self.Ep = ep
+        self.Ce = ce
     
     def move_cp(self, mov):
         surface = [[3, 1, 7, 5], [0, 2, 4, 6], [0, 1, 3, 2], [4, 5, 7, 6], [2, 3, 5, 4], [1, 0, 6, 7]]
@@ -129,12 +128,7 @@ class Cube:
         return res
     
     def move(self, mov):
-        res = Cube()
-        res.Cp = self.move_cp(mov)
-        res.Co = self.move_co(mov)
-        res.Ep = self.move_ep(mov)
-        res.Ce = self.move_ce(mov)
-        return res
+        return Cube(cp=self.move_cp(mov), co=self.move_co(mov), ep=self.move_ep(mov), ce=self.move_ce(mov))
 
     def phase_idx(self, phase):
         res = 0
@@ -152,7 +146,7 @@ class Cube:
             return [res]
         elif phase == 1:
             cnt = 0
-            arr = [0, 1, 2, 3, 4, 5, 6, 7, 12, 13, 14, 15, 20, 21, 22, 23] # FBUDセンター
+            arr = [0, 1, 2, 3, 20, 21, 22, 23, 4, 5, 6, 7, 12, 13, 14, 15] # FBUD centers
             for i in range(15):
                 if self.Ce[arr[i]] == 1 or self.Ce[arr[i]] == 3:
                     res += cmb(15 - i, 8 - cnt)
@@ -161,24 +155,26 @@ class Cube:
                         break
             res2 = 0
             cnt = 0
-            arr = [8, 9, 10, 11, 16, 17, 18, 19] # RLセンター
+            arr = [8, 9, 10, 11, 16, 17, 18, 19] # RL centers
             for i in range(8):
-                if self.Ce[arr[i]] == 2:
+                if self.Ce[arr[i]] == 4:
                     res2 += cmb(7 - i, 4 - cnt)
                     cnt += 1
                     if cnt == 4 or i - cnt == 3:
                         break
             res3 = 0
-            for i in range(12):
+            for i in range(24):
                 res3 *= 2
                 if self.Ep[i] % 2 != i % 2:
                     res3 += 1
+            '''
             res4 = 0
             for i in range(12, 24):
                 res4 *= 2
                 if self.Ep[i] % 2 != i % 2:
                     res4 += 1
-            return res, res2, res3, res4
+            '''
+            return res * 70 + res2, res3
         elif phase == 2:
             cnt = 0
             res0 = 0
@@ -278,7 +274,7 @@ class Cube:
         idxes = self.phase_idx(phase)
         return_val = max([prunning[phase][i][idxes[i]] for i in range(len(idxes))])
         if phase == 3 and return_val == 0 and self.ep_parity() != 0:
-            return_val = 1
+            return_val = 6 # the minimum number of moves to solve OP or PP (or DP) that I know (this number may be bigger actually)
         '''
         if phase == 2:
             print([prunning[phase][i][idxes[i]] for i in range(len(idxes))])
@@ -327,9 +323,9 @@ def phase_search(phase, puzzle, depth):
 
 '''
 phase 0: gather RL centers on RL faces
-phase 1: gather FB centers on FB faces, clear center parity and separate low & high edges
-phase 2: make center columns and pair up 4 edges on the middle layer, clear edge parity
-phase 3: complete center and edge pairing, which means complete reduction
+phase 1: gather FB centers on FB faces, clear center parity(RL centers) and separate low & high edges
+phase 2: make center columns and pair up 4 edges on the middle layer
+phase 3: complete center, edge pairing and clear edge parity, which means complete reduction
 '''
 
 def solver(puzzle):
@@ -337,20 +333,19 @@ def solver(puzzle):
     solution = []
     for phase in range(4):
         strt = time()
-        for depth in range(20):
+        for depth in range(15):
             #print(depth)
             path = []
             if phase_search(phase, puzzle, depth):
                 for twist in path:
                     puzzle = puzzle.move(twist)
-                #print('')
-                print('phase', phase, end=' ')
+                solution.extend(path)
+                print('phase', phase, end=': ')
                 for i in path:
                     print(move_candidate[i], end=' ')
                 print('   ',end='')
-                solution.extend(path)
+                print(time() - strt, 'sec')
                 break
-        print(time() - strt, puzzle.ep_parity())
         #print('OP:', puzzle.sgn())
 
 fac = [1 for _ in range(25)]
@@ -368,14 +363,11 @@ successor = [
             ]
 
 prunning = [None for _ in range(8)]
+prun_len = [1, 2, 3, 2]
 for phase in range(4):
-    line_len = 0
+    prunning[phase] = [[] for _ in range(prun_len[phase])]
     with open('prunning' + str(phase) + '.csv', mode='r') as f:
-        for line in f:
-            line_len += 1
-    prunning[phase] = [[] for _ in range(line_len)]
-    with open('prunning' + str(phase) + '.csv', mode='r') as f:
-        for lin in range(line_len):
+        for lin in range(prun_len[phase]):
             prunning[phase][lin] = [int(i) for i in f.readline().replace('\n', '').split(',')]
 
 solution = []
@@ -385,6 +377,10 @@ puzzle = Cube()
 for mov in scramble:
     puzzle = puzzle.move(mov)
 solver(puzzle)
+print('solution:',end=' ')
+for i in solution:
+    print(move_candidate[i],end=' ')
+print('')
 print(solution)
 
 
