@@ -221,11 +221,11 @@ class Cube:
             arr3 = [-1 for _ in range(8)]
             for i in range(8):
                 arr3[i] = arr2_p.index(arr1_p[i])
-            for i in range(7):
-                cnt = arr3[i]
+            for i in range(8):
+                cnt = 0
                 for j in arr3[i + 1:]:
                     if j < arr3[i]:
-                        cnt -= 1
+                        cnt += 1
                 res1 += fac[7 - i] * (arr3[i] - cnt)
             return res0, res1
         elif phase == 4:
@@ -253,11 +253,11 @@ class Cube:
         elif phase == 5:
             res0 = 0
             for i in range(8):
-                cnt = self.Cp[i]
+                cnt = 0
                 for j in self.Cp[:i]:
                     if j < self.Cp[i]:
-                        cnt -= 1
-                res0 += fac[7 - i] * cnt
+                        cnt += 1
+                res0 += fac[7 - i] * (self.Cp[i] - cnt)
             res1 = 0
             for i in range(6):
                 cnt = self.Ep[i * 2] // 2
@@ -564,7 +564,7 @@ with open('prunning3.csv', mode='w') as f:
     writer = csv.writer(f, lineterminator='\n')
     writer.writerow(prunning)
 '''
-'''
+
 # phase3 1 Ep
 solved = Cube()
 print('phase 3 2/2')
@@ -601,7 +601,7 @@ while que:
 with open('prunning3.csv', mode='a') as f:
     writer = csv.writer(f, lineterminator='\n')
     writer.writerow(prunning)
-'''
+
 
 '''
 # phase4 1 CO
@@ -672,7 +672,7 @@ with open('prunning4.csv', mode='a') as f:
 '''
 
 
-
+'''
 # phase5 1 CP
 solved = Cube()
 print('phase 5 1/2')
@@ -743,11 +743,5 @@ with open('prunning5.csv', mode='a') as f:
     writer = csv.writer(f, lineterminator='\n')
     for i in range(2):
         writer.writerow(prunning[i])
-
-
-
-
-
-
-
+'''
 

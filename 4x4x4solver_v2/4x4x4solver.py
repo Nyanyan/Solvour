@@ -51,6 +51,19 @@ L 23 22 R
     B
 '''
 
+'''
+Solver:
+--- Reduction phase ---
+phase 0: gather RL centers on RL faces, clear RL center parity
+phase 1: gather FB centers on FB faces and separate low & high edges
+phase 2: make center columns and pair up 4 edges on the middle layer
+phase 3: complete center, edge pairing and clear edge parity, which means complete reduction
+--- 3x3x3 phase ---
+phase 4: gather UD stickers on UD faces and clear EO
+phase 5: solve it!
+'''
+
+
 import tkinter
 from time import time
 
@@ -273,11 +286,11 @@ class Cube:
             arr3 = [-1 for _ in range(8)]
             for i in range(8):
                 arr3[i] = arr2_p.index(arr1_p[i])
-            for i in range(7):
-                cnt = arr3[i]
+            for i in range(8):
+                cnt = 0
                 for j in arr3[i + 1:]:
                     if j < arr3[i]:
-                        cnt -= 1
+                        cnt += 1
                 res1 += fac[7 - i] * (arr3[i] - cnt)
             return res0, res1
         elif phase == 4:
@@ -363,6 +376,32 @@ class Cube:
                 return True
         return False
     
+    def ec_parity(self):
+        '''
+        corner = 0
+        for i in range(8):
+            cnt = self.Cp[i]
+            for j in self.Cp[i + 1:]:
+                if j < self.Cp[i]:
+                    cnt -= 1
+            corner += fac[7 - i] * (self.Cp[i] - cnt)
+            corner %= 4
+        edge = 0
+        for i in range(12):
+            cnt = self.Ep[i * 2] // 2
+            for j in range(i):
+                if self.Ep[j * 2] < self.Ep[i * 2]:
+                    cnt -= 1
+            edge += fac[11 - i] * cnt
+            edge %= 4
+        return not (corner == edge == 0)
+        '''
+        ep = [self.Ep[i] // 2 for i in range(0, 24, 2)]
+        cp = [i for i in self.Cp]
+        res1 = pp_ep_p(ep, 0)
+        res2 = pp_cp_p(cp, 0)
+        return not res1 % 2 == res2 % 2 == 0
+    
     def distance(self, phase):
         idxes = self.phase_idx(phase)
         return_val = max([prunning[phase][i][idxes[i]] for i in range(len(idxes))])
@@ -371,19 +410,15 @@ class Cube:
             #print(self.Ep)
         if phase == 3 and return_val == 0 and self.pp_parity():
             return_val = 10 # the minimum number of moves to solve OP or PP (or DP) that I know (this number may be bigger actually)
-        if return_val == 100:
-            print([prunning[phase][i][idxes[i]] for i in range(len(idxes))])
-            print(idxes)
+        
+        if phase == 4 and return_val == 0 and self.ec_parity():
+            return_val = 5
         '''
-        if phase == 5 and return_val == 0 and self.check_eo() == True:
-            return_val = 10
-        '''
-        '''
-        if phase == 2:
+        if phase == 3:
             print([prunning[phase][i][idxes[i]] for i in range(len(idxes))])
             print(idxes)
             #print(return_val)
-            print(self.Ce)
+            #print(self.Ce)
         '''
         return return_val
 
@@ -432,17 +467,6 @@ def phase_search(phase, puzzle, depth):
                 if phase_search(phase, n_puzzle, depth - 1):
                     return True
                 path.pop()
-
-'''
---- Reduction phase ---
-phase 0: gather RL centers on RL faces, clear RL center parity
-phase 1: gather FB centers on FB faces and separate low & high edges
-phase 2: make center columns and pair up 4 edges on the middle layer
-phase 3: complete center, edge pairing and clear edge parity, which means complete reduction
---- 3x3x3 phase ---
-phase 4: gather UD stickers on UD faces and clear EO
-phase 5: solve it!
-'''
 
 def solver(puzzle):
     global solution, path
