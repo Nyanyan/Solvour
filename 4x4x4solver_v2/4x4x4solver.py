@@ -406,7 +406,7 @@ class Cube:
         cp = [i for i in self.Cp]
         res1 = pp_ep_p(ep, 0)
         res2 = pp_cp_p(cp, 0)
-        return not res1 % 2 == res2 % 2 == 0
+        return not res1 % 4 == res2 % 4 == 0
     
     def distance(self, phase):
         idxes = self.phase_idx(phase)
