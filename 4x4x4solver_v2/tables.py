@@ -280,6 +280,30 @@ class Cube:
                 res2 += fac[5 - i + 6] * cnt * cmb(11 - i + 6, 5 - i + 6)
             return res0, res1, res2
     
+    def pp_parity(self): # this is PP checker, if 1, there is PP, although not-proved
+        #arr = [[self.Ep[i] // 2, False] for i in range(0, 24, 2)]
+        '''
+        for i in range(12):
+            if arr[i][0] != i:
+                for j in range(i + 1, 12):
+                    if arr[j][0] == i:
+                        arr[i][0], arr[j][0] = arr[j][0], arr[i][0]
+                        res += 1
+                        arr[j][1] = True
+            elif arr[i][1]:
+                res += 1
+        '''
+        ep = [self.Ep[i] // 2 for i in range(0, 24, 2)]
+        cp = [i for i in self.Cp]
+        res1 = pp_ep_p(ep, 0)
+        res2 = pp_cp_p(cp, 0)
+        #if (res1 + res2) % 2 == 0:
+            #print(res1, res2)
+            #print([self.Ep[i] // 2 for i in range(0, 24, 2)])
+            #print(self.Cp)
+            #return 0
+        return (res1 + res2) % 2
+
     def ce_parity(self):
         arr = [[4, 7], [5, 6], [8, 11], [9, 10], [12, 15], [13, 14], [16, 19], [17, 18]]
         for m_arr in arr:
@@ -320,11 +344,42 @@ class Cube:
         res %= 4
         return res
     
+    def ep_swich_parity(self): # avoid "last 2 edge"
+        return ep_switch_parity_p([i for i in self.Ep], 0) % 2
+    
     def edge_separated(self):
         if set([self.Ep[i] // 2 for i in range(0, 24, 2)]) == set([self.Ep[i] // 2 for i in range(1, 24, 2)]):
             return True
         return False
 
+def pp_ep_p(arr, res):
+    for i in range(12):
+        if arr[i] != i:
+            for j in range(12):
+                if arr[j] == i:
+                    arr[i], arr[j] = arr[j], arr[i]
+                    res += 1
+                    return pp_ep_p(arr, res)
+    return res
+
+def pp_cp_p(arr, res):
+    for i in range(8):
+        if arr[i] != i:
+            for j in range(8):
+                if arr[j] == i:
+                    arr[i], arr[j] = arr[j], arr[i]
+                    res += 1
+                    return pp_cp_p(arr, res)
+    return res
+
+def ep_switch_parity_p(arr, res):
+    for i in range(24):
+        if arr[i] != i:
+            for j in range(i + 1, 24):
+                if arr[j] == i:
+                    arr[i], arr[j] = arr[j], arr[i]
+                    return ep_switch_parity_p(arr, res + 1)
+    return res
 
 def cmb(n, r):
     return fac[n] // fac[r] // fac[n - r]
@@ -382,7 +437,7 @@ with open('prunning0.csv', mode='w') as f:
 
 
 
-
+'''
 # phase1 center
 solved = Cube()
 print('phase 1 1/2')
@@ -417,7 +472,7 @@ with open('prunning1.csv', mode='w') as f:
     writer = csv.writer(f, lineterminator='\n')
     writer.writerow(prunning)
 
-'''
+
 # phase1 low & high edges
 solved = Cube()
 print('phase 1 2/2')
@@ -569,14 +624,14 @@ while que:
 with open('prunning3.csv', mode='w') as f:
     writer = csv.writer(f, lineterminator='\n')
     writer.writerow(prunning)
-
+'''
 
 # phase3 2 Ep
 solved = Cube()
 print('phase 3 2/2')
-prunning = [100 for _ in range(40320)]
+prunning = [[100 for _ in range(40320)] for _ in range(2)]
 que = deque([[solved, 0, -10, -10]])
-prunning[solved.phase_idx(3)[1]] = 0
+prunning[0][solved.phase_idx(3)[1]] = 0
 cnt = 0
 while que:
     strt = time()
@@ -596,18 +651,20 @@ while que:
             continue
         n_status = status.move(twist)
         idx = n_status.phase_idx(3)[1]
-        if n_status.edge_paired_8():
-            if prunning[idx] != 0:
-                prunning[idx] = 0
+        parity = n_status.pp_parity()
+        if n_status.edge_paired_8() and parity == 0:
+            if prunning[0][idx] != 0:
+                prunning[0][idx] = 0
                 que.append([n_status, 0, -10, -10])
-        elif prunning[idx] > num + 1:
-            prunning[idx] = num + 1
+        elif prunning[parity][idx] > num + 1:
+            prunning[parity][idx] = num + 1
             que.append([n_status, num + 1, twist, l_mov])
 
 with open('prunning3.csv', mode='a') as f:
     writer = csv.writer(f, lineterminator='\n')
-    writer.writerow(prunning)
-'''
+    for i in range(2):
+        writer.writerow(prunning[i])
+
 
 
 

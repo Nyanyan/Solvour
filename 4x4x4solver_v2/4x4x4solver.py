@@ -65,7 +65,7 @@ phase 3: complete center, edge pairing and clear edge parity (= PP), which means
          use R2, Rw2, L2, U, Uw2, D, F2, Fw2, B2
 --- 3x3x3 phase ---
 phase 4: gather UD stickers on UD faces and clear EO
-         use R, L, U, D, F, B
+         use R, L, U, D, F, B, not use R2, L2, F2, B2
 phase 5: solve it!
          use R2, L2, U, D, F2, B2
 '''
@@ -420,14 +420,17 @@ class Cube:
     
     def distance(self, phase):
         idxes = self.phase_idx(phase)
-        return_val = max([prunning[phase][i][idxes[i]] for i in range(len(idxes))])
+        if phase == 3:
+            return_val = max(prunning[phase][0][idxes[0]], prunning[phase][1 + self.pp_parity()][idxes[1]])
+        else:
+            return_val = max([prunning[phase][i][idxes[i]] for i in range(len(idxes))])
 
         if phase == 1 and return_val == 0 and self.ep_swich_parity():
             return_val = 5
-
+        '''
         if phase == 3 and return_val == 0 and self.pp_parity():
             return_val = 10 # the minimum number of moves to solve OP or PP (or DP) that I know (this number may be bigger actually)
-        
+        '''
         if phase == 4 and return_val == 0 and self.ec_parity():
             return_val = 5
         '''
@@ -498,19 +501,20 @@ def solver(puzzle):
     global solution, path
     solution = []
     for phase in range(6):
-        #print('phase is', phase)
+        print('phase', phase, 'depth', end=' ',flush=True)
         strt = time()
         for depth in range(15):
-            #print(depth)
+            print(depth, end=' ', flush=True)
             path = []
             if phase_search(phase, puzzle, depth):
                 for twist in path:
                     puzzle = puzzle.move(twist)
                 solution.extend(path)
-                print('phase', phase, end=': ')
+                #print('phase', phase, end=': ')
+                print('')
                 for i in path:
                     print(move_candidate[i], end=' ')
-                print('   ',end='')
+                print('')
                 print(time() - strt, 'sec')
                 break
 
@@ -531,7 +535,7 @@ successor = [
             ]
 
 prunning = [None for _ in range(8)]
-prun_len = [1, 2, 3, 2, 2, 3]
+prun_len = [1, 2, 3, 3, 2, 3]
 for phase in range(6):
     prunning[phase] = [[] for _ in range(prun_len[phase])]
     with open('prunning' + str(phase) + '.csv', mode='r') as f:
