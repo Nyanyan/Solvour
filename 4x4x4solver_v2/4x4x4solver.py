@@ -53,14 +53,21 @@ L 23 22 R
 
 '''
 Solver:
+* "X" twist includes X, X2, X', while "X2" means only X2
 --- Reduction phase ---
 phase 0: gather RL centers on RL faces
+         use R, Rw, L, U, Uw, D, F, Fw, B
 phase 1: gather FB centers on FB faces, separate low & high edges, clear RL center parity, avoid last two edges
+         use R, Rw, L, U, Uw2, D, F, Fw2, B
 phase 2: make center columns and pair up 4 edges on the middle layer
+         use R2, Rw2, L2, U, Uw2, D, F, Fw2, B
 phase 3: complete center, edge pairing and clear edge parity (= PP), which means complete reduction
+         use R2, Rw2, L2, U, Uw2, D, F2, Fw2, B2
 --- 3x3x3 phase ---
 phase 4: gather UD stickers on UD faces and clear EO
+         use R, L, U, D, F, B
 phase 5: solve it!
+         use R2, L2, U, D, F2, B2
 '''
 
 

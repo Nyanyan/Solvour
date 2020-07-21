@@ -103,7 +103,7 @@ class Cube:
                         break
             res *= 70
             cnt = 0
-            for i in range(7):
+            for i in range(7): # RL centers
                 if self.Ce[rl_center[i]] == 4:
                     res += cmb(7 - i, 4 - cnt)
                     cnt += 1
