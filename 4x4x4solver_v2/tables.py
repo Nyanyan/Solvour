@@ -159,7 +159,7 @@ class Cube:
                     if cnt == 4 or i - cnt == 3:
                         break
             res1 = 0
-            tmp = [4, 5, 6, 7]
+            #tmp = [4, 5, 6, 7]
             arr1 = [self.Ep[i] // 2 for i in range(1, 24, 2)]
             arr2 = [self.Ep[i] // 2 for i in range(0, 23, 2)]
             #print(arr1)

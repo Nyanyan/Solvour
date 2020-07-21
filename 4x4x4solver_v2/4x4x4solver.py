@@ -55,7 +55,7 @@ L 23 22 R
 Solver:
 --- Reduction phase ---
 phase 0: gather RL centers on RL faces
-phase 1: gather FB centers on FB faces, separate low & high edges, and clear RL center parity
+phase 1: gather FB centers on FB faces, separate low & high edges, clear RL center parity, avoid last two edges
 phase 2: make center columns and pair up 4 edges on the middle layer
 phase 3: complete center, edge pairing and clear edge parity (= PP), which means complete reduction
 --- 3x3x3 phase ---
@@ -224,7 +224,7 @@ class Cube:
                     if cnt == 4 or i - cnt == 3:
                         break
             res1 = 0
-            tmp = [4, 5, 6, 7]
+            #tmp = [4, 5, 6, 7]
             arr1 = [self.Ep[i] // 2 for i in range(1, 24, 2)]
             arr2 = [self.Ep[i] // 2 for i in range(0, 23, 2)]
             #print(arr1)
@@ -376,6 +376,9 @@ class Cube:
             #return 0
         return (res1 + res2) % 2
     
+    def ep_swich_parity(self): # avoid "last 2 edge"
+        return ep_switch_parity_p([i for i in self.Ep], 0) % 2
+    
     def check_eo(self):
         for i in range(0, 24, 2):
             if self.Ep[i] % 2:
@@ -411,9 +414,10 @@ class Cube:
     def distance(self, phase):
         idxes = self.phase_idx(phase)
         return_val = max([prunning[phase][i][idxes[i]] for i in range(len(idxes))])
-        #if phase == 3 and return_val == 0:
-            #print(self.ep_parity())
-            #print(self.Ep)
+
+        if phase == 1 and return_val == 0 and self.ep_swich_parity():
+            return_val = 5
+
         if phase == 3 and return_val == 0 and self.pp_parity():
             return_val = 10 # the minimum number of moves to solve OP or PP (or DP) that I know (this number may be bigger actually)
         
@@ -446,6 +450,15 @@ def pp_cp_p(arr, res):
                     arr[i], arr[j] = arr[j], arr[i]
                     res += 1
                     return pp_cp_p(arr, res)
+    return res
+
+def ep_switch_parity_p(arr, res):
+    for i in range(24):
+        if arr[i] != i:
+            for j in range(i + 1, 24):
+                if arr[j] == i:
+                    arr[i], arr[j] = arr[j], arr[i]
+                    return ep_switch_parity_p(arr, res + 1)
     return res
 
 def cmb(n, r):
@@ -525,8 +538,8 @@ puzzle = Cube()
 for mov in scramble:
     puzzle = puzzle.move(mov)
 solver(puzzle)
-print('solution:')
-print(solution)
+print('solution:',end=' ')
+#print(solution)
 for i in solution:
     print(move_candidate[i],end=' ')
 print('')
