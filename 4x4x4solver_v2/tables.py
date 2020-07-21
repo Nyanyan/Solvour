@@ -101,6 +101,14 @@ class Cube:
                     cnt += 1
                     if cnt == 8 or i - cnt == 7:
                         break
+            res *= 70
+            cnt = 0
+            for i in range(7):
+                if self.Ce[rl_center[i]] == 4:
+                    res += cmb(7 - i, 4 - cnt)
+                    cnt += 1
+                    if cnt == 4 or i - cnt == 3:
+                        break
             '''
             res2 = 0
             cnt = 0
@@ -127,7 +135,6 @@ class Cube:
             return res, res3
         elif phase == 2:
             res0 = 0
-            '''
             cnt = 0
             for i in range(7):
                 if self.Ce[rl_center[i]] == 4:
@@ -136,7 +143,6 @@ class Cube:
                     if cnt == 4 or i - cnt == 3:
                         break
             res0 *= 70
-            '''
             cnt = 0
             for i in range(7):
                 if self.Ce[fb_center[i]] == 3:
@@ -275,15 +281,15 @@ class Cube:
             return res0, res1, res2
     
     def ce_parity(self):
-        if (self.Ce[8] == self.Ce[11] and self.Ce[9] == self.Ce[10] and self.Ce[16] == self.Ce[19] and self.Ce[17] == self.Ce[18]) or (self.Ce[8] == self.Ce[9] and self.Ce[10] == self.Ce[11] and self.Ce[16] == self.Ce[17] and self.Ce[18] == self.Ce[19]) or (self.Ce[8] == self.Ce[10] == self.Ce[16] == self.Ce[18]):
-            res2 = 0
-        else:
-            res2 = 1
-        return res2
+        arr = [[4, 7], [5, 6], [8, 11], [9, 10], [12, 15], [13, 14], [16, 19], [17, 18]]
+        for m_arr in arr:
+            if self.Ce[m_arr[0]] != self.Ce[m_arr[1]]:
+                return True
+        return False
     
     def iscolumn(self):
-        ng_arr = [[i, i + 2] for i in [0, 1, 4, 5, 8, 9, 12, 13, 16, 17, 20, 21]]
-        all_arr = [list(range(i, i + 4)) for i in range(0, 24, 4)]
+        #ng_arr = [[i, i + 2] for i in [0, 1, 4, 5, 8, 9, 12, 13, 16, 17, 20, 21]]
+        #all_arr = [list(range(i, i + 4)) for i in range(0, 24, 4)]
         arr = [[4, 7], [5, 6], [8, 11], [9, 10], [12, 15], [13, 14], [16, 19], [17, 18]]
         for m_arr in arr:
             if self.Ce[m_arr[0]] != self.Ce[m_arr[1]]:
@@ -376,11 +382,11 @@ with open('prunning0.csv', mode='w') as f:
 
 
 
-'''
+
 # phase1 center
 solved = Cube()
 print('phase 1 1/2')
-prunning = [100 for _ in range(12871)]
+prunning = [100 for _ in range(900970)]
 prunning[solved.phase_idx(1)[0]] = 0
 que = deque([[solved, 0, -10, -10]])
 cnt = 0
@@ -399,7 +405,7 @@ while que:
         n_status = status.move(twist)
         idx = n_status.phase_idx(1)[0]
         #print(idx)
-        if idx == 0: # and n_status.ce_parity() == 0:
+        if idx // 70 == 0 and (not n_status.ce_parity()):
             if prunning[idx] != 0:
                 prunning[idx] = 0
                 que.append([n_status, 0, -10, -10])
@@ -411,7 +417,7 @@ with open('prunning1.csv', mode='w') as f:
     writer = csv.writer(f, lineterminator='\n')
     writer.writerow(prunning)
 
-
+'''
 # phase1 low & high edges
 solved = Cube()
 print('phase 1 2/2')
@@ -449,7 +455,7 @@ with open('prunning1.csv', mode='a') as f:
 # phase2 1 Ce
 solved = Cube()
 print('phase 2 1/2')
-prunning = [100 for _ in range(4900)]
+prunning = [100 for _ in range(343000)]
 idx = solved.phase_idx(2)[0]
 prunning[idx] = 0
 que = deque([[solved, 0, -10, -10]])
@@ -563,9 +569,9 @@ while que:
 with open('prunning3.csv', mode='w') as f:
     writer = csv.writer(f, lineterminator='\n')
     writer.writerow(prunning)
-'''
 
-# phase3 1 Ep
+
+# phase3 2 Ep
 solved = Cube()
 print('phase 3 2/2')
 prunning = [100 for _ in range(40320)]
@@ -601,6 +607,8 @@ while que:
 with open('prunning3.csv', mode='a') as f:
     writer = csv.writer(f, lineterminator='\n')
     writer.writerow(prunning)
+'''
+
 
 
 '''

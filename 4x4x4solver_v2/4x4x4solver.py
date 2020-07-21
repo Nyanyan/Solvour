@@ -54,10 +54,10 @@ L 23 22 R
 '''
 Solver:
 --- Reduction phase ---
-phase 0: gather RL centers on RL faces, clear RL center parity
-phase 1: gather FB centers on FB faces and separate low & high edges
+phase 0: gather RL centers on RL faces
+phase 1: gather FB centers on FB faces, separate low & high edges, and clear RL center parity
 phase 2: make center columns and pair up 4 edges on the middle layer
-phase 3: complete center, edge pairing and clear edge parity, which means complete reduction
+phase 3: complete center, edge pairing and clear edge parity (= PP), which means complete reduction
 --- 3x3x3 phase ---
 phase 4: gather UD stickers on UD faces and clear EO
 phase 5: solve it!
@@ -166,6 +166,14 @@ class Cube:
                     cnt += 1
                     if cnt == 8 or i - cnt == 7:
                         break
+            res *= 70
+            cnt = 0
+            for i in range(7):
+                if self.Ce[rl_center[i]] == 4:
+                    res += cmb(7 - i, 4 - cnt)
+                    cnt += 1
+                    if cnt == 4 or i - cnt == 3:
+                        break
             '''
             res2 = 0
             cnt = 0
@@ -192,7 +200,6 @@ class Cube:
             return res, res3
         elif phase == 2:
             res0 = 0
-            '''
             cnt = 0
             for i in range(7):
                 if self.Ce[rl_center[i]] == 4:
@@ -201,7 +208,6 @@ class Cube:
                     if cnt == 4 or i - cnt == 3:
                         break
             res0 *= 70
-            '''
             cnt = 0
             for i in range(7):
                 if self.Ce[fb_center[i]] == 3:
@@ -318,10 +324,10 @@ class Cube:
         elif phase == 5:
             res0 = 0
             for i in range(8):
-                cnt = self.Cp[i]
-                for j in self.Cp[i + 1:]:
+                cnt = 0
+                for j in self.Cp[:i]:
                     if j < self.Cp[i]:
-                        cnt -= 1
+                        cnt += 1
                 res0 += fac[7 - i] * (self.Cp[i] - cnt)
             res1 = 0
             for i in range(6):
@@ -414,7 +420,7 @@ class Cube:
         if phase == 4 and return_val == 0 and self.ec_parity():
             return_val = 5
         '''
-        if phase == 3:
+        if phase == 1 and return_val < 2:
             print([prunning[phase][i][idxes[i]] for i in range(len(idxes))])
             print(idxes)
             #print(return_val)
