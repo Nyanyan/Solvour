@@ -121,18 +121,16 @@ class Cube:
                         break
             '''
             res3 = 0
-            for i in range(23):
+            for i in range(12):
                 res3 *= 2
                 if self.Ep[i] % 2 != i % 2:
                     res3 += 1
-            '''
             res4 = 0
             for i in range(12, 24):
                 res4 *= 2
                 if self.Ep[i] % 2 != i % 2:
                     res4 += 1
-            '''
-            return res, res3
+            return res, res3, res4
         elif phase == 2:
             res0 = 0
             cnt = 0
@@ -347,6 +345,13 @@ class Cube:
     def ep_swich_parity(self): # avoid "last 2 edge"
         return ep_switch_parity_p([i for i in self.Ep], 0) % 2
     
+    def ec_parity(self):
+        ep = [self.Ep[i] // 2 for i in range(0, 24, 2)]
+        cp = [i for i in self.Cp]
+        res1 = pp_ep_p(ep, 0)
+        res2 = pp_cp_p(cp, 0)
+        return not res1 % 4 == res2 % 4 == 0
+
     def edge_separated(self):
         if set([self.Ep[i] // 2 for i in range(0, 24, 2)]) == set([self.Ep[i] // 2 for i in range(1, 24, 2)]):
             return True
@@ -471,13 +476,15 @@ while que:
 with open('prunning1.csv', mode='w') as f:
     writer = csv.writer(f, lineterminator='\n')
     writer.writerow(prunning)
-
+'''
 
 # phase1 low & high edges
 solved = Cube()
 print('phase 1 2/2')
-prunning = [100 for _ in range(8388608)]
-prunning[solved.phase_idx(1)[1]] = 0
+prunning = [[100 for _ in range(4096)] for _ in range(4)]
+_, idx1, idx2 = solved.phase_idx(1)
+prunning[0][idx1] = 0
+prunning[2][idx2] = 0
 que = deque([[solved, 0, -10, -10]])
 cnt = 0
 while que:
@@ -493,15 +500,23 @@ while que:
         if l_twist_0 == twist // 3 or l_twist_1 == twist // 3 or l_twist_2 == twist // 3:
             continue
         n_status = status.move(twist)
-        idx = n_status.phase_idx(1)[1]
-        if prunning[idx] > num + 1:
-            prunning[idx] = num + 1
+        _, idx1, idx2 = n_status.phase_idx(1)
+        parity = n_status.ep_swich_parity()
+        flag = False
+        if prunning[parity][idx1] > num + 1:
+            prunning[parity][idx1] = num + 1
+            flag = True
+        if prunning[2 + parity][idx2] > num + 1:
+            prunning[2 + parity][idx2] = num + 1
+            flag = True
+        if flag:
             que.append([n_status, num + 1, twist, l_mov])
 
 with open('prunning1.csv', mode='a') as f:
     writer = csv.writer(f, lineterminator='\n')
-    writer.writerow(prunning)
-'''
+    for i in range(4):
+        writer.writerow(prunning[i])
+
 
 
 
@@ -624,7 +639,8 @@ while que:
 with open('prunning3.csv', mode='w') as f:
     writer = csv.writer(f, lineterminator='\n')
     writer.writerow(prunning)
-'''
+
+
 
 # phase3 2 Ep
 solved = Cube()
@@ -664,7 +680,7 @@ with open('prunning3.csv', mode='a') as f:
     writer = csv.writer(f, lineterminator='\n')
     for i in range(2):
         writer.writerow(prunning[i])
-
+'''
 
 
 
@@ -672,9 +688,9 @@ with open('prunning3.csv', mode='a') as f:
 # phase4 1 CO
 solved = Cube()
 print('phase 4 1/2')
-prunning = [100 for _ in range(2187)]
+prunning = [[100 for _ in range(2187)] for _ in range(2)]
 que = deque([[solved, 0, -10, -10]])
-prunning[solved.phase_idx(4)[0]] = 0
+prunning[0][solved.phase_idx(4)[0]] = 0
 cnt = 0
 while que:
     strt = time()
@@ -694,20 +710,22 @@ while que:
             continue
         n_status = status.move(twist)
         idx = n_status.phase_idx(4)[0]
-        if prunning[idx] > num + 1:
-            prunning[idx] = num + 1
+        parity = n_status.ec_parity()
+        if prunning[parity][idx] > num + 1:
+            prunning[parity][idx] = num + 1
             que.append([n_status, num + 1, twist, l_mov])
 
 with open('prunning4.csv', mode='w') as f:
     writer = csv.writer(f, lineterminator='\n')
-    writer.writerow(prunning)
+    for i in range(2):
+        writer.writerow(prunning[i])
 
 # phase4 2 EO
 solved = Cube()
 print('phase 4 2/2')
-prunning = [100 for _ in range(531522)]
+prunning = [[100 for _ in range(531522)] for _ in range(2)]
 que = deque([[solved, 0, -10, -10]])
-prunning[solved.phase_idx(4)[1]] = 0
+prunning[0][solved.phase_idx(4)[1]] = 0
 cnt = 0
 while que:
     strt = time()
@@ -727,13 +745,15 @@ while que:
             continue
         n_status = status.move(twist)
         idx = n_status.phase_idx(4)[1]
-        if prunning[idx] > num + 1:
-            prunning[idx] = num + 1
+        parity = n_status.ec_parity()
+        if prunning[parity][idx] > num + 1:
+            prunning[parity][idx] = num + 1
             que.append([n_status, num + 1, twist, l_mov])
 
 with open('prunning4.csv', mode='a') as f:
     writer = csv.writer(f, lineterminator='\n')
-    writer.writerow(prunning)
+    for i in range(2):
+        writer.writerow(prunning[i])
 '''
 
 
