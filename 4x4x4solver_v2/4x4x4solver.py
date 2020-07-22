@@ -175,7 +175,7 @@ class Cube:
                         break
             res *= 70
             cnt = 0
-            for i in range(7): # RL centers
+            for i in range(7):
                 if self.Ce[rl_center[i]] == 4:
                     res += cmb(7 - i, 4 - cnt)
                     cnt += 1
@@ -193,16 +193,18 @@ class Cube:
                         break
             '''
             res3 = 0
-            for i in range(12):
+            for i in range(23):
                 res3 *= 2
                 if self.Ep[i] % 2 != i % 2:
                     res3 += 1
+            '''
             res4 = 0
             for i in range(12, 24):
                 res4 *= 2
                 if self.Ep[i] % 2 != i % 2:
                     res4 += 1
-            return res, res3, res4
+            '''
+            return res, res3
         elif phase == 2:
             res0 = 0
             cnt = 0
@@ -418,17 +420,19 @@ class Cube:
     
     def distance(self, phase):
         idxes = self.phase_idx(phase)
-        if phase == 1:
-            parity = self.ep_swich_parity()
-            return_val = max(prunning[phase][0][idxes[0]], prunning[phase][1 + parity][idxes[1]], prunning[phase][3 + parity][idxes[2]])
-        elif phase == 3:
+        if phase == 3:
             return_val = max(prunning[phase][0][idxes[0]], prunning[phase][1 + self.pp_parity()][idxes[1]])
-        elif phase == 4:
-            parity = self.ec_parity()
-            return_val = max(prunning[phase][parity][idxes[0]], prunning[phase][2 + parity][idxes[1]])
         else:
             return_val = max([prunning[phase][i][idxes[i]] for i in range(len(idxes))])
 
+        if phase == 1 and return_val == 0 and self.ep_swich_parity():
+            return_val = 5
+        '''
+        if phase == 3 and return_val == 0 and self.pp_parity():
+            return_val = 10 # the minimum number of moves to solve OP or PP (or DP) that I know (this number may be bigger actually)
+        '''
+        if phase == 4 and return_val == 0 and self.ec_parity():
+            return_val = 5
         '''
         if phase == 1 and return_val < 2:
             print([prunning[phase][i][idxes[i]] for i in range(len(idxes))])
@@ -499,7 +503,7 @@ def solver(puzzle):
     for phase in range(6):
         print('phase', phase, 'depth', end=' ',flush=True)
         strt = time()
-        for depth in range(20):
+        for depth in range(15):
             print(depth, end=' ', flush=True)
             path = []
             if phase_search(phase, puzzle, depth):
@@ -531,7 +535,7 @@ successor = [
             ]
 
 prunning = [None for _ in range(8)]
-prun_len = [1, 5, 3, 3, 4, 3]
+prun_len = [1, 2, 3, 3, 2, 3]
 for phase in range(6):
     prunning[phase] = [[] for _ in range(prun_len[phase])]
     with open('prunning' + str(phase) + '.csv', mode='r') as f:
