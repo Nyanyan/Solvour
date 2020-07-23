@@ -1,395 +1,34 @@
+from cube_class import Cube, face, axis, wide
 from collections import deque, Counter
 import csv
 from time import time
 
-class Cube:
-    def __init__(self, cp=list(range(8)), co=[0 for _ in range(8)], ep=list(range(24)), ce=[i // 4 for i in range(24)]):
-        self.Cp = cp
-        self.Co = co
-        self.Ep = ep
-        self.Ce = ce
-    
-    def move_cp(self, mov):
-        surface = [[3, 1, 7, 5], [0, 2, 4, 6], [0, 1, 3, 2], [4, 5, 7, 6], [2, 3, 5, 4], [1, 0, 6, 7]]
-        res = [i for i in self.Cp]
-        mov_type = mov // 6
-        mov_amount = mov % 3
-        for i in range(4):
-            res[surface[mov_type][(i + mov_amount + 1) % 4]] = self.Cp[surface[mov_type][i]]
-        return res
-    
-    def move_co(self, mov):
-        surface = [[3, 1, 7, 5], [0, 2, 4, 6], [0, 1, 3, 2], [4, 5, 7, 6], [2, 3, 5, 4], [1, 0, 6, 7]]
-        pls = [2, 1, 2, 1]
-        res = [i for i in self.Co]
-        mov_type = mov // 6
-        mov_amount = mov % 3
-        for i in range(4):
-            res[surface[mov_type][(i + mov_amount + 1) % 4]] = self.Co[surface[mov_type][i]]
-            if mov_type // 2 != 1 and mov_amount != 1:
-                res[surface[mov_type][(i + mov_amount + 1) % 4]] += pls[(i + mov_amount + 1) % 4]
-                res[surface[mov_type][(i + mov_amount + 1) % 4]] %= 3
-        return res
-    
-    def move_ep(self, mov):
-        surface = [[[3, 12, 19, 10], [2, 13, 18, 11]], # R
-                   [[3, 12, 19, 10], [2, 13, 18, 11], [4, 1, 20, 17]],  # Rw
-                   [[7, 8, 23, 14], [6, 9, 22, 15]], # L
-                   [[7, 8, 23, 14], [6, 9, 22, 15], [0, 5, 16, 21]], # Lw
-                   [[0, 2, 4, 6], [1, 3, 5, 7]], # U
-                   [[0, 2, 4, 6], [1, 3, 5, 7], [15, 12, 11, 8]], # Uw
-                   [[16, 18, 20, 22], [17, 19, 21, 23]], # D
-                   [[16, 18, 20, 22], [17, 19, 21, 23], [9, 10, 13, 14]], # Dw
-                   [[5, 11, 17, 9], [4, 10, 16, 8]], # F
-                   [[5, 11, 17, 9], [4, 10, 16, 8], [6, 3, 18, 23]], # Fw
-                   [[1, 15, 21, 13], [0, 14, 20, 12]], # B
-                   [[1, 15, 21, 13], [0, 14, 20, 12], [2, 7, 22, 19]] # Bw
-                   ]
-        mov_type = mov // 3
-        mov_amount = mov % 3
-        res = [i for i in self.Ep]
-        for arr in surface[mov_type]:
-            for i in range(4):
-                res[arr[(i + mov_amount + 1) % 4]] = self.Ep[arr[i]]
-        return res
-    
-    def move_ce(self, mov):
-        surface = [[[8, 9, 10, 11]], # R
-                   [[8, 9, 10, 11], [2, 12, 22, 6], [1, 15, 21, 5]], # Rw
-                   [[16, 17, 18, 19]], # L
-                   [[16, 17, 18, 19], [0, 4, 20, 14], [3, 7, 23, 13]], # Lw
-                   [[0, 1, 2, 3]], # U
-                   [[0, 1, 2, 3], [13, 9, 5, 17], [12, 8, 4, 16]], # Uw
-                   [[20, 21, 22, 23]], # D
-                   [[20, 21, 22, 23], [7, 11, 15, 19], [6, 10, 14, 18]], # Dw
-                   [[4, 5, 6, 7]], # F
-                   [[4, 5, 6, 7], [3, 8, 21, 18], [2, 11, 20, 17]], # Fw
-                   [[12, 13, 14, 15]], # B
-                   [[12, 13, 14, 15], [1, 16, 23, 10], [0, 19, 22, 9]] # Bw
-                   ]
-        mov_type = mov // 3
-        mov_amount = mov % 3
-        res = [i for i in self.Ce]
-        for arr in surface[mov_type]:
-            for i in range(4):
-                res[arr[(i + mov_amount + 1) % 4]] = self.Ce[arr[i]]
-        return res
-    
-    def move(self, mov):
-        return Cube(cp=self.move_cp(mov), co=self.move_co(mov), ep=self.move_ep(mov), ce=self.move_ce(mov))
+def move_ce_phase0_func(puzzle, twist):
+    return move_ce_phase0[puzzle][twist_to_idx[twist]]
 
-    def phase_idx(self, phase):
-        res = 0
-        rl_center = [8, 9, 10, 11, 16, 17, 18, 19]
-        fb_center = [4, 5, 6, 7, 12, 13, 14, 15]
-        ud_center = [0, 1, 2, 3, 20, 21, 22, 23]
-        if phase == 0:
-            cnt = 0
-            for i in range(23):
-                if self.Ce[i] == 2 or self.Ce[i] == 4:
-                    res += cmb(23 - i, 8 - cnt)
-                    cnt += 1
-                    if cnt == 8 or i - cnt == 15:
-                        break
-            return res * 2 + self.ce_parity()
-        elif phase == 1:
-            cnt = 0
-            arr = [0, 1, 2, 3, 20, 21, 22, 23, 4, 5, 6, 7, 12, 13, 14, 15] # FBUD centers
-            for i in range(15):
-                if self.Ce[arr[i]] == 1 or self.Ce[arr[i]] == 3:
-                    res += cmb(15 - i, 8 - cnt)
-                    cnt += 1
-                    if cnt == 8 or i - cnt == 7:
-                        break
-            res *= 70
-            cnt = 0
-            for i in range(7): # RL centers
-                if self.Ce[rl_center[i]] == 4:
-                    res += cmb(7 - i, 4 - cnt)
-                    cnt += 1
-                    if cnt == 4 or i - cnt == 3:
-                        break
-            '''
-            res2 = 0
-            cnt = 0
-            arr = [8, 9, 10, 11, 16, 17, 18, 19] # RL centers
-            for i in range(8):
-                if self.Ce[arr[i]] == 4:
-                    res2 += cmb(7 - i, 4 - cnt)
-                    cnt += 1
-                    if cnt == 4 or i - cnt == 3:
-                        break
-            '''
-            res3 = 0
-            for i in range(23):
-                res3 *= 2
-                if self.Ep[i] % 2 != i % 2:
-                    res3 += 1
-            '''
-            res4 = 0
-            for i in range(12, 24):
-                res4 *= 2
-                if self.Ep[i] % 2 != i % 2:
-                    res4 += 1
-            '''
-            return res, res3
-        elif phase == 2:
-            res0 = 0
-            cnt = 0
-            for i in range(7):
-                if self.Ce[rl_center[i]] == 4:
-                    res0 += cmb(7 - i, 4 - cnt)
-                    cnt += 1
-                    if cnt == 4 or i - cnt == 3:
-                        break
-            res0 *= 70
-            cnt = 0
-            for i in range(7):
-                if self.Ce[fb_center[i]] == 3:
-                    res0 += cmb(7 - i, 4 - cnt)
-                    cnt += 1
-                    if cnt == 4 or i - cnt == 3:
-                        break
-            res0 *= 70
-            cnt = 0
-            for i in range(7):
-                if self.Ce[ud_center[i]] == 5:
-                    res0 += cmb(7 - i, 4 - cnt)
-                    cnt += 1
-                    if cnt == 4 or i - cnt == 3:
-                        break
-            res1 = 0
-            #tmp = [4, 5, 6, 7]
-            arr1 = [self.Ep[i] // 2 for i in range(1, 24, 2)]
-            arr2 = [self.Ep[i] // 2 for i in range(0, 23, 2)]
-            #print(arr1)
-            #print(arr2)
-            arr3 = [-1 for _ in range(12)]
-            for i in range(12):
-                arr3[i] = arr2.index(arr1[i])
-            #print(arr3)
-            res1 = 0
-            for i in range(6):
-                cnt = arr3[i]
-                for j in arr3[:i]:
-                    if j < arr3[i]:
-                        cnt -= 1
-                res1 += cnt * cmb(11 - i, 5 - i) * fac[5 - i]
-            #print(res1)
-            res2 = 0
-            for i in range(6, 12):
-                cnt = arr3[i]
-                for j in arr3[6:i]:
-                    if j < arr3[i]:
-                        cnt -= 1
-                res2 += cnt * cmb(11 - i + 6, 5 - i + 6) * fac[5 - i + 6]
-            #print(res1, res2)
-            #print('')
-            return res0, res1, res2
-        elif phase == 3:
-            cnt = 0
-            res0 = 0
-            for i in range(7):
-                if self.Ce[rl_center[i]] == 4:
-                    res0 += cmb(7 - i, 4 - cnt)
-                    cnt += 1
-                    if cnt == 4 or i - cnt == 3:
-                        break
-            res0 *= 70
-            cnt = 0
-            for i in range(7):
-                if self.Ce[fb_center[i]] == 3:
-                    res0 += cmb(7 - i, 4 - cnt)
-                    cnt += 1
-                    if cnt == 4 or i - cnt == 3:
-                        break
-            res0 *= 70
-            cnt = 0
-            for i in range(7):
-                if self.Ce[ud_center[i]] == 5:
-                    res0 += cmb(7 - i, 4 - cnt)
-                    cnt += 1
-                    if cnt == 4 or i - cnt == 3:
-                        break
-            res1 = 0
-            arr1 = [0, 2, 4, 6, 16, 18, 20, 22]
-            arr1_p = [self.Ep[i] // 2 for i in arr1]
-            arr2 = [1, 3, 5, 7, 17, 19, 21, 23]
-            arr2_p = [self.Ep[i]// 2 for i in arr2]
-            '''
-            arr1_tmp = sorted(arr1_p)
-            for i in range(8):
-                arr1_p[i] = arr1_tmp.index(arr1_p[i])
-            arr2_tmp = sorted(arr2_p)
-            for i in range(8):
-                arr2_p[i] = arr2_tmp.index(arr2_p[i])
-            '''
-            arr3 = [-1 for _ in range(8)]
-            for i in range(8):
-                arr3[i] = arr2_p.index(arr1_p[i])
-            for i in range(8):
-                cnt = 0
-                for j in arr3[i + 1:]:
-                    if j < arr3[i]:
-                        cnt += 1
-                res1 += fac[7 - i] * (arr3[i] - cnt)
-            return res0, res1
-        elif phase == 4:
-            res0 = 0
-            for i in self.Co[:7]:
-                res0 *= 3
-                res0 += i
-            res1 = 0
-            for i in [0, 2, 4, 6, 16, 18, 20, 22]:
-                res1 *= 3
-                if self.Ep[i] // 2 in {0, 1, 2, 3, 8, 9, 10, 11}:
-                    tmp = self.Ep[i] % 2
-                    res1 += tmp
-                else:
-                    res1 += 2
-            res2 = 0
-            for i in [8, 10, 12, 14]:
-                res2 *= 3
-                if self.Ep[i] // 2 in {4, 5, 6, 7}:
-                    tmp = self.Ep[i] % 2
-                    res2 += tmp
-                else:
-                    res2 += 2
-            return res0, res1 * 81 + res2
-        elif phase == 5:
-            res0 = 0
-            for i in range(8):
-                cnt = 0
-                for j in self.Cp[:i]:
-                    if j < self.Cp[i]:
-                        cnt += 1
-                res0 += fac[7 - i] * (self.Cp[i] - cnt)
-            res1 = 0
-            for i in range(6):
-                cnt = self.Ep[i * 2] // 2
-                for j in range(i):
-                    if self.Ep[j * 2] < self.Ep[i * 2]:
-                        cnt -= 1
-                res1 += fac[5 - i] * cnt * cmb(11 - i, 5 - i)
-            res2 = 0
-            for i in range(6, 12):
-                cnt = self.Ep[i * 2] // 2
-                for j in range(6, i):
-                    if self.Ep[j * 2] < self.Ep[i * 2]:
-                        cnt -= 1
-                res2 += fac[5 - i + 6] * cnt * cmb(11 - i + 6, 5 - i + 6)
-            return res0, res1, res2
-    
-    def pp_parity(self): # this is PP checker, if 1, there is PP, although not-proved
-        #arr = [[self.Ep[i] // 2, False] for i in range(0, 24, 2)]
-        '''
-        for i in range(12):
-            if arr[i][0] != i:
-                for j in range(i + 1, 12):
-                    if arr[j][0] == i:
-                        arr[i][0], arr[j][0] = arr[j][0], arr[i][0]
-                        res += 1
-                        arr[j][1] = True
-            elif arr[i][1]:
-                res += 1
-        '''
-        ep = [self.Ep[i] // 2 for i in range(0, 24, 2)]
-        cp = [i for i in self.Cp]
-        res1 = pp_ep_p(ep, 0)
-        res2 = pp_cp_p(cp, 0)
-        #if (res1 + res2) % 2 == 0:
-            #print(res1, res2)
-            #print([self.Ep[i] // 2 for i in range(0, 24, 2)])
-            #print(self.Cp)
-            #return 0
-        return (res1 + res2) % 2
+def move_ce_phase1_func(puzzle, twist):
+    return move_ce_phase1_fbud[puzzle // 70][twist_to_idx[twist]] * 70 + move_ce_phase1_rl[puzzle % 70][twist_to_idx[twist]]
 
-    def ce_parity(self):
-        arr = [[4, 7], [5, 6], [8, 11], [9, 10], [12, 15], [13, 14], [16, 19], [17, 18]]
-        for m_arr in arr:
-            if self.Ce[m_arr[0]] != self.Ce[m_arr[1]]:
-                return True
-        return False
-    
-    def iscolumn(self):
-        #ng_arr = [[i, i + 2] for i in [0, 1, 4, 5, 8, 9, 12, 13, 16, 17, 20, 21]]
-        #all_arr = [list(range(i, i + 4)) for i in range(0, 24, 4)]
-        arr = [[4, 7], [5, 6], [8, 11], [9, 10], [12, 15], [13, 14], [16, 19], [17, 18]]
-        for m_arr in arr:
-            if self.Ce[m_arr[0]] != self.Ce[m_arr[1]]:
-                return False
-        return True
-    
-    def edge_paired_4(self):
-        for i in range(4, 8):
-            if self.Ep[i * 2] // 2 != self.Ep[i * 2 + 1] // 2:
-                return False
-        return True
-    
-    def edge_paired_8(self):
-        for i in [0, 1, 2, 3, 8, 9, 10, 11]:
-            if self.Ep[i * 2] // 2 != self.Ep[i * 2 + 1] // 2:
-                return False
-        return True
-    
-    def ep_parity(self):
-        res = 0
-        arr = [i for i in self.Ep]
-        for i in range(24):
-            if arr[i] != i:
-                for j in range(i + 1, 24):
-                    if arr[j] == i:
-                        arr[i], arr[j] = arr[j], arr[i]
-                        res += 1
-        res %= 4
-        return res
-    
-    def ep_swich_parity(self): # avoid "last 2 edge"
-        return ep_switch_parity_p([i for i in self.Ep], 0) % 2
-    
-    def edge_separated(self):
-        if set([self.Ep[i] // 2 for i in range(0, 24, 2)]) == set([self.Ep[i] // 2 for i in range(1, 24, 2)]):
-            return True
-        return False
+def move_ep_phase1_func(puzzle, twist):
+    decision = [
+        [[], [], [2, 3, 6, 7], [18, 19, 22, 23], [11, 10, 9, 8], [15, 14, 13, 12]], 
+        [[12, 13, 10, 11], [8, 9, 14, 15], [0, 1, 4, 5], [16, 17, 20, 21], [], []],
+        [[3, 2, 19, 18], [7, 6, 23, 22], [], [], [5, 4, 17, 16], [1, 0, 21, 20]]
+        ]
+    mse_parts = [[0, 1, 4, 5, 16, 17, 20, 21], [6, 7, 2, 3, 18, 19, 22, 23], [9, 8, 11, 10, 13, 12, 15, 14]] #MSE
+    mse_lst = [{0, 1, 4, 5, 16, 17, 20, 21}, {6, 7, 2, 3, 18, 19, 22, 23}, {9, 8, 11, 10, 13, 12, 15, 14}]
+    for mse in range(3):
+        idx = puzzle[mse]
+        decision_num = 0
+        for i in decision[twist // 6]:
+            for m_mse in range(3):
+                if i in mse_lst[m_mse]:
+                    shift = mse_parts.index(i)
+                    decision_num *= 2
+                    decision_num += int((puzzle[m_mse] >> (7 - shift))& 1 != i % 2)
 
-def pp_ep_p(arr, res):
-    for i in range(12):
-        if arr[i] != i:
-            for j in range(12):
-                if arr[j] == i:
-                    arr[i], arr[j] = arr[j], arr[i]
-                    res += 1
-                    return pp_ep_p(arr, res)
-    return res
 
-def pp_cp_p(arr, res):
-    for i in range(8):
-        if arr[i] != i:
-            for j in range(8):
-                if arr[j] == i:
-                    arr[i], arr[j] = arr[j], arr[i]
-                    res += 1
-                    return pp_cp_p(arr, res)
-    return res
 
-def ep_switch_parity_p(arr, res):
-    for i in range(24):
-        if arr[i] != i:
-            for j in range(i + 1, 24):
-                if arr[j] == i:
-                    arr[i], arr[j] = arr[j], arr[i]
-                    return ep_switch_parity_p(arr, res + 1)
-    return res
-
-def cmb(n, r):
-    return fac[n] // fac[r] // fac[n - r]
-
-fac = [1 for _ in range(25)]
-for i in range(1, 25):
-    fac[i] = fac[i - 1] * i
-
-solution = []
-path = []
 #                  0    1     2     3     4      5      6    7     8     9     10     11     12   13    14    15    16     17     18   19   20     21    22     23     24   25    26    27    28     29     30   31    32    33    34     35
 move_candidate = ["R", "R2", "R'", "Rw", "Rw2", "Rw'", "L", "L2", "L'", "Lw", "Lw2", "Lw'", "U", "U2", "U'", "Uw", "Uw2", "Uw'", "D", "D2", "D'", "Dw", "Dw2", "Dw'", "F", "F2", "F'", "Fw", "Fw2", "Fw'", "B", "B2", "B'", "Bw", "Bw2", "Bw'"]
 successor = [
@@ -401,7 +40,123 @@ successor = [
             [   1,                7,               12, 13, 14,             18, 19, 20,                 25,                     31                ]  # phase 5
             ]
 
+twist_to_idx = [0, 1, 2, 3, 4, 5, 6, 7, 8, -1, -1, -1, 9, 10, 11, 12, 13, 14, 15, 16, 17, -1, -1, -1, 18, 19, 20, 21, 22, 23, 24, 25, 26, -1, -1, -1]
 
+move_ce_phase0 = [[] for _ in range(735471)]
+with open('move_table/move_ce_phase0.csv', mode='r') as f:
+    for idx in range(735471):
+        move_ce_phase0[idx] = [int(i) for i in f.readline().replace('\n', '').split(',')]
+move_ce_phase1_fbud = [[] for _ in range(12870)]
+with open('move_table/move_ce_phase1_fbud.csv', mode='r') as f:
+    for idx in range(12870):
+        move_ce_phase1_fbud[idx] = [int(i) for i in f.readline().replace('\n', '').split(',')]
+move_ce_phase1_rl = [[] for _ in range(70)]
+with open('move_table/move_ce_phase1_rl.csv', mode='r') as f:
+    for idx in range(70):
+        move_ce_phase1_rl[idx] = [int(i) for i in f.readline().replace('\n', '').split(',')]
+
+
+
+'''
+# phase 0
+solved = Cube()
+print('phase 0 1/1')
+prunning = [99 for _ in range(735471)]
+solved_idx = solved.idx_ce_phase0()
+prunning[solved_idx] = 0
+que = deque([[solved_idx, 0, -10, -10, -10]])
+cnt = 0
+while que:
+    cnt += 1
+    if cnt % 10000 == 0:
+        #tmp = prunning.count(100)
+        print(cnt, len(que))
+        #print(prunning[0])
+    puzzle, num, l1_twist, l2_twist, l3_twist = que.popleft()
+    for twist in successor[0]:
+        if face(twist) == face(l1_twist) or axis(twist) == axis(l1_twist) == axis(l2_twist) == axis(l3_twist) or (axis(twist) == axis(l1_twist) and wide(twist) == wide(l1_twist) == 1):
+            continue
+        n_puzzle = move_ce_phase0_func(puzzle, twist)
+        if prunning[n_puzzle] > num + 1:
+            prunning[n_puzzle] = num + 1
+            que.append([n_puzzle, num + 1, twist, l1_twist, l2_twist])
+with open('prun_table/prunning0.csv', mode='w') as f:
+    writer = csv.writer(f, lineterminator='\n')
+    writer.writerow(prunning)
+'''
+
+#puzzle = Cube()
+#print(puzzle.move(3).idx_ce_phase1_fbud() * 70 + puzzle.move(3).idx_ce_phase1_rl())
+#print(move_ce_phase1_func(puzzle.idx_ce_phase1_fbud() * 70 + puzzle.idx_ce_phase1_rl(), 3))
+'''
+# phase1 center
+ce_parity = [-1 for _ in range(70)]
+solved = Cube()
+que = deque([solved])
+while que:
+    puzzle = que.popleft()
+    for twist in successor[1]:
+        n_puzzle = puzzle.move(twist)
+        idx = n_puzzle.idx_ce_phase1_rl()
+        if ce_parity[idx] == -1:
+            ce_parity[idx] = n_puzzle.ce_parity()
+            que.append(n_puzzle)
+print(ce_parity)
+solved = Cube()
+print('phase 1 1/2')
+prunning = [99 for _ in range(900970)]
+solved_idx = solved.idx_ce_phase1_fbud() * 70 + solved.idx_ce_phase1_rl()
+prunning[solved_idx] = 0
+que = deque([[solved_idx, 0, -10, -10, -10]])
+cnt = 0
+while que:
+    cnt += 1
+    if cnt % 10000 == 0:
+        #tmp = prunning.count(100)
+        print(cnt, len(que))
+    puzzle, num, l1_twist, l2_twist, l3_twist = que.popleft()
+    for twist in successor[1]:
+        if face(twist) == face(l1_twist) or axis(twist) == axis(l1_twist) == axis(l2_twist) == axis(l3_twist) or (axis(twist) == axis(l1_twist) and wide(twist) == wide(l1_twist) == 1):
+            continue
+        n_puzzle = move_ce_phase1_func(puzzle, twist)
+        if n_puzzle // 70 == 0 and ce_parity[n_puzzle % 70] == 0:
+            if prunning[n_puzzle] != 0:
+                prunning[n_puzzle] = 0
+                que.append([n_puzzle, 0, -10, -10, -10])
+        elif prunning[n_puzzle] > num + 1:
+            prunning[n_puzzle] = num + 1
+            que.append([n_puzzle, num + 1, twist, l1_twist, l2_twist])
+
+with open('prun_table/prunning1.csv', mode='w') as f:
+    writer = csv.writer(f, lineterminator='\n')
+    writer.writerow(prunning)
+'''
+
+# phase1 low & high edges
+solved = Cube()
+print('phase 1 2/2')
+prunning = [100 for _ in range(8388608)]
+solved_idx = solved.idx_high_low_edge()
+prunning[solved_idx] = 0
+que = deque([[solved_idx, 0, -10, -10, -10]])
+cnt = 0
+while que:
+    cnt += 1
+    if cnt % 10000 == 0:
+        #tmp = prunning.count(100)
+        print(cnt, len(que))
+    puzzle, num, l1_twist, l2_twist, l3_twist = que.popleft()
+    for twist in successor[1]:
+        if face(twist) == face(l1_twist) or axis(twist) == axis(l1_twist) == axis(l2_twist) == axis(l3_twist) or (axis(twist) == axis(l1_twist) and wide(twist) == wide(l1_twist) == 1):
+            continue
+        n_puzzle = move_idx_high_low_edge(puzzle, twist)
+        if prunning[n_puzzle] > num + 1:
+            prunning[n_puzzle] = num + 1
+            que.append([n_puzzle, num + 1, twist, l1_twist, l2_twist])
+
+with open('prun_table/prunning1.csv', mode='a') as f:
+    writer = csv.writer(f, lineterminator='\n')
+    writer.writerow(prunning)
 
 
 '''
@@ -625,7 +380,7 @@ with open('prunning3.csv', mode='w') as f:
     writer = csv.writer(f, lineterminator='\n')
     writer.writerow(prunning)
 '''
-
+'''
 # phase3 2 Ep
 solved = Cube()
 print('phase 3 2/2')
@@ -664,7 +419,7 @@ with open('prunning3.csv', mode='a') as f:
     writer = csv.writer(f, lineterminator='\n')
     for i in range(2):
         writer.writerow(prunning[i])
-
+'''
 
 
 

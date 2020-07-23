@@ -1,57 +1,4 @@
 '''
-Corner
-   B
-  0 1 
-L 2 3 R
-   F
-
-   F
-  4 5
-L 6 7 R
-   B
-
-
-Edge
-top layer
-    B
-   0 1
-  7   2
-L 6   3 R
-   5 4
-    F
-
-Middle layer
-8   11   12   15
-9 F 10 R 13 B 14
-
-Bottom layer
-     F
-   16 17
-  23   18
-L 22   19 R
-   21 20
-     B
-
-
-Center
-top layer
-   B
-  0 1 
-L 2 3 R
-   F
-
-Middle layer
-4   5   8    9  12   13  16   17
-7 F 6  11 R 10  15 B 14  19 L 18
-
-Bottom layer
-    F
-  20 21
-L 23 22 R
-    B
-'''
-
-'''
 Solver:
 * "X" twist includes X, X2, X', while "X2" means only X2
 --- Reduction phase ---
@@ -71,16 +18,21 @@ phase 5: solve it!
 '''
 
 
-from cube_class import Cube, face, axis, wide
+from cube_class import Cube, face, axis, wide, move_idx_high_low_edge
 from time import time
 
+def initialize_puzzle_arr(phase, puzzle):
+    if phase == 0:
+        return [puzzle.idx_ce_phase0()]
+
 def distance(puzzle_arr, phase):
-    pass
+    return max(prunning[phase][i][puzzle_arr[i]] for i in range(prun_len[phase]))
 
 def move_arr(puzzle_arr, phase, twist):
-    pass
+    if phase == 0:
+        return [move_ce_phase0[puzzle_arr[0]][twist_to_idx[twist]]]
 
-def phase_search(phase_arr, puzzle, depth):
+def phase_search(phase, puzzle_arr, depth):
     global path
     if depth == 0:
         if distance(puzzle_arr, phase) == 0:
@@ -95,20 +47,21 @@ def phase_search(phase_arr, puzzle, depth):
                     continue
                 n_puzzle_arr = move_arr(puzzle_arr, phase, twist)
                 path.append(twist)
-                if phase_search(phase, n_puzzle, depth - 1):
+                if phase_search(phase, n_puzzle_arr, depth - 1):
                     return True
                 path.pop()
 
 def solver(puzzle):
     global solution, path
     solution = []
-    for phase in range(6):
+    for phase in range(1):
         print('phase', phase, 'depth', end=' ',flush=True)
         strt = time()
         for depth in range(15):
             print(depth, end=' ', flush=True)
             path = []
-            if phase_search(phase, puzzle, depth):
+            puzzle_arr = initialize_puzzle_arr(phase, puzzle)
+            if phase_search(phase, puzzle_arr, depth):
                 for twist in path:
                     puzzle = puzzle.move(twist)
                 solution.extend(path)
@@ -120,12 +73,9 @@ def solver(puzzle):
                 print(time() - strt, 'sec')
                 break
 
-fac = [1 for _ in range(25)]
-for i in range(1, 25):
-    fac[i] = fac[i - 1] * i
-
 #                  0    1     2     3     4      5      6    7     8     9     10     11     12   13    14    15    16     17     18   19   20     21    22     23     24   25    26    27    28     29     30   31    32    33    34     35
 move_candidate = ["R", "R2", "R'", "Rw", "Rw2", "Rw'", "L", "L2", "L'", "Lw", "Lw2", "Lw'", "U", "U2", "U'", "Uw", "Uw2", "Uw'", "D", "D2", "D'", "Dw", "Dw2", "Dw'", "F", "F2", "F'", "Fw", "Fw2", "Fw'", "B", "B2", "B'", "Bw", "Bw2", "Bw'"]
+twist_to_idx = [0, 1, 2, 3, 4, 5, 6, 7, 8, -1, -1, -1, 9, 10, 11, 12, 13, 14, 15, 16, 17, -1, -1, -1, 18, 19, 20, 21, 22, 23, 24, 25, 26, -1, -1, -1]
 
 successor = [
             [0, 1, 2, 3, 4, 5, 6, 7, 8,            12, 13, 14, 15, 16, 17, 18, 19, 20,             24, 25, 26, 27, 28, 29, 30, 31, 32            ], # phase 0
@@ -136,11 +86,17 @@ successor = [
             [   1,                7,               12, 13, 14,             18, 19, 20,                 25,                     31                ]  # phase 5
             ]
 
-prunning = [None for _ in range(8)]
+move_ce_phase0 = [[] for _ in range(735471)]
+with open('move_table/move_ce_phase0.csv', mode='r') as f:
+    for idx in range(735471):
+        move_ce_phase0[idx] = [int(i) for i in f.readline().replace('\n', '').split(',')]
+
+
+prunning = [None for _ in range(6)]
 prun_len = [1, 2, 3, 3, 2, 3]
-for phase in range(6):
+for phase in range(1):
     prunning[phase] = [[] for _ in range(prun_len[phase])]
-    with open('prunning' + str(phase) + '.csv', mode='r') as f:
+    with open('prun_table/prunning' + str(phase) + '.csv', mode='r') as f:
         for lin in range(prun_len[phase]):
             prunning[phase][lin] = [int(i) for i in f.readline().replace('\n', '').split(',')]
 

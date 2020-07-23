@@ -162,50 +162,48 @@ class Cube:
                     break
         return res
 
-
-
-    def idx_phase0_ep(self):
-        res_ep = 0
+    def idx_ce_phase1_fbud(self):
+        res = 0
         cnt = 0
-        for i in range(12):
-            if cnt == 4:
-                break
-            if self.Ep[i] // 4 == 1:
-                res_ep += cmb(11 - i, 4 - cnt)
+        arr = [0, 1, 2, 3, 20, 21, 22, 23, 4, 5, 6, 7, 12, 13, 14, 15] # FBUD centers
+        for i in range(15):
+            if self.Ce[arr[i]] == 1 or self.Ce[arr[i]] == 3:
+                res += cmb(15 - i, 8 - cnt)
                 cnt += 1
-        return res_ep
+                if cnt == 8 or i - cnt == 7:
+                    break
+        return res
     
-    def idx_phase0_eo(self):
-        res_eo = 0
-        for i in range(11):
-            res_eo *= 2
-            res_eo += self.Eo[i]
-        return res_eo
+    def idx_ce_phase1_rl(self):
+        res = 0
+        cnt = 0
+        for i in range(7): # RL centers
+            if self.Ce[rl_center[i]] == 4:
+                res += cmb(7 - i, 4 - cnt)
+                cnt += 1
+                if cnt == 4 or i - cnt == 3:
+                    break
+        return res
     
-    def idx_phase1_ep_ud(self):
-        res_ep_ud = 0
-        arr_ep_ud = [self.Ep[i] for i in [0, 1, 2, 3, 8, 9, 10, 11]]
-        for i in range(8):
-            if arr_ep_ud[i] > 3:
-                arr_ep_ud[i] -= 4
-        for i in range(8):
-            cnt = arr_ep_ud[i]
-            for j in arr_ep_ud[:i]:
-                if j < arr_ep_ud[i]:
-                    cnt -= 1
-            res_ep_ud += fac[7 - i] * cnt
-        return res_ep_ud
+    def idx_high_low_edge(self):
+        arr = [int(self.Ep[i] % 2 != i % 2) for i in range(24)]
+        parts = [[0, 1, 4, 5, 16, 17, 20, 21], [6, 7, 2, 3, 18, 19, 22, 23], [9, 8, 11, 10, 13, 12, 15, 14]] #MSE
 
-    def idx_phase1_ep_fbrl(self):
-        res_ep_fbrl = 0
-        arr_ep_fbrl = [self.Ep[i] - 4 for i in [4, 5, 6, 7]]
-        for i in range(4):
-            cnt = arr_ep_fbrl[i]
-            for j in arr_ep_fbrl[:i]:
-                if j < arr_ep_fbrl[i]:
-                    cnt -= 1
-            res_ep_fbrl += fac[3 - i] * cnt
-        return res_ep_fbrl
+        res = []
+        for m_parts in parts:
+            tmp = 0
+            for i in range(8):
+                tmp *= 2
+                tmp += arr[m_parts[i]]
+            res.append(tmp)
+        return res
+    
+    def ce_parity(self):
+        arr = [[8, 11], [9, 10], [16, 19], [17, 18]]
+        for m_arr in arr:
+            if self.Ce[m_arr[0]] != self.Ce[m_arr[1]]:
+                return 1
+        return 0
 
 def face(twist):
     return twist // 3
@@ -215,3 +213,46 @@ def axis(twist):
 
 def wide(twist):
     return (twist // 3) % 2
+
+'''
+def move_idx_high_low_edge(num, twist):
+    edge = [(num >> i) & 1 for i in reversed(range(23))]
+    if sum(edge) % 2:
+        edge.append(1)
+    else:
+        edge.append(0)
+    #print('bef', edge)
+    surface = [
+        [[3, 12, 19, 10], [2, 13, 18, 11]], # R
+        [[3, 12, 19, 10], [2, 13, 18, 11], [4, 1, 20, 17]],  # Rw
+        [[7, 8, 23, 14], [6, 9, 22, 15]], # L
+        [[7, 8, 23, 14], [6, 9, 22, 15], [0, 5, 16, 21]], # Lw
+        [[0, 2, 4, 6], [1, 3, 5, 7]], # U
+        [[0, 2, 4, 6], [1, 3, 5, 7], [15, 12, 11, 8]], # Uw
+        [[16, 18, 20, 22], [17, 19, 21, 23]], # D
+        [[16, 18, 20, 22], [17, 19, 21, 23], [9, 10, 13, 14]], # Dw
+        [[5, 11, 17, 9], [4, 10, 16, 8]], # F
+        [[5, 11, 17, 9], [4, 10, 16, 8], [6, 3, 18, 23]], # Fw
+        [[1, 15, 21, 13], [0, 14, 20, 12]], # B
+        [[1, 15, 21, 13], [0, 14, 20, 12], [2, 7, 22, 19]] # Bw
+        ]
+    mov_type = twist // 3
+    mov_amount = twist % 3
+    prd = [i for i in edge]
+    for idx, arr in enumerate(surface[mov_type]):
+        for i in range(4):
+            prd[arr[(i + mov_amount + 1) % 4]] = edge[arr[i]]
+            if mov_amount != 1 and (idx > 1 or mov_type < 4):
+                prd[arr[(i + mov_amount + 1) % 4]] += 1
+                prd[arr[(i + mov_amount + 1) % 4]] %= 2
+    #print('prd', prd)
+    res = 0
+    for i in range(23):
+        res *= 2
+        res += prd[i]
+    return res
+
+rl_center = [8, 9, 10, 11, 16, 17, 18, 19]
+fb_center = [4, 5, 6, 7, 12, 13, 14, 15]
+ud_center = [0, 1, 2, 3, 20, 21, 22, 23]
+'''
