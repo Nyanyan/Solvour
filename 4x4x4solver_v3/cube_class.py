@@ -151,6 +151,19 @@ class Cube:
             res += self.Co[i]
         return res
 
+    def idx_ce_phase0(self):
+        res = 0
+        cnt = 0
+        for i in range(23):
+            if self.Ce[i] == 2 or self.Ce[i] == 4:
+                res += cmb(23 - i, 8 - cnt)
+                cnt += 1
+                if cnt == 8 or i - cnt == 15:
+                    break
+        return res
+
+
+
     def idx_phase0_ep(self):
         res_ep = 0
         cnt = 0
@@ -198,4 +211,7 @@ def face(twist):
     return twist // 3
 
 def axis(twist):
-    return twist // 6
+    return twist // 12
+
+def wide(twist):
+    return (twist // 3) % 2
