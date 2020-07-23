@@ -21,7 +21,7 @@ phase 5: solve it!
 from cube_class import Cube, face, axis, wide
 from time import time
 
-def move_ep_phase1_func(puzzle, twist):
+def move_ep_phase1_func(puzzle_arr, twist):
     decision = [
         [[], [], [2, 3, 6, 7], [18, 19, 22, 23], [11, 10, 9, 8], [15, 14, 13, 12]], 
         [[12, 13, 10, 11], [8, 9, 14, 15], [0, 1, 4, 5], [16, 17, 20, 21], [], []],
@@ -29,35 +29,38 @@ def move_ep_phase1_func(puzzle, twist):
         ]
     mse_lst = [[0, 0], [0, 1], [1, 2], [1, 3], [0, 2], [0, 3], [1, 0], [1, 1], [2, 1], [2, 0], [2, 3], [2, 2], [2, 5], [2, 4], [2, 7], [2, 6], [0, 4], [0, 5], [1, 4], [1, 5], [0, 6], [0, 7], [1, 6], [1, 7]]
     res = [-1, -1, -1]
+    puzzle = [puzzle_arr // 65536, (puzzle_arr // 256) % 256, puzzle_arr % 256]
     for mse in range(3):
         decision_num = 0
+        #print('decision', decision[mse][twist // 6])
         for i in decision[mse][twist // 6]:
             m_mse = mse_lst[i][0]
             shift = mse_lst[i][1]
+            #print('shift', shift)
             decision_num *= 2
+            #print(int((puzzle[m_mse] >> (7 - shift)) & 1 != i % 2))
             decision_num += int((puzzle[m_mse] >> (7 - shift)) & 1)
+        #print('dec', decision_num)
+        #print(move_ep_phase1[mse][puzzle[mse]][twist_to_idx[twist]])
         res[mse] = move_ep_phase1[mse][puzzle[mse]][twist_to_idx[twist]][decision_num]
+    res = res[0] * 65536 + res[1] * 256 + res[2]
     return res
-
 
 def initialize_puzzle_arr(phase, puzzle):
     if phase == 0:
         return [puzzle.idx_ce_phase0()]
     elif phase == 1:
-        res = [puzzle.idx_ce_phase1_fbud() * 70 + puzzle.idx_ce_phase1_rl(), None, None, None]
-        res[1:4] = puzzle.idx_high_low_edge()
-        return res
+        return [puzzle.idx_ce_phase1_fbud() * 70 + puzzle.idx_ce_phase1_rl(), puzzle.idx_high_low_edge()]
 
 def distance(puzzle_arr, phase):
-    return max(prunning[phase][i][puzzle_arr[i]] for i in range(prun_len[phase]))
+    puzzle = puzzle_arr if phase != 1 else [puzzle_arr[0], puzzle_arr[1] // 2]
+    return max(prunning[phase][i][puzzle[i]] for i in range(prun_len[phase]))
 
 def move_arr(puzzle_arr, phase, twist):
     if phase == 0:
         return [move_ce_phase0[puzzle_arr[0]][twist_to_idx[twist]]]
     elif phase == 1:
-        res = [move_ce_phase1_fbud[puzzle_arr[0] // 70][twist_to_idx[twist]] * 70 + move_ce_phase1_rl[puzzle_arr[0] % 70][twist_to_idx[twist]], None, None, None]
-        res[1:4] = move_ep_phase1_func(puzzle_arr[1:], twist)
-        return res
+        return [move_ce_phase1_fbud[puzzle_arr[0] // 70][twist_to_idx[twist]] * 70 + move_ce_phase1_rl[puzzle_arr[0] % 70][twist_to_idx[twist]], move_ep_phase1_func(puzzle_arr[1], twist)]
 
 def phase_search(phase, puzzle_arr, depth):
     global path
@@ -68,7 +71,7 @@ def phase_search(phase, puzzle_arr, depth):
         if distance(puzzle_arr, phase) <= depth:
             l1_twist = path[-1] if len(path) >= 1 else -10
             l2_twist = path[-2] if len(path) >= 2 else -10
-            l3_twist = path[-2] if len(path) >= 3 else -10
+            l3_twist = path[-3] if len(path) >= 3 else -10
             for twist in successor[phase]:
                 if face(twist) == face(l1_twist) or axis(twist) == axis(l1_twist) == axis(l2_twist) == axis(l3_twist) or (axis(twist) == axis(l1_twist) and wide(twist) == wide(l1_twist) == 1):
                     continue
@@ -134,7 +137,7 @@ with open('move_table/move_ep_phase1.csv', mode='r') as f:
 
 
 prunning = [None for _ in range(6)]
-prun_len = [1, 4, 3, 3, 2, 3]
+prun_len = [1, 2, 3, 3, 2, 3]
 for phase in range(2):
     prunning[phase] = [[] for _ in range(prun_len[phase])]
     with open('prun_table/prunning' + str(phase) + '.csv', mode='r') as f:
@@ -147,6 +150,7 @@ scramble = [move_candidate.index(i) for i in input("scramble: ").split()]
 puzzle = Cube()
 for mov in scramble:
     puzzle = puzzle.move(mov)
+strt = time()
 solver(puzzle)
 print('solution:',end=' ')
 #print(solution)
@@ -154,6 +158,7 @@ for i in solution:
     print(move_candidate[i],end=' ')
 print('')
 print(len(solution), 'moves')
+print(time() - strt, 'sec')
 
 
 

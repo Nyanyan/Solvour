@@ -196,6 +196,7 @@ class Cube:
                 tmp *= 2
                 tmp += arr[m_parts[i]]
             res.append(tmp)
+        res = res[0] * 65536 + res[1] * 256 + res[2]
         return res
     
     def ce_parity(self):
