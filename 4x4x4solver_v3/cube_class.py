@@ -251,8 +251,7 @@ def move_idx_high_low_edge(num, twist):
         res *= 2
         res += prd[i]
     return res
-
+'''
 rl_center = [8, 9, 10, 11, 16, 17, 18, 19]
 fb_center = [4, 5, 6, 7, 12, 13, 14, 15]
 ud_center = [0, 1, 2, 3, 20, 21, 22, 23]
-'''

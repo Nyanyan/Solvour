@@ -16,20 +16,18 @@ def move_ep_phase1_func(puzzle, twist):
         [[3, 2, 19, 18], [7, 6, 23, 22], [], [], [5, 4, 17, 16], [1, 0, 21, 20]]
         ]
     mse_parts = [[0, 1, 4, 5, 16, 17, 20, 21], [6, 7, 2, 3, 18, 19, 22, 23], [9, 8, 11, 10, 13, 12, 15, 14]] #MSE
-    mse_lst = [{0, 1, 4, 5, 16, 17, 20, 21}, {6, 7, 2, 3, 18, 19, 22, 23}, {9, 8, 11, 10, 13, 12, 15, 14}]
+    mse_lst = [[0, 0], [0, 1], [1, 2], [1, 3], [0, 2], [0, 3], [1, 0], [1, 1], [2, 1], [2, 0], [2, 3], [2, 2], [2, 5], [2, 4], [2, 7], [2, 6], [0, 4], [0, 5], [1, 4], [1, 5], [0, 6], [0, 7], [1, 6], [1, 7]]
     res = [-1, -1, -1]
     for mse in range(3):
         decision_num = 0
         #print('decision', decision[mse][twist // 6])
         for i in decision[mse][twist // 6]:
-            for m_mse in range(3):
-                if i in mse_lst[m_mse]:
-                    shift = mse_parts[m_mse].index(i)
-                    #print('shift', shift)
-                    decision_num *= 2
-                    #print(int((puzzle[m_mse] >> (7 - shift)) & 1 != i % 2))
-                    decision_num += int((puzzle[m_mse] >> (7 - shift)) & 1)
-                    break
+            m_mse = mse_lst[i][0]
+            shift = mse_lst[i][1]
+            #print('shift', shift)
+            decision_num *= 2
+            #print(int((puzzle[m_mse] >> (7 - shift)) & 1 != i % 2))
+            decision_num += int((puzzle[m_mse] >> (7 - shift)) & 1)
         #print('dec', decision_num)
         #print(move_ep_phase1[mse][puzzle[mse]][twist_to_idx[twist]])
         res[mse] = move_ep_phase1[mse][puzzle[mse]][twist_to_idx[twist]][decision_num]
@@ -150,9 +148,10 @@ with open('prun_table/prunning1.csv', mode='w') as f:
 # phase1 low & high edges
 solved = Cube()
 print('phase 1 2/2')
-prunning = [100 for _ in range(8388608)]
+prunning = [[99 for _ in range(256)] for _ in range(3)]
 solved_idx = solved.idx_high_low_edge()
-prunning[solved_idx] = 0
+for i in range(3):
+    prunning[i][solved_idx[i]] = 0
 que = deque([[solved_idx, 0, -10, -10, -10]])
 cnt = 0
 while que:
@@ -164,14 +163,19 @@ while que:
     for twist in successor[1]:
         if face(twist) == face(l1_twist) or axis(twist) == axis(l1_twist) == axis(l2_twist) == axis(l3_twist) or (axis(twist) == axis(l1_twist) and wide(twist) == wide(l1_twist) == 1):
             continue
-        n_puzzle = move_idx_high_low_edge(puzzle, twist)
-        if prunning[n_puzzle] > num + 1:
-            prunning[n_puzzle] = num + 1
+        n_puzzle = move_ep_phase1_func(puzzle, twist)
+        flag = False
+        for i in range(3):
+            if prunning[i][n_puzzle[i]] > num + 1:
+                prunning[i][n_puzzle[i]] = num + 1
+                flag = True
+        if flag:
             que.append([n_puzzle, num + 1, twist, l1_twist, l2_twist])
 
 with open('prun_table/prunning1.csv', mode='a') as f:
     writer = csv.writer(f, lineterminator='\n')
-    writer.writerow(prunning)
+    for i in range(3):
+        writer.writerow(prunning[i])
 
 
 
