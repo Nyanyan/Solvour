@@ -17,15 +17,25 @@ def move_ep_phase1_func(puzzle, twist):
         ]
     mse_parts = [[0, 1, 4, 5, 16, 17, 20, 21], [6, 7, 2, 3, 18, 19, 22, 23], [9, 8, 11, 10, 13, 12, 15, 14]] #MSE
     mse_lst = [{0, 1, 4, 5, 16, 17, 20, 21}, {6, 7, 2, 3, 18, 19, 22, 23}, {9, 8, 11, 10, 13, 12, 15, 14}]
+    res = [-1, -1, -1]
     for mse in range(3):
-        idx = puzzle[mse]
         decision_num = 0
-        for i in decision[twist // 6]:
+        #print('decision', decision[mse][twist // 6])
+        for i in decision[mse][twist // 6]:
             for m_mse in range(3):
                 if i in mse_lst[m_mse]:
-                    shift = mse_parts.index(i)
+                    shift = mse_parts[m_mse].index(i)
+                    #print('shift', shift)
                     decision_num *= 2
-                    decision_num += int((puzzle[m_mse] >> (7 - shift))& 1 != i % 2)
+                    #print(int((puzzle[m_mse] >> (7 - shift)) & 1 != i % 2))
+                    decision_num += int((puzzle[m_mse] >> (7 - shift)) & 1)
+                    break
+        #print('dec', decision_num)
+        #print(move_ep_phase1[mse][puzzle[mse]][twist_to_idx[twist]])
+        res[mse] = move_ep_phase1[mse][puzzle[mse]][twist_to_idx[twist]][decision_num]
+    return res
+
+
 
 
 
@@ -54,7 +64,12 @@ move_ce_phase1_rl = [[] for _ in range(70)]
 with open('move_table/move_ce_phase1_rl.csv', mode='r') as f:
     for idx in range(70):
         move_ce_phase1_rl[idx] = [int(i) for i in f.readline().replace('\n', '').split(',')]
-
+move_ep_phase1 = [[[[] for _ in range(27)] for _ in range(256)] for _ in range(3)]
+with open('move_table/move_ep_phase1.csv', mode='r') as f:
+    for mse in range(3):
+        for all_twist in range(256):
+            for twist in range(27):
+                move_ep_phase1[mse][all_twist][twist] = [int(i) for i in f.readline().replace('\n', '').split(',')]
 
 
 '''
@@ -157,6 +172,17 @@ while que:
 with open('prun_table/prunning1.csv', mode='a') as f:
     writer = csv.writer(f, lineterminator='\n')
     writer.writerow(prunning)
+
+
+
+
+
+
+
+
+
+
+
 
 
 '''
