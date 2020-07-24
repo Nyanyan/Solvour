@@ -199,12 +199,59 @@ class Cube:
         res = res[0] * 65536 + res[1] * 256 + res[2]
         return res
     
+    def idx_high_low_edge_sep(self):
+        arr = [int(self.Ep[i] % 2 != i % 2) for i in range(24)]
+        parts = [[0, 1, 4, 5, 16, 17, 20, 21], [6, 7, 2, 3, 18, 19, 22, 23], [9, 8, 11, 10, 13, 12, 15, 14]] #MSE
+
+        res = []
+        for m_parts in parts:
+            tmp = 0
+            for i in range(8):
+                tmp *= 2
+                tmp += arr[m_parts[i]]
+            res.append(tmp)
+        return res
+    
+    def idx_ce_phase2(self):
+        res = 0
+        cnt = 0
+        for i in range(7):
+            if self.Ce[rl_center[i]] == 4:
+                res += cmb(7 - i, 4 - cnt)
+                cnt += 1
+                if cnt == 4 or i - cnt == 3:
+                    break
+        res *= 70
+        cnt = 0
+        for i in range(7):
+            if self.Ce[fb_center[i]] == 3:
+                res += cmb(7 - i, 4 - cnt)
+                cnt += 1
+                if cnt == 4 or i - cnt == 3:
+                    break
+        res *= 70
+        cnt = 0
+        for i in range(7):
+            if self.Ce[ud_center[i]] == 5:
+                res += cmb(7 - i, 4 - cnt)
+                cnt += 1
+                if cnt == 4 or i - cnt == 3:
+                    break
+        return res
+    
     def ce_parity(self):
         arr = [[8, 11], [9, 10], [16, 19], [17, 18]]
         for m_arr in arr:
             if self.Ce[m_arr[0]] != self.Ce[m_arr[1]]:
                 return 1
         return 0
+    
+    def iscolumn(self):
+        arr = [[4, 7], [5, 6], [8, 11], [9, 10], [12, 15], [13, 14], [16, 19], [17, 18]]
+        for m_arr in arr:
+            if self.Ce[m_arr[0]] != self.Ce[m_arr[1]]:
+                return False
+        return True
 
 def face(twist):
     return twist // 3
@@ -214,6 +261,54 @@ def axis(twist):
 
 def wide(twist):
     return (twist // 3) % 2
+
+def idx_ep_phase2(ep):
+    arr1 = [ep[i] // 2 for i in range(1, 24, 2)]
+    arr2 = [ep[i] // 2 for i in range(0, 23, 2)]
+    #print(arr1)
+    #print(arr2)
+    arr3 = [-1 for _ in range(12)]
+    for i in range(12):
+        arr3[i] = arr2.index(arr1[i])
+    #print(arr3)
+    res1 = 0
+    for i in range(6):
+        cnt = arr3[i]
+        for j in arr3[:i]:
+            if j < arr3[i]:
+                cnt -= 1
+        res1 += cnt * cmb(11 - i, 5 - i) * fac[5 - i]
+    #print(res1)
+    res2 = 0
+    for i in range(6, 12):
+        cnt = arr3[i]
+        for j in arr3[6:i]:
+            if j < arr3[i]:
+                cnt -= 1
+        res2 += cnt * cmb(11 - i + 6, 5 - i + 6) * fac[5 - i + 6]
+    return res1, res2
+
+def move_ep(ep, mov):
+    surface = [[[3, 12, 19, 10], [2, 13, 18, 11]], # R
+                [[3, 12, 19, 10], [2, 13, 18, 11], [4, 1, 20, 17]],  # Rw
+                [[7, 8, 23, 14], [6, 9, 22, 15]], # L
+                [[7, 8, 23, 14], [6, 9, 22, 15], [0, 5, 16, 21]], # Lw
+                [[0, 2, 4, 6], [1, 3, 5, 7]], # U
+                [[0, 2, 4, 6], [1, 3, 5, 7], [15, 12, 11, 8]], # Uw
+                [[16, 18, 20, 22], [17, 19, 21, 23]], # D
+                [[16, 18, 20, 22], [17, 19, 21, 23], [9, 10, 13, 14]], # Dw
+                [[5, 11, 17, 9], [4, 10, 16, 8]], # F
+                [[5, 11, 17, 9], [4, 10, 16, 8], [6, 3, 18, 23]], # Fw
+                [[1, 15, 21, 13], [0, 14, 20, 12]], # B
+                [[1, 15, 21, 13], [0, 14, 20, 12], [2, 7, 22, 19]] # Bw
+                ]
+    mov_type = mov // 3
+    mov_amount = mov % 3
+    res = [i for i in ep]
+    for arr in surface[mov_type]:
+        for i in range(4):
+            res[arr[(i + mov_amount + 1) % 4]] = ep[arr[i]]
+    return res
 
 '''
 def move_idx_high_low_edge(num, twist):
