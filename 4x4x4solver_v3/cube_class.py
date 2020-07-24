@@ -242,6 +242,43 @@ class Cube:
                     break
         return res
     
+    def idx_ep_phase3(self):
+        arr1 = [self.Ep[i] // 2 for i in [1, 3, 5, 7, 17, 19, 21, 23]]
+        arr2 = [self.Ep[i] // 2 for i in [0, 2, 4, 6, 16, 18, 20, 22]]
+        arr3 = [-1 for _ in range(8)]
+        for i in range(8):
+            arr3[i] = arr2.index(arr1[i])
+        res = 0
+        for i in range(8):
+            cnt = arr3[i]
+            for j in arr3[:i]:
+                if j < arr3[i]:
+                    cnt -= 1
+            res += cnt * fac[7 - i]
+        return res
+    
+    def idx_ep(self):
+        arr = [[4, 1, 20, 17], [0, 5, 16, 21], [6, 3, 18, 23], [2, 7, 22, 19], [11, 8, 15, 12], [9, 10, 13, 14]]
+        res = [-1 for _ in range(6)]
+        for slc in range(6):
+            tmp_arr = [-1 for _ in range(4)]
+            for elm_idx in range(4):
+                for i in range(24):
+                    if arr[elm_idx] == self.Ep[i]:
+                        tmp_arr[elm_idx] = i
+                        break
+            print(tmp_arr)
+            res_tmp = 0
+            for i in range(4):
+                cnt = tmp_arr[i]
+                for j in tmp_arr[:i]:
+                    if j < tmp_arr[i]:
+                        cnt -= 1
+                res_tmp += cnt * cmb(23 - i, 3 - i) * fac[3 - i]
+            res[slc] = res_tmp
+        return res
+
+    
     def ce_parity(self):
         arr = [[8, 11], [9, 10], [16, 19], [17, 18]]
         for m_arr in arr:
@@ -255,6 +292,18 @@ class Cube:
             if self.Ce[m_arr[0]] != self.Ce[m_arr[1]]:
                 return False
         return True
+    
+    def ep_switch_parity(self): # avoid "last 2 edge"
+        return ep_switch_parity_p([i for i in self.Ep], 0) % 2
+
+def ep_switch_parity_p(arr, res):
+    for i in range(24):
+        if arr[i] != i:
+            for j in range(i + 1, 24):
+                if arr[j] == i:
+                    arr[i], arr[j] = arr[j], arr[i]
+                    return ep_switch_parity_p(arr, res + 1)
+    return res
 
 def face(twist):
     return twist // 3

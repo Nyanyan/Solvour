@@ -127,8 +127,39 @@ with open('move_table/move_ce_phase1_rl.csv', mode='w') as f:
     writer = csv.writer(f, lineterminator='\n')
     for arr in ce_move_phase1_rl:
         writer.writerow(arr)
+'''
 
 
+ep_move = [[[-1 for _ in range(len(move_arr))] for _ in range(255024)] for _ in range(6)] # r, l, f, b, u, d slices
+que = deque([solved])
+cnt = 0
+print('EP move index')
+while que:
+    cnt += 1
+    if cnt % 10000 == 0:
+        print(cnt, len(que))
+    puzzle = que.popleft()
+    idxes = puzzle.idx_ep()
+    #print(ep_move[0][idxes[0]])
+    #print(idxes)
+    if ep_move[0][idxes[0]][0] == -1:
+        for twist in successor[0]:
+            n_puzzle = puzzle.move(twist)
+            n_idxes = n_puzzle.idx_ep()
+            for slc in range(6):
+                ep_move[slc][idxes[slc]][twist_to_idx[twist]] = n_idxes[slc]
+            que.append(n_puzzle)
+with open('move_table/move_ep.csv', mode='w') as f:
+    writer = csv.writer(f, lineterminator='\n')
+    for arr in ep_move:
+        for m_arr in arr:
+            writer.writerow(m_arr)
+
+
+
+
+
+''' ボツ
 decision = [[[], [], [2, 3, 6, 7], [18, 19, 22, 23], [11, 10, 9, 8], [15, 14, 13, 12]], [[12, 13, 10, 11], [8, 9, 14, 15], [0, 1, 4, 5], [16, 17, 20, 21], [], []],[[3, 2, 19, 18], [7, 6, 23, 22], [], [], [5, 4, 17, 16], [1, 0, 21, 20]]]
 ep_move_phase1 = [[[[-1 for _ in range(16)] for _ in range(len(move_arr))] for _ in range(256)] for _ in range(3)]
 que = deque([solved])
@@ -170,7 +201,7 @@ with open('move_table/move_ep_phase1.csv', mode='w') as f:
         for all_status in mse:
             for twist in all_status:
                 writer.writerow(twist)
-'''
+
 
 
 ce_move_phase2 = [[-1 for _ in range(len(move_arr))] for _ in range(343000)]
@@ -193,3 +224,50 @@ with open('move_table/move_ce_phase2.csv', mode='w') as f:
     writer = csv.writer(f, lineterminator='\n')
     for arr in ce_move_phase2:
         writer.writerow(arr)
+
+
+
+ce_move_phase3 = [[-1 for _ in range(len(move_arr))] for _ in range(343000)]
+que = deque([solved])
+cnt = 0
+print('CE move index phase3')
+while que:
+    cnt += 1
+    if cnt % 10000 == 0:
+        print(cnt, len(que))
+    puzzle = que.popleft()
+    idx = puzzle.idx_ce_phase2() # same as phase2 but it contains loss
+    for twist in successor[3]:
+        n_puzzle = puzzle.move(twist)
+        n_idx = n_puzzle.idx_ce_phase2() # same as phase2 but it contains loss
+        if ce_move_phase3[idx][twist_to_idx[twist]] == -1:
+            ce_move_phase3[idx][twist_to_idx[twist]] = n_idx
+            que.append(n_puzzle)
+with open('move_table/move_ce_phase3.csv', mode='w') as f:
+    writer = csv.writer(f, lineterminator='\n')
+    for arr in ce_move_phase3:
+        writer.writerow(arr)
+'''
+
+'''
+ep_move_phase3 = [[-1 for _ in range(len(move_arr))] for _ in range(40320)]
+que = deque([solved])
+cnt = 0
+print('EP move index phase3')
+while que:
+    cnt += 1
+    if cnt % 10000 == 0:
+        print(cnt, len(que))
+    puzzle = que.popleft()
+    idx = puzzle.idx_ep_phase3()
+    for twist in successor[3]:
+        n_puzzle = puzzle.move(twist)
+        n_idx = n_puzzle.idx_ep_phase3()
+        if ep_move_phase3[idx][twist_to_idx[twist]] == -1:
+            ep_move_phase3[idx][twist_to_idx[twist]] = n_idx
+            que.append(n_puzzle)
+with open('move_table/move_ep_phase3.csv', mode='w') as f:
+    writer = csv.writer(f, lineterminator='\n')
+    for arr in ep_move_phase3:
+        writer.writerow(arr)
+'''
