@@ -55,6 +55,10 @@ fac = [1 for _ in range(25)]
 for i in range(1, 25):
     fac[i] = fac[i - 1] * i
 
+rl_center = [8, 9, 10, 11, 16, 17, 18, 19]
+fb_center = [4, 5, 6, 7, 12, 13, 14, 15]
+ud_center = [0, 1, 2, 3, 20, 21, 22, 23]
+
 def cmb(n, r):
     return fac[n] // fac[r] // fac[n - r]
 
@@ -202,7 +206,6 @@ class Cube:
     def idx_high_low_edge_sep(self):
         arr = [int(self.Ep[i] % 2 != i % 2) for i in range(24)]
         parts = [[0, 1, 4, 5, 16, 17, 20, 21], [6, 7, 2, 3, 18, 19, 22, 23], [9, 8, 11, 10, 13, 12, 15, 14]] #MSE
-
         res = []
         for m_parts in parts:
             tmp = 0
@@ -265,8 +268,6 @@ def wide(twist):
 def idx_ep_phase2(ep):
     arr1 = [ep[i] // 2 for i in range(1, 24, 2)]
     arr2 = [ep[i] // 2 for i in range(0, 23, 2)]
-    #print(arr1)
-    #print(arr2)
     arr3 = [-1 for _ in range(12)]
     for i in range(12):
         arr3[i] = arr2.index(arr1[i])
@@ -286,7 +287,7 @@ def idx_ep_phase2(ep):
             if j < arr3[i]:
                 cnt -= 1
         res2 += cnt * cmb(11 - i + 6, 5 - i + 6) * fac[5 - i + 6]
-    return res1, res2
+    return [res1, res2]
 
 def move_ep(ep, mov):
     surface = [[[3, 12, 19, 10], [2, 13, 18, 11]], # R
@@ -348,6 +349,3 @@ def move_idx_high_low_edge(num, twist):
         res += prd[i]
     return res
 '''
-rl_center = [8, 9, 10, 11, 16, 17, 18, 19]
-fb_center = [4, 5, 6, 7, 12, 13, 14, 15]
-ud_center = [0, 1, 2, 3, 20, 21, 22, 23]

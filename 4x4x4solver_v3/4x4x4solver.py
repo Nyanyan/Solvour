@@ -18,7 +18,7 @@ phase 5: solve it!
 '''
 
 
-from cube_class import Cube, face, axis, wide, idx_ep_phase2, move_ep
+from cube_class import Cube, face, axis, wide, idx_ep_phase2, move_ep, fac, cmb
 from time import time
 
 def move_ep_phase1_func(puzzle_arr, twist):
@@ -30,7 +30,7 @@ def move_ep_phase1_func(puzzle_arr, twist):
         for i in decision[mse][twist_axis]:
             decision_num *= 2
             decision_num += (puzzle[mse_lst[i][0]] >> (7 - mse_lst[i][1])) & 1
-        res += move_ep_phase1[mse][puzzle[mse]][twist_to_idx[twist]][decision_num] * (256 ** mse)
+        res += move_ep_phase1[mse][puzzle[mse]][twist_to_idx[twist]][decision_num] * (256 ** (2 - mse))
     return res
 
 def initialize_puzzle_arr(phase, puzzle):
@@ -39,7 +39,10 @@ def initialize_puzzle_arr(phase, puzzle):
     elif phase == 1:
         return [puzzle.idx_ce_phase1_fbud() * 70 + puzzle.idx_ce_phase1_rl(), puzzle.idx_high_low_edge()]
     elif phase == 2:
-        return [puzzle.idx_ce_phase2()]
+        res = [puzzle.idx_ce_phase2(), None, None]
+        res[1:3] = idx_ep_phase2(puzzle.Ep)
+        return res
+
 
 def distance(puzzle_arr, phase):
     puzzle = puzzle_arr if phase != 1 else [puzzle_arr[0], puzzle_arr[1] // 2]
@@ -51,32 +54,47 @@ def move_arr(puzzle_arr, phase, twist):
     elif phase == 1:
         return [move_ce_phase1_fbud[puzzle_arr[0] // 70][twist_to_idx[twist]] * 70 + move_ce_phase1_rl[puzzle_arr[0] % 70][twist_to_idx[twist]], move_ep_phase1_func(puzzle_arr[1], twist)]
     elif phase == 2:
+        #print(puzzle_arr)
         ep = [-1 for _ in range(12)]
         idx_1 = puzzle_arr[1]
         idx_2 = puzzle_arr[2]
         for i in range(6):
-            cnt = idx_1 // fac[5 - i]
+            cnt = idx_1 // (fac[5 - i] * cmb(11 - i, 5 - i))
             for num in range(cnt, 12):
                 cnt_check = num
+                flag = True
                 for j in ep[:i]:
                     if j < num:
                         cnt_check -= 1
-                if cnt == cnt_check:
+                    elif j == num:
+                        flag = False
+                        break
+                if cnt == cnt_check and flag:
                     ep[i] = num
                     break
-            idx_1 %= fac[5 - i]
+            idx_1 %= fac[5 - i] * cmb(11 - i, 5 - i)
         for i in range(6, 12):
-            cnt = idx_2 // fac[5 - i + 6]
+            cnt = idx_2 // (fac[5 - i + 6] * cmb(11 - i + 6, 5 - i + 6))
             for num in range(cnt, 12):
                 cnt_check = num
+                flag = True
                 for j in ep[6:i]:
                     if j < num:
                         cnt_check -= 1
-                if cnt == cnt_check:
+                    elif j == num:
+                        flag = False
+                        break
+                if cnt == cnt_check and flag:
                     ep[i] = num
                     break
-            idx_2 %= fac[5 - i + 6]
-        idxes = idx_ep_phase2(ep, twist)
+            idx_2 %= fac[5 - i + 6] * cmb(11 - i + 6, 5 - i + 6)
+        #print(ep)
+        ep_p = [-1 for _ in range(24)]
+        for i in range(12):
+            ep_p[i * 2 + 1] = ep[i] * 2
+            ep_p[i * 2] = i * 2 + 1
+        ep_p = move_ep(ep_p, twist)
+        idxes = idx_ep_phase2(ep_p)
         return [move_ce_phase2[puzzle_arr[0]][twist_to_idx[twist]], idxes[0], idxes[1]]
 
 def phase_search(phase, puzzle_arr, depth):

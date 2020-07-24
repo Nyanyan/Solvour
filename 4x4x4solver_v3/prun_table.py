@@ -73,6 +73,9 @@ with open('move_table/move_ce_phase2.csv', mode='r') as f:
     for idx in range(343000):
         move_ce_phase2[idx] = [int(i) for i in f.readline().replace('\n', '').split(',')]
 
+
+
+
 '''
 # phase 0
 solved = Cube()
@@ -214,7 +217,7 @@ while que:
 with open('prun_table/prunning2.csv', mode='w') as f:
     writer = csv.writer(f, lineterminator='\n')
     writer.writerow(prunning)
-'''
+
 
 def edge_paired_4(ep):
     for i in range(4, 8):
@@ -250,10 +253,25 @@ while que:
             prunning[0][idxes[0]] = num + 1
             prunning[1][idxes[1]] = num + 1
             que.append([n_puzzle, num + 1, twist, l1_twist, l2_twist])
-with open('prun_table/prunning2.csv', mode='r') as f:
+with open('prun_table/prunning2.csv', mode='a') as f:
     writer = csv.writer(f, lineterminator='\n')
     for arr in prunning:
         writer.writerow(arr)
+
+'''
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
