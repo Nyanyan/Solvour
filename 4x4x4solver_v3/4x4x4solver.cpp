@@ -126,14 +126,13 @@ array<int, 24> Cube::move_ce(int twist){
 const string move_candidate[36] = {"R", "R2", "R'", "Rw", "Rw2", "Rw'", "L", "L2", "L'", "Lw", "Lw2", "Lw'", "U", "U2", "U'", "Uw", "Uw2", "Uw'", "D", "D2", "D'", "Dw", "Dw2", "Dw'", "F", "F2", "F'", "Fw", "Fw2", "Fw'", "B", "B2", "B'", "Bw", "Bw2", "Bw'"};
 const int twist_to_idx[36] = {0, 1, 2, 3, 4, 5, 6, 7, 8, -1, -1, -1, 9, 10, 11, 12, 13, 14, 15, 16, 17, -1, -1, -1, 18, 19, 20, 21, 22, 23, 24, 25, 26, -1, -1, -1};
 
-const vector<vector<int>> successor = 
-    {
-    vector<int>{0, 1, 2, 3, 4, 5, 6, 7, 8,            12, 13, 14, 15, 16, 17, 18, 19, 20,             24, 25, 26, 27, 28, 29, 30, 31, 32            }, // phase 0
-    vector<int>{0, 1, 2, 3, 4, 5, 6, 7, 8,            12, 13, 14,     16,     18, 19, 20,             24, 25, 26,     28,     30, 31, 32            }, // phase 1
-    vector<int>{   1,       4,       7,               12, 13, 14,     16,     18, 19, 20,             24, 25, 26,     28,     30, 31, 32            }, // phase 2
-    vector<int>{   1,       4,       7,               12, 13, 14,             18, 19, 20,                 25,         28,         31,               }, // phase 3
-    vector<int>{0,    2,          6,    8,            12, 13, 14,             18, 19, 20,             24,     26,             30,     32            }, // phase 4
-    vector<int>{   1,                7,               12, 13, 14,             18, 19, 20,                 25,                     31                }  // phase 5
+const vector<vector<int>> successor = {
+    {0, 1, 2, 3, 4, 5, 6, 7, 8,            12, 13, 14, 15, 16, 17, 18, 19, 20,             24, 25, 26, 27, 28, 29, 30, 31, 32            }, // phase 0
+    {0, 1, 2, 3, 4, 5, 6, 7, 8,            12, 13, 14,     16,     18, 19, 20,             24, 25, 26,     28,     30, 31, 32            }, // phase 1
+    {   1,       4,       7,               12, 13, 14,     16,     18, 19, 20,             24, 25, 26,     28,     30, 31, 32            }, // phase 2
+    {   1,       4,       7,               12, 13, 14,             18, 19, 20,                 25,         28,         31,               }, // phase 3
+    {0,    2,          6,    8,            12, 13, 14,             18, 19, 20,             24,     26,             30,     32            }, // phase 4
+    {   1,                7,               12, 13, 14,             18, 19, 20,                 25,                     31                }  // phase 5
     };
 
 vector<vector<vector<int>>> prunning;
@@ -180,24 +179,28 @@ void get_move_ce_phase1_rl(){
 
 void get_prunning(){
     rep(phase, 0, 1){
+        prunning.push_back({});
         ifstream ifs("prun_table/prunning" + to_string(phase) + ".csv");
         string line;
         rep(lin, 0, prun_len[phase]) {
+            prunning[phase].push_back({});
             getline(ifs, line);
             vector<string> strvec = split(line, ',');
-            rep(i, 0, strvec.size()) prunning[phase][lin][i] = int(stoi(strvec.at(i)));
+            rep(i, 0, strvec.size()) prunning[phase][lin].push_back(int(stoi(strvec.at(i))));
         }
     }
 }
 
 int main() {
     get_move_ce_phase0();
+    cout << "move_ce_phase0 done" << endl;
     get_prunning();
+    cout << "prunning done" << endl;
     Cube puzzle;
     puzzle.set(cp_d, co_d, ep_d, ce_d);
     vector<int> scramble;
     string scramble_str;
-    cout << "input scarble: "; 
+    cout << "input scramble: "; 
     cin >> scramble_str;
     istringstream spl(scramble_str);
     string s;
@@ -213,6 +216,10 @@ int main() {
         int twist = scramble[i];
         puzzle.set(puzzle.move_cp(twist), puzzle.move_co(twist), puzzle.move_ep(twist), puzzle.move_ce(twist));
     }
-    rep(i, 0, 8) cout << puzzle.Cp[i] << ' ';
+    chrono::system_clock::time_point  start, end;
+    start = chrono::system_clock::now();
+    end = chrono::system_clock::now();
+    double elapsed = chrono::duration_cast<chrono::milliseconds>(end-start).count();
+    cout << "time: " << elapsed << endl;
     return 0;
 }
