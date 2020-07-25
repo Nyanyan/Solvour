@@ -20,6 +20,10 @@ const array<int, 8> co_d = {0, 0, 0, 0, 0, 0, 0, 0};
 const array<int, 24> ep_d = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23};
 const array<int, 24> ce_d = {0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5};
 
+const int rl_center[8] = {8, 9, 10, 11, 16, 17, 18, 19};
+const int fb_center[8] = {4, 5, 6, 7, 12, 13, 14, 15};
+const int ud_center[8] = {0, 1, 2, 3, 20, 21, 22, 23};
+
 
 long long fac[25];
 
@@ -96,6 +100,9 @@ class Cube{
     array<int, 24> Ce;
     void set(array<int, 8> cp, array<int, 8> co, array<int, 24> ep, array<int, 24> ce);
     int idx_ce_phase0();
+    int idx_ce_phase1_rl();
+    int idx_ce_phase1_fbud();
+    vector<int> idx_ep();
     array<int, 8> move_cp(int twist);
     array<int, 8> move_co(int twist);
     array<int, 24> move_ep(int twist);
@@ -201,6 +208,62 @@ int Cube::idx_ce_phase0(){
 }
 
 
+int Cube::idx_ce_phase1_rl(){
+    int res = 0;
+    int cnt = 0;
+    rep(i, 0, 7){
+        if(this->Ce[rl_center[i]] == 4){
+            res += cmb(7 - i, 4 - cnt);
+            cnt++;
+            if(cnt == 4 || i - cnt == 3) break;
+        }
+    }
+    return res;
+}
+
+int Cube::idx_ce_phase1_fbud(){
+    int res = 0;
+    int cnt = 0;
+    int arr[16] = {0, 1, 2, 3, 20, 21, 22, 23, 4, 5, 6, 7, 12, 13, 14, 15};
+    rep(i, 0, 15){
+        if(this->Ce[arr[i]] == 1 || this->Ce[arr[i]] == 3){
+            res += cmb(15 - i, 8 - cnt);
+            cnt++;
+            if(cnt == 8 || i - cnt == 7) break;
+        }
+    }
+    return res;
+}
+
+
+vector<int> Cube::idx_ep(){
+    int arr[6][4] = {{4, 1, 20, 17}, {0, 5, 16, 21}, {6, 3, 18, 23}, {2, 7, 22, 19}, {11, 8, 15, 12}, {9, 10, 13, 14}};
+    vector<int> res;
+    rep(slc, 0, 6){
+        int tmp_arr[4] = {-1, -1, -1, -1};
+        rep(elm_idx, 0, 4){
+            rep(i, 0, 24){
+                if(arr[slc][elm_idx] == this->Ep[i]){
+                    tmp_arr[elm_idx] = i;
+                    break;
+                }
+            }
+        }
+        int res_tmp = 0;
+        rep(i, 0, 4){
+            int cnt = tmp_arr[i];
+            rep(j, 0, i){
+                if(tmp_arr[j] < tmp_arr[i]) cnt -= 1;
+            }
+            res_tmp += cnt * cmb(23 - i, 3 - i) * fac[3 - i];
+        }
+        res.push_back(res_tmp);
+    }
+    return res;
+}
+
+
+
 
 vector<string> split(string& input, char delimiter)
 {
@@ -233,8 +296,28 @@ void get_move_ce_phase1_rl(){
     }
 }
 
+void get_move_ce_phase1_fbud(){
+    ifstream ifs("move_table/move_ce_phase1_fbud.csv");
+    string line;
+    rep(lin, 0, 12870) {
+        getline(ifs, line);
+        vector<string> strvec = split(line, ',');
+        rep(i, 0, strvec.size()) move_ce_phase1_fbud[lin][i] = int(stoi(strvec.at(i)));
+    }
+}
+
+void get_move_ep(){
+    ifstream ifs("move_table/move_ep.csv");
+    string line;
+    rep(lin, 0, 255024) {
+        getline(ifs, line);
+        vector<string> strvec = split(line, ',');
+        rep(i, 0, strvec.size()) move_ep[lin][i] = int(stoi(strvec.at(i)));
+    }
+}
+
 void get_prunning(){
-    rep(phase, 0, 1){
+    rep(phase, 0, 2){
         prunning.push_back({});
         ifstream ifs("prun_table/prunning" + to_string(phase) + ".csv");
         string line;
@@ -265,20 +348,33 @@ int wide(int twist){
 
 vector<int> puzzle_initialize(int phase, Cube puzzle){
     if(phase == 0) return (vector<int>){puzzle.idx_ce_phase0()};
+    else if(phase == 1){
+        vector<int> res = {puzzle.idx_ce_phase1_fbud() * 70 + puzzle.idx_ce_phase1_rl()};
+        vector<int> tmp = puzzle.idx_ep();
+        rep(i, 0, 6) res.push_back(tmp[i]);
+        return res;
+    }
 }
 
 vector<int> move_arr(int phase, vector<int> puzzle_arr, int twist){
     if(phase == 0) return (vector<int>){move_ce_phase0[puzzle_arr[0]][twist_to_idx[twist]]};
+    else if(phase == 1){
+        vector<int> res = {move_ce_phase1_fbud[int(puzzle_arr[0] / 70)][twist_to_idx[twist]] * 70 + move_ce_phase1_rl[puzzle_arr[0] % 70][twist_to_idx[twist]]};
+        rep(i, 0, 6) res.push_back(move_ep[puzzle_arr[i + 1]][twist_to_idx[twist]]);
+        return res;
+    }
 }
 
 int distance(int phase, vector<int> puzzle_arr){
     int res = 0;
     rep(i, 0, prun_len[phase]) res += prunning[phase][i][puzzle_arr[i]];
-    //cout << "dis" << puzzle_arr[0] << ' ' << res << endl;
     return res;
 }
 
+int cnt = 0;
+
 bool phase_search(int phase, vector<int> puzzle_arr, int depth){
+    cnt++;
     if(depth == 0){
         if(distance(phase, puzzle_arr) == 0) return true;
         else return false;
@@ -306,10 +402,11 @@ bool phase_search(int phase, vector<int> puzzle_arr, int depth){
 }
 
 void solver(Cube puzzle){
-    rep(phase, 0, 1){
+    rep(phase, 0, 2){
         cout << "phase " << phase << " depth ";
         chrono::system_clock::time_point  s, e;
         s = chrono::system_clock::now();
+        cnt = 0;
         rep(depth, 0, 30){
             vector<int> puzzle_arr = puzzle_initialize(phase, puzzle);
             //cout << "puzzle_arr ";
@@ -330,18 +427,24 @@ void solver(Cube puzzle){
                 e = chrono::system_clock::now();
                 double elap = chrono::duration_cast<chrono::milliseconds>(e-s).count();
                 cout << "phase time: " << elap << "ms" << endl;
+                cout << "cnt " << cnt << endl;
                 break;
             }
         }
     }
 }
 
-
 int main() {
     init();
     cout << "init done" << endl;
     get_move_ce_phase0();
     cout << "move_ce_phase0 done" << endl;
+    get_move_ce_phase1_rl();
+    cout << "move_ce_phase1 rl done" << endl;
+    get_move_ce_phase1_fbud();
+    cout << "move_ce_phase1 fbud done" << endl;
+    get_move_ep();
+    cout << "move_ep done" << endl;
     get_prunning();
     cout << "prunning done" << endl;
     Cube puzzle;

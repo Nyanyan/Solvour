@@ -136,7 +136,7 @@ def phase_search(phase, puzzle_arr, depth):
 def solver(puzzle):
     global solution, path, cnt
     solution = []
-    for phase in range(1):
+    for phase in range(2):
         print('phase', phase, 'depth', end=' ',flush=True)
         strt = time()
         cnt = 0
