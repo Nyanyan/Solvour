@@ -21,7 +21,7 @@ const array<int, 24> ep_d = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 1
 const array<int, 24> ce_d = {0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5};
 
 
-int fac[25];
+long long fac[25];
 
 //                            0    1     2     3     4      5      6    7     8     9     10     11     12   13    14    15    16     17     18   19   20     21    22     23     24   25    26    27    28     29     30   31    32    33    34     35
 const string move_candidate[36] = {"R", "R2", "R'", "Rw", "Rw2", "Rw'", "L", "L2", "L'", "Lw", "Lw2", "Lw'", "U", "U2", "U'", "Uw", "Uw2", "Uw'", "D", "D2", "D'", "Dw", "Dw2", "Dw'", "F", "F2", "F'", "Fw", "Fw2", "Fw'", "B", "B2", "B'", "Bw", "Bw2", "Bw'"};
@@ -51,11 +51,42 @@ int move_ep_phase3[40320][27];
 void init(){
     fac[0] = 1;
     rep(i, 1, 25) fac[i] = fac[i - 1] * i;
+    //rep(i, 0, 25) cout << fac[i] << ' ';
 }
-
+/*
 int cmb(int n, int r){
     return int(fac[n] / fac[r] / fac[n - r]);
 }
+*/
+
+unsigned long long cmb(long long a,long long b){
+    unsigned long long cmb=1;
+    long long c=min(b,a-b);
+    long long d=2;
+    for(long long i=a-c+1  ;i<=a  ;i++){
+        cmb*=i;
+        while(cmb%d==0 and d<=c){
+            cmb/=d;
+            d++;
+        }
+    }
+    return cmb;
+}
+/*
+unsigned long long cmb(int n, int r) {
+  std::vector<std::vector<long long>> v(n + 1,std::vector<long long>(n + 1, 0));
+  for (int i = 0; i < v.size(); i++) {
+    v[i][0] = 1;
+    v[i][i] = 1;
+  }
+  for (int j = 1; j < v.size(); j++) {
+    for (int k = 1; k < j; k++) {
+      v[j][k] = (v[j - 1][k - 1] + v[j - 1][k]);
+    }
+  }
+  return v[n][r];
+}
+*/
 
 class Cube{
     public:
@@ -243,7 +274,6 @@ vector<int> move_arr(int phase, vector<int> puzzle_arr, int twist){
 int distance(int phase, vector<int> puzzle_arr){
     int res = 0;
     rep(i, 0, prun_len[phase]) res += prunning[phase][i][puzzle_arr[i]];
-    cout << "distance " << res << endl;
     return res;
 }
 
@@ -252,7 +282,6 @@ bool phase_search(int phase, vector<int> puzzle_arr, int depth){
         if(distance(phase, puzzle_arr) == 0) return true;
         else return false;
     } else {
-        cout << "a " << path.size() << endl;
         if(distance(phase, puzzle_arr) <= depth){
             int l1_twist = -10;
             int l2_twist = -10;
@@ -280,8 +309,11 @@ void solver(Cube puzzle){
         cout << "phase " << phase << " depth ";
         chrono::system_clock::time_point  s, e;
         s = chrono::system_clock::now();
-        vector<int> puzzle_arr = puzzle_initialize(phase, puzzle);
         rep(depth, 0, 30){
+            vector<int> puzzle_arr = puzzle_initialize(phase, puzzle);
+            //cout << "puzzle_arr ";
+            //rep(i, 0, puzzle_arr.size()) cout << puzzle_arr[i] << ' ';
+            cout << endl;
             cout << depth << " ";
             path = {};
             if(phase_search(phase, puzzle_arr, depth)){
