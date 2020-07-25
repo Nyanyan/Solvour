@@ -274,6 +274,7 @@ vector<int> move_arr(int phase, vector<int> puzzle_arr, int twist){
 int distance(int phase, vector<int> puzzle_arr){
     int res = 0;
     rep(i, 0, prun_len[phase]) res += prunning[phase][i][puzzle_arr[i]];
+    //cout << "dis" << puzzle_arr[0] << ' ' << res << endl;
     return res;
 }
 
@@ -299,8 +300,8 @@ bool phase_search(int phase, vector<int> puzzle_arr, int depth){
                 if(phase_search(phase, n_puzzle_arr, depth - 1)) return true;
                 path.pop_back();
             }
-            return false;
         }
+        return false;
     }
 }
 
@@ -313,11 +314,12 @@ void solver(Cube puzzle){
             vector<int> puzzle_arr = puzzle_initialize(phase, puzzle);
             //cout << "puzzle_arr ";
             //rep(i, 0, puzzle_arr.size()) cout << puzzle_arr[i] << ' ';
-            cout << endl;
+            //cout << endl;
             cout << depth << " ";
             path = {};
             if(phase_search(phase, puzzle_arr, depth)){
                 cout << endl;
+                cout << "path: ";
                 rep(i, 0, path.size()){
                     int twist = path[i];
                     solution.push_back(twist);
@@ -346,13 +348,18 @@ int main() {
     puzzle.set(cp_d, co_d, ep_d, ce_d);
     vector<int> scramble;
     string scramble_str;
-    cout << "input scramble: "; 
-    cin >> scramble_str;
-    istringstream spl(scramble_str);
-    string s;
-    while(spl >> s){
+    cout << "input scramble: ";
+    vector<string> scramble_str_spl;
+    //cin >> scramble_str;
+    string str, s;
+    getline(cin,str);
+    stringstream ss{str};
+    while ( getline(ss, s, ' ') ){    
+        scramble_str_spl.push_back(s);
+    }
+    rep(idx, 0, scramble_str_spl.size()){
         rep(i, 0, 36){
-            if(move_candidate[i] == s){
+            if(move_candidate[i] == scramble_str_spl[idx]){
                 scramble.push_back(i);
                 break;
             }
@@ -362,6 +369,8 @@ int main() {
         int twist = scramble[i];
         puzzle.set(puzzle.move_cp(twist), puzzle.move_co(twist), puzzle.move_ep(twist), puzzle.move_ce(twist));
     }
+    rep(i, 0, 24) cout << puzzle.Ce[i] << " ";
+    cout << endl;
     chrono::system_clock::time_point  start, end;
     start = chrono::system_clock::now();
     solver(puzzle);
