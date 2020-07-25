@@ -20,6 +20,43 @@ const array<int, 8> co_d = {0, 0, 0, 0, 0, 0, 0, 0};
 const array<int, 24> ep_d = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23};
 const array<int, 24> ce_d = {0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5};
 
+
+int fac[25];
+
+//                            0    1     2     3     4      5      6    7     8     9     10     11     12   13    14    15    16     17     18   19   20     21    22     23     24   25    26    27    28     29     30   31    32    33    34     35
+const string move_candidate[36] = {"R", "R2", "R'", "Rw", "Rw2", "Rw'", "L", "L2", "L'", "Lw", "Lw2", "Lw'", "U", "U2", "U'", "Uw", "Uw2", "Uw'", "D", "D2", "D'", "Dw", "Dw2", "Dw'", "F", "F2", "F'", "Fw", "Fw2", "Fw'", "B", "B2", "B'", "Bw", "Bw2", "Bw'"};
+const int twist_to_idx[36] = {0, 1, 2, 3, 4, 5, 6, 7, 8, -1, -1, -1, 9, 10, 11, 12, 13, 14, 15, 16, 17, -1, -1, -1, 18, 19, 20, 21, 22, 23, 24, 25, 26, -1, -1, -1};
+
+const vector<vector<int>> successor = {
+    {0, 1, 2, 3, 4, 5, 6, 7, 8,            12, 13, 14, 15, 16, 17, 18, 19, 20,             24, 25, 26, 27, 28, 29, 30, 31, 32            }, // phase 0
+    {0, 1, 2, 3, 4, 5, 6, 7, 8,            12, 13, 14,     16,     18, 19, 20,             24, 25, 26,     28,     30, 31, 32            }, // phase 1
+    {   1,       4,       7,               12, 13, 14,     16,     18, 19, 20,             24, 25, 26,     28,     30, 31, 32            }, // phase 2
+    {   1,       4,       7,               12, 13, 14,             18, 19, 20,                 25,         28,         31,               }, // phase 3
+    {0,    2,          6,    8,            12, 13, 14,             18, 19, 20,             24,     26,             30,     32            }, // phase 4
+    {   1,                7,               12, 13, 14,             18, 19, 20,                 25,                     31                }  // phase 5
+    };
+
+vector<vector<vector<int>>> prunning;
+int prun_len[6] = {1, 7, 3, 2, 2, 3};
+
+
+int move_ce_phase0[735471][27];
+int move_ce_phase1_fbud[12870][27];
+int move_ce_phase1_rl[70][27];
+int move_ce_phase2[343000][27];
+int move_ep[255024][27];
+int move_ep_phase3[40320][27];
+
+
+void init(){
+    fac[0] = 1;
+    rep(i, 1, 25) fac[i] = fac[i - 1] * i;
+}
+
+int cmb(int n, int r){
+    return int(fac[n] / fac[r] / fac[n - r]);
+}
+
 class Cube{
     public:
     array<int, 8> Cp;
@@ -27,6 +64,7 @@ class Cube{
     array<int, 24> Ep;
     array<int, 24> Ce;
     void set(array<int, 8> cp, array<int, 8> co, array<int, 24> ep, array<int, 24> ce);
+    int idx_ce_phase0();
     array<int, 8> move_cp(int twist);
     array<int, 8> move_co(int twist);
     array<int, 24> move_ep(int twist);
@@ -118,33 +156,20 @@ array<int, 24> Cube::move_ce(int twist){
     return res;
 }
 
+int Cube::idx_ce_phase0(){
+    int res = 0;
+    int cnt = 0;
+    rep(i, 0, 23){
+        if(this->Ce[i] == 2 || this->Ce[i] == 4){
+            res += cmb(23 - i, 8 - cnt);
+            cnt++;
+            if(cnt == 8 || i - cnt == 15) break;
+        }
+    }
+    return res;
+}
 
 
-
-
-//                            0    1     2     3     4      5      6    7     8     9     10     11     12   13    14    15    16     17     18   19   20     21    22     23     24   25    26    27    28     29     30   31    32    33    34     35
-const string move_candidate[36] = {"R", "R2", "R'", "Rw", "Rw2", "Rw'", "L", "L2", "L'", "Lw", "Lw2", "Lw'", "U", "U2", "U'", "Uw", "Uw2", "Uw'", "D", "D2", "D'", "Dw", "Dw2", "Dw'", "F", "F2", "F'", "Fw", "Fw2", "Fw'", "B", "B2", "B'", "Bw", "Bw2", "Bw'"};
-const int twist_to_idx[36] = {0, 1, 2, 3, 4, 5, 6, 7, 8, -1, -1, -1, 9, 10, 11, 12, 13, 14, 15, 16, 17, -1, -1, -1, 18, 19, 20, 21, 22, 23, 24, 25, 26, -1, -1, -1};
-
-const vector<vector<int>> successor = {
-    {0, 1, 2, 3, 4, 5, 6, 7, 8,            12, 13, 14, 15, 16, 17, 18, 19, 20,             24, 25, 26, 27, 28, 29, 30, 31, 32            }, // phase 0
-    {0, 1, 2, 3, 4, 5, 6, 7, 8,            12, 13, 14,     16,     18, 19, 20,             24, 25, 26,     28,     30, 31, 32            }, // phase 1
-    {   1,       4,       7,               12, 13, 14,     16,     18, 19, 20,             24, 25, 26,     28,     30, 31, 32            }, // phase 2
-    {   1,       4,       7,               12, 13, 14,             18, 19, 20,                 25,         28,         31,               }, // phase 3
-    {0,    2,          6,    8,            12, 13, 14,             18, 19, 20,             24,     26,             30,     32            }, // phase 4
-    {   1,                7,               12, 13, 14,             18, 19, 20,                 25,                     31                }  // phase 5
-    };
-
-vector<vector<vector<int>>> prunning;
-int prun_len[6] = {1, 7, 3, 2, 2, 3};
-
-
-int move_ce_phase0[735471][27];
-int move_ce_phase1_fbud[12870][27];
-int move_ce_phase1_rl[70][27];
-int move_ce_phase2[343000][27];
-int move_ep[255024][27];
-int move_ep_phase3[40320][27];
 
 vector<string> split(string& input, char delimiter)
 {
@@ -191,7 +216,96 @@ void get_prunning(){
     }
 }
 
+
+vector<int> solution;
+vector<int> path;
+
+int face(int twist){
+    return int(twist / 3);
+}
+
+int axis(int twist){
+    return int(twist / 12);
+}
+
+int wide(int twist){
+    return face(twist) % 2;
+}
+
+vector<int> puzzle_initialize(int phase, Cube puzzle){
+    if(phase == 0) return (vector<int>){puzzle.idx_ce_phase0()};
+}
+
+vector<int> move_arr(int phase, vector<int> puzzle_arr, int twist){
+    if(phase == 0) return (vector<int>){move_ce_phase0[puzzle_arr[0]][twist_to_idx[twist]]};
+}
+
+int distance(int phase, vector<int> puzzle_arr){
+    int res = 0;
+    rep(i, 0, prun_len[phase]) res += prunning[phase][i][puzzle_arr[i]];
+    cout << "distance " << res << endl;
+    return res;
+}
+
+bool phase_search(int phase, vector<int> puzzle_arr, int depth){
+    if(depth == 0){
+        if(distance(phase, puzzle_arr) == 0) return true;
+        else return false;
+    } else {
+        cout << "a " << path.size() << endl;
+        if(distance(phase, puzzle_arr) <= depth){
+            int l1_twist = -10;
+            int l2_twist = -10;
+            int l3_twist = -10;
+            int siz = path.size();
+            if(siz >= 1) l1_twist = path[siz - 1];
+            if(siz >= 2) l2_twist = path[siz - 2];
+            if(siz >= 3) l3_twist = path[siz - 3];
+            rep(idx, 0, successor[phase].size()){
+                int twist = successor[phase][idx];
+                if(face(twist) == face(l1_twist) || (axis(twist) == axis(l1_twist) && axis(l1_twist) == axis(l2_twist) && axis(l2_twist) == axis(l3_twist)) || (axis(twist) == axis(l1_twist) && wide(twist) == wide(l1_twist) && wide(l1_twist) == 1))
+                    continue;
+                vector<int> n_puzzle_arr = move_arr(phase, puzzle_arr, twist);
+                path.push_back(twist);
+                if(phase_search(phase, n_puzzle_arr, depth - 1)) return true;
+                path.pop_back();
+            }
+            return false;
+        }
+    }
+}
+
+void solver(Cube puzzle){
+    rep(phase, 0, 1){
+        cout << "phase " << phase << " depth ";
+        chrono::system_clock::time_point  s, e;
+        s = chrono::system_clock::now();
+        vector<int> puzzle_arr = puzzle_initialize(phase, puzzle);
+        rep(depth, 0, 30){
+            cout << depth << " ";
+            path = {};
+            if(phase_search(phase, puzzle_arr, depth)){
+                cout << endl;
+                rep(i, 0, path.size()){
+                    int twist = path[i];
+                    solution.push_back(twist);
+                    puzzle.set(puzzle.move_cp(twist), puzzle.move_co(twist), puzzle.move_ep(twist), puzzle.move_ce(twist));
+                    cout << move_candidate[twist] << " ";
+                }
+                cout << endl;
+                e = chrono::system_clock::now();
+                double elap = chrono::duration_cast<chrono::milliseconds>(e-s).count();
+                cout << "phase time: " << elap << "ms" << endl;
+                break;
+            }
+        }
+    }
+}
+
+
 int main() {
+    init();
+    cout << "init done" << endl;
     get_move_ce_phase0();
     cout << "move_ce_phase0 done" << endl;
     get_prunning();
@@ -218,8 +332,9 @@ int main() {
     }
     chrono::system_clock::time_point  start, end;
     start = chrono::system_clock::now();
+    solver(puzzle);
     end = chrono::system_clock::now();
     double elapsed = chrono::duration_cast<chrono::milliseconds>(end-start).count();
-    cout << "time: " << elapsed << endl;
+    cout << "all time: " << elapsed << "ms" << endl;
     return 0;
 }
