@@ -52,13 +52,13 @@ array<int, 8> Cube::move_cp(int twist){
 
 array<int, 8> Cube::move_co(int twist){
     int surface[6][4] = {{3, 1, 7, 5}, {0, 2, 4, 6}, {0, 1, 3, 2}, {4, 5, 7, 6}, {2, 3, 5, 4}, {1, 0, 6, 7}};
-    int pls[4] = {2, 1, 2, 1}
+    int pls[4] = {2, 1, 2, 1};
     array<int, 8> res;
-    rep(i, 0, 8) res[i] = this->Cp[i];
+    rep(i, 0, 8) res[i] = this->Co[i];
     int type = twist / 6;
     int amount = twist % 3;
     rep(i, 0, 4){
-        res[surface[type][(i + amount + 1) % 4]] = this->Cp[surface[type][i]];
+        res[surface[type][(i + amount + 1) % 4]] = this->Co[surface[type][i]];
         if(int(type / 2) != 1 && amount != 1){
             res[surface[type][(i + amount + 1) % 4]] += pls[(i + amount + 1) % 4];
             res[surface[type][(i + amount + 1) % 4]] %= 3;
@@ -68,22 +68,55 @@ array<int, 8> Cube::move_co(int twist){
 }
 
 array<int, 24> Cube::move_ep(int twist){
-    int surface[6][4] = {{3, 1, 7, 5}, {0, 2, 4, 6}, {0, 1, 3, 2}, {4, 5, 7, 6}, {2, 3, 5, 4}, {1, 0, 6, 7}};
-    int pls[4] = {2, 1, 2, 1}
-    array<int, 8> res;
-    rep(i, 0, 8) res[i] = this->Cp[i];
-    int type = twist / 6;
+    vector<vector<vector<int>>> surface = {
+        {{3, 12, 19, 10}, {2, 13, 18, 11}}, // R
+        {{3, 12, 19, 10}, {2, 13, 18, 11}, {4, 1, 20, 17}},  // Rw
+        {{7, 8, 23, 14}, {6, 9, 22, 15}}, // L
+        {{7, 8, 23, 14}, {6, 9, 22, 15}, {0, 5, 16, 21}}, // Lw
+        {{0, 2, 4, 6}, {1, 3, 5, 7}}, // U
+        {{0, 2, 4, 6}, {1, 3, 5, 7}, {15, 12, 11, 8}}, // Uw
+        {{16, 18, 20, 22}, {17, 19, 21, 23}}, // D
+        {{16, 18, 20, 22}, {17, 19, 21, 23}, {9, 10, 13, 14}}, // Dw
+        {{5, 11, 17, 9}, {4, 10, 16, 8}}, // F
+        {{5, 11, 17, 9}, {4, 10, 16, 8}, {6, 3, 18, 23}}, // Fw
+        {{1, 15, 21, 13}, {0, 14, 20, 12}}, // B
+        {{1, 15, 21, 13}, {0, 14, 20, 12}, {2, 7, 22, 19}} // Bw
+    };
+    array<int, 24> res;
+    rep(i, 0, 24) res[i] = this->Ep[i];
+    int type = twist / 3;
     int amount = twist % 3;
-    rep(i, 0, 4){
-        res[surface[type][(i + amount + 1) % 4]] = this->Cp[surface[type][i]];
-        if(int(type / 2) != 1 && amount != 1){
-            res[surface[type][(i + amount + 1) % 4]] += pls[(i + amount + 1) % 4];
-            res[surface[type][(i + amount + 1) % 4]] %= 3;
-        }
+    rep(i, 0, surface[type].size()){
+        rep(j, 0, 4) res[surface[type][i][(j + amount + 1) % 4]] = this->Ep[surface[type][i][j]];
     }
     return res;
 }
 
+
+array<int, 24> Cube::move_ce(int twist){
+    vector<vector<vector<int>>> surface = {
+        {{8, 9, 10, 11}}, // R
+        {{8, 9, 10, 11}, {2, 12, 22, 6}, {1, 15, 21, 5}}, // Rw
+        {{16, 17, 18, 19}}, // L
+        {{16, 17, 18, 19}, {0, 4, 20, 14}, {3, 7, 23, 13}}, // Lw
+        {{0, 1, 2, 3}}, // U
+        {{0, 1, 2, 3}, {13, 9, 5, 17}, {12, 8, 4, 16}}, // Uw
+        {{20, 21, 22, 23}}, // D
+        {{20, 21, 22, 23}, {7, 11, 15, 19}, {6, 10, 14, 18}}, // Dw
+        {{4, 5, 6, 7}}, // F
+        {{4, 5, 6, 7}, {3, 8, 21, 18}, {2, 11, 20, 17}}, // Fw
+        {{12, 13, 14, 15}}, // B
+        {{12, 13, 14, 15}, {1, 16, 23, 10}, {0, 19, 22, 9}} // Bw
+    };
+    array<int, 24> res;
+    rep(i, 0, 24) res[i] = this->Ce[i];
+    int type = twist / 3;
+    int amount = twist % 3;
+    rep(i, 0, surface[type].size()){
+        rep(j, 0, 4) res[surface[type][i][(j + amount + 1) % 4]] = this->Ce[surface[type][i][j]];
+    }
+    return res;
+}
 
 
 //                            0    1     2     3     4      5      6    7     8     9     10     11     12   13    14    15    16     17     18   19   20     21    22     23     24   25    26    27    28     29     30   31    32    33    34     35
@@ -163,9 +196,9 @@ int main() {
         cout << cube.Cp[i] << ' ';
     }
     cout << endl;
-    cube.set(cube.move_cp(0), cube.move_co(0), ep_d, ce_d);
-    rep(i, 0, 8){
-        cout << cube.Cp[i] << ' ';
+    cube.set(cube.move_cp(0), cube.move_co(0), cube.move_ep(0), cube.move_ce(0));
+    rep(i, 0, 24){
+        cout << cube.Ep[i] << ' ';
     }
     cout << endl;
     return 0;
