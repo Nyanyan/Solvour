@@ -14,7 +14,8 @@
 
 using namespace std;
 
-//                 0    1     2     3     4      5      6    7     8     9     10     11     12   13    14    15    16     17     18   19   20     21    22     23     24   25    26    27    28     29     30   31    32    33    34     35
+
+//                            0    1     2     3     4      5      6    7     8     9     10     11     12   13    14    15    16     17     18   19   20     21    22     23     24   25    26    27    28     29     30   31    32    33    34     35
 string move_candidate[36] = {"R", "R2", "R'", "Rw", "Rw2", "Rw'", "L", "L2", "L'", "Lw", "Lw2", "Lw'", "U", "U2", "U'", "Uw", "Uw2", "Uw'", "D", "D2", "D'", "Dw", "Dw2", "Dw'", "F", "F2", "F'", "Fw", "Fw2", "Fw'", "B", "B2", "B'", "Bw", "Bw2", "Bw'"};
 int twist_to_idx[36] = {0, 1, 2, 3, 4, 5, 6, 7, 8, -1, -1, -1, 9, 10, 11, 12, 13, 14, 15, 16, 17, -1, -1, -1, 18, 19, 20, 21, 22, 23, 24, 25, 26, -1, -1, -1};
 
@@ -28,11 +29,16 @@ vector<vector<int>> successor =
     vector<int>{   1,                7,               12, 13, 14,             18, 19, 20,                 25,                     31                }  // phase 5
     };
 
+vector<vector<vector<int>>> prunning;
+int prun_len[6] = {1, 7, 3, 2, 2, 3};
+
 
 int move_ce_phase0[735471][27];
 int move_ce_phase1_fbud[12870][27];
 int move_ce_phase1_rl[70][27];
 int move_ce_phase2[343000][27];
+int move_ep[255024][27];
+int move_ep_phase3[40320][27];
 
 vector<string> split(string& input, char delimiter)
 {
@@ -45,7 +51,17 @@ vector<string> split(string& input, char delimiter)
     return result;
 }
 
-void get_move_arr(){
+void get_move_ce_phase0(){
+    ifstream ifs("move_table/move_ce_phase0.csv");
+    string line;
+    rep(lin, 0, 735471) {
+        getline(ifs, line);
+        vector<string> strvec = split(line, ',');
+        rep(i, 0, strvec.size()) move_ce_phase0[lin][i] = int(stoi(strvec.at(i)));
+    }
+}
+
+void get_move_ce_phase1_rl(){
     ifstream ifs("move_table/move_ce_phase1_rl.csv");
     string line;
     rep(lin, 0, 70) {
@@ -55,6 +71,20 @@ void get_move_arr(){
     }
 }
 
+void get_prunning(){
+    rep(phase, 0, 1){
+        ifstream ifs("prun_table/prunning" + to_string(phase) + ".csv");
+        string line;
+        rep(lin, 0, prun_len[phase]) {
+            getline(ifs, line);
+            vector<string> strvec = split(line, ',');
+            rep(i, 0, strvec.size()) prunning[phase][lin][i] = int(stoi(strvec.at(i)));
+        }
+    }
+}
+
 int main() {
+    get_move_ce_phase0();
+    get_prunning();
     return 0;
 }
