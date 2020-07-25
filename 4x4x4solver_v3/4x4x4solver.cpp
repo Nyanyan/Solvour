@@ -119,6 +119,9 @@ array<int, 24> Cube::move_ce(int twist){
 }
 
 
+
+
+
 //                            0    1     2     3     4      5      6    7     8     9     10     11     12   13    14    15    16     17     18   19   20     21    22     23     24   25    26    27    28     29     30   31    32    33    34     35
 const string move_candidate[36] = {"R", "R2", "R'", "Rw", "Rw2", "Rw'", "L", "L2", "L'", "Lw", "Lw2", "Lw'", "U", "U2", "U'", "Uw", "Uw2", "Uw'", "D", "D2", "D'", "Dw", "Dw2", "Dw'", "F", "F2", "F'", "Fw", "Fw2", "Fw'", "B", "B2", "B'", "Bw", "Bw2", "Bw'"};
 const int twist_to_idx[36] = {0, 1, 2, 3, 4, 5, 6, 7, 8, -1, -1, -1, 9, 10, 11, 12, 13, 14, 15, 16, 17, -1, -1, -1, 18, 19, 20, 21, 22, 23, 24, 25, 26, -1, -1, -1};
@@ -188,18 +191,28 @@ void get_prunning(){
 }
 
 int main() {
-    //get_move_ce_phase0();
-    //get_prunning();
-    Cube cube;
-    cube.set(cp_d, co_d, ep_d, ce_d);
-    rep(i, 0, 8){
-        cout << cube.Cp[i] << ' ';
+    get_move_ce_phase0();
+    get_prunning();
+    Cube puzzle;
+    puzzle.set(cp_d, co_d, ep_d, ce_d);
+    vector<int> scramble;
+    string scramble_str;
+    cout << "input scarble: "; 
+    cin >> scramble_str;
+    istringstream spl(scramble_str);
+    string s;
+    while(spl >> s){
+        rep(i, 0, 36){
+            if(move_candidate[i] == s){
+                scramble.push_back(i);
+                break;
+            }
+        }
     }
-    cout << endl;
-    cube.set(cube.move_cp(0), cube.move_co(0), cube.move_ep(0), cube.move_ce(0));
-    rep(i, 0, 24){
-        cout << cube.Ep[i] << ' ';
+    rep(i, 0, scramble.size()){
+        int twist = scramble[i];
+        puzzle.set(puzzle.move_cp(twist), puzzle.move_co(twist), puzzle.move_ep(twist), puzzle.move_ce(twist));
     }
-    cout << endl;
+    rep(i, 0, 8) cout << puzzle.Cp[i] << ' ';
     return 0;
 }
