@@ -18,9 +18,10 @@ phase 5: solve it!
 '''
 
 
-from cube_class import Cube, face, axis, wide, idx_ep_phase2, move_ep, fac, cmb
+from cube_class import Cube, face, axis, wide, idx_ep_phase2, move_ep_func, fac, cmb
 from time import time
 
+'''
 def move_ep_phase1_func(puzzle_arr, twist):
     res = 0
     puzzle = [puzzle_arr // 65536, (puzzle_arr // 256) % 256, puzzle_arr % 256]
@@ -32,12 +33,15 @@ def move_ep_phase1_func(puzzle_arr, twist):
             decision_num += (puzzle[mse_lst[i][0]] >> (7 - mse_lst[i][1])) & 1
         res += move_ep_phase1[mse][puzzle[mse]][twist_to_idx[twist]][decision_num] * (256 ** (2 - mse))
     return res
+'''
 
 def initialize_puzzle_arr(phase, puzzle):
     if phase == 0:
         return [puzzle.idx_ce_phase0()]
     elif phase == 1:
-        return [puzzle.idx_ce_phase1_fbud() * 70 + puzzle.idx_ce_phase1_rl(), puzzle.idx_high_low_edge()]
+        res = [puzzle.idx_ce_phase1_fbud() * 70 + puzzle.idx_ce_phase1_rl(), None, None, None, None, None, None]
+        res[1:7] = puzzle.idx_ep()
+        return res
     elif phase == 2:
         res = [puzzle.idx_ce_phase2(), None, None]
         res[1:3] = idx_ep_phase2(puzzle.Ep)
@@ -45,26 +49,25 @@ def initialize_puzzle_arr(phase, puzzle):
     elif phase == 3:
         return [puzzle.idx_ce_phase2(), puzzle.idx_ep_phase3()]
 
-
 def distance(puzzle_arr, phase):
-    global puzzle
-    puzzle_p = puzzle_arr if phase != 1 else [puzzle_arr[0], puzzle_arr[1] // 2]
-    res = sum(prunning[phase][i][puzzle_p[i]] for i in range(prun_len[phase]))
-    if phase == 1 and res == 0:
-        check_puzzle = Cube(ep=puzzle.Ep)
-        for i in path:
-            check_puzzle = check_puzzle.move(i)
-        if check_puzzle.ep_switch_parity():
-            return 9
-    return res
-
+    #print(puzzle_arr)
+    return sum(prunning[phase][i][puzzle_arr[i]] for i in range(prun_len[phase]))
 
 def move_arr(puzzle_arr, phase, twist):
     if phase == 0:
         return [move_ce_phase0[puzzle_arr[0]][twist_to_idx[twist]]]
     elif phase == 1:
-        return [move_ce_phase1_fbud[puzzle_arr[0] // 70][twist_to_idx[twist]] * 70 + move_ce_phase1_rl[puzzle_arr[0] % 70][twist_to_idx[twist]], move_ep_phase1_func(puzzle_arr[1], twist)]
+        res = [move_ce_phase1_fbud[puzzle_arr[0] // 70][twist_to_idx[twist]] * 70 + move_ce_phase1_rl[puzzle_arr[0] % 70][twist_to_idx[twist]], None, None, None, None, None, None]
+        for i in range(6):
+            res[i + 1] = move_ep[puzzle_arr[i + 1]][twist_to_idx[twist]]
+        return res
     elif phase == 2:
+        '''
+        res = [move_ce_phase2[puzzle_arr[0]][twist_to_idx[twist]], None, None, None, None, None, None]
+        for i in range(6):
+            res[i + 1] = move_ep[puzzle_arr[i + 1]][twist_to_idx[twist]]
+        return res
+        '''
         #print(puzzle_arr)
         ep = [-1 for _ in range(12)]
         idx_1 = puzzle_arr[1]
@@ -104,7 +107,7 @@ def move_arr(puzzle_arr, phase, twist):
         for i in range(12):
             ep_p[i * 2 + 1] = ep[i] * 2
             ep_p[i * 2] = i * 2 + 1
-        ep_p = move_ep(ep_p, twist)
+        ep_p = move_ep_func(ep_p, twist)
         idxes = idx_ep_phase2(ep_p)
         return [move_ce_phase2[puzzle_arr[0]][twist_to_idx[twist]], idxes[0], idxes[1]]
     elif phase == 3:
@@ -130,8 +133,8 @@ def phase_search(phase, puzzle_arr, depth):
                     return True
                 path.pop()
 
-def solver():
-    global solution, path, cnt, puzzle
+def solver(puzzle):
+    global solution, path, cnt
     solution = []
     for phase in range(4):
         print('phase', phase, 'depth', end=' ',flush=True)
@@ -189,16 +192,22 @@ move_ce_phase1_rl = [[] for _ in range(70)]
 with open('move_table/move_ce_phase1_rl.csv', mode='r') as f:
     for idx in range(70):
         move_ce_phase1_rl[idx] = [int(i) for i in f.readline().replace('\n', '').split(',')]
+'''
 move_ep_phase1 = [[[[] for _ in range(27)] for _ in range(256)] for _ in range(3)]
 with open('move_table/move_ep_phase1.csv', mode='r') as f:
     for mse in range(3):
         for all_twist in range(256):
             for twist in range(27):
                 move_ep_phase1[mse][all_twist][twist] = [int(i) for i in f.readline().replace('\n', '').split(',')]
+'''
 move_ce_phase2 = [[] for _ in range(343000)]
 with open('move_table/move_ce_phase2.csv', mode='r') as f:
     for idx in range(343000):
         move_ce_phase2[idx] = [int(i) for i in f.readline().replace('\n', '').split(',')]
+move_ep = [[] for _ in range(255024)]
+with open('move_table/move_ep.csv', mode='r') as f:
+    for idx in range(255024):
+        move_ep[idx] = [int(i) for i in f.readline().replace('\n', '').split(',')]
 move_ep_phase3 = [[] for _ in range(40320)]
 with open('move_table/move_ep_phase3.csv', mode='r') as f:
     for idx in range(40320):
@@ -207,7 +216,7 @@ with open('move_table/move_ep_phase3.csv', mode='r') as f:
 
 
 prunning = [None for _ in range(6)]
-prun_len = [1, 2, 3, 2, 2, 3]
+prun_len = [1, 7, 3, 2, 2, 3]
 for phase in range(4):
     prunning[phase] = [[] for _ in range(prun_len[phase])]
     with open('prun_table/prunning' + str(phase) + '.csv', mode='r') as f:
@@ -220,7 +229,7 @@ puzzle = Cube()
 for mov in scramble:
     puzzle = puzzle.move(mov)
 strt = time()
-solver()
+solver(puzzle)
 print('solution:',end=' ')
 #print(solution)
 for i in solution:

@@ -130,30 +130,28 @@ with open('move_table/move_ce_phase1_rl.csv', mode='w') as f:
 '''
 
 
-ep_move = [[[-1 for _ in range(len(move_arr))] for _ in range(255024)] for _ in range(6)] # r, l, f, b, u, d slices
-que = deque([solved])
-cnt = 0
-print('EP move index')
-while que:
-    cnt += 1
-    if cnt % 10000 == 0:
-        print(cnt, len(que))
-    puzzle = que.popleft()
-    idxes = puzzle.idx_ep()
-    #print(ep_move[0][idxes[0]])
-    #print(idxes)
-    if ep_move[0][idxes[0]][0] == -1:
-        for twist in successor[0]:
-            n_puzzle = puzzle.move(twist)
-            n_idxes = n_puzzle.idx_ep()
-            for slc in range(6):
-                ep_move[slc][idxes[slc]][twist_to_idx[twist]] = n_idxes[slc]
-            que.append(n_puzzle)
-with open('move_table/move_ep.csv', mode='w') as f:
-    writer = csv.writer(f, lineterminator='\n')
-    for arr in ep_move:
-        for m_arr in arr:
-            writer.writerow(m_arr)
+for slc in range(6):
+    ep_move = [[-1 for _ in range(len(move_arr))] for _ in range(255024)] # r, l, f, b, u, d slices
+    que = deque([solved])
+    cnt = 0
+    print('EP move index', slc)
+    while que:
+        cnt += 1
+        if cnt % 10000 == 0:
+            print(cnt, len(que))
+        puzzle = que.popleft()
+        idxes = puzzle.idx_ep()
+        #print(ep_move[0][idxes[0]])
+        if ep_move[idxes[slc]][0] == -1:
+            for twist in successor[0]:
+                n_puzzle = puzzle.move(twist)
+                n_idxes = n_puzzle.idx_ep()
+                ep_move[idxes[slc]][twist_to_idx[twist]] = n_idxes[slc]
+                que.append(n_puzzle)
+    with open('move_table/move_ep.csv', mode='a') as f:
+        writer = csv.writer(f, lineterminator='\n')
+        for arr in ep_move:
+            writer.writerow(arr)
 
 
 

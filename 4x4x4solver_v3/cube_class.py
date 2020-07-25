@@ -264,10 +264,9 @@ class Cube:
             tmp_arr = [-1 for _ in range(4)]
             for elm_idx in range(4):
                 for i in range(24):
-                    if arr[elm_idx] == self.Ep[i]:
+                    if arr[slc][elm_idx] == self.Ep[i]:
                         tmp_arr[elm_idx] = i
                         break
-            print(tmp_arr)
             res_tmp = 0
             for i in range(4):
                 cnt = tmp_arr[i]
@@ -293,8 +292,22 @@ class Cube:
                 return False
         return True
     
-    def ep_switch_parity(self): # avoid "last 2 edge"
+    def low_high_separated(self):
+        for i in range(24):
+            if self.Ep[i] % 2 != i % 2:
+                return False
+        return True
+    
+    def edge_paired_4(self):
+        for i in range(4, 8):
+            if self.Ep[i * 2] // 2 != self.Ep[i * 2 + 1] // 2:
+                return False
+        return True
+    
+    def ep_switch_parity(self): # "last 2 edge"
         return ep_switch_parity_p([i for i in self.Ep], 0) % 2
+    
+
 
 def ep_switch_parity_p(arr, res):
     for i in range(24):
@@ -338,7 +351,7 @@ def idx_ep_phase2(ep):
         res2 += cnt * cmb(11 - i + 6, 5 - i + 6) * fac[5 - i + 6]
     return [res1, res2]
 
-def move_ep(ep, mov):
+def move_ep_func(ep, mov):
     surface = [[[3, 12, 19, 10], [2, 13, 18, 11]], # R
                 [[3, 12, 19, 10], [2, 13, 18, 11], [4, 1, 20, 17]],  # Rw
                 [[7, 8, 23, 14], [6, 9, 22, 15]], # L
