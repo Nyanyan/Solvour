@@ -1,4 +1,4 @@
-from cube_class import Cube, face
+from cube_class import Cube, face, idx_to_ep_phase1, move_ep_phase1_func
 from collections import deque
 import csv
 ##                  0    1     2     3     4      5      6    7     8     9     10     11     12   13    14    15    16     17     18   19   20     21    22     23     24   25    26    27    28     29     30   31    32    33    34     35
@@ -129,7 +129,7 @@ with open('move_table/move_ce_phase1_rl.csv', mode='w') as f:
         writer.writerow(arr)
 '''
 
-
+'''
 for slc in range(6):
     ep_move = [[-1 for _ in range(len(move_arr))] for _ in range(255024)] # r, l, f, b, u, d slices
     que = deque([solved])
@@ -152,8 +152,52 @@ for slc in range(6):
         writer = csv.writer(f, lineterminator='\n')
         for arr in ep_move:
             writer.writerow(arr)
+'''
+'''
+def idx_to_ep(idx):
+    arr = [idx >> i for i in range(23)]
+    if sum(arr) % 2:
+        arr.append(1)
+    else:
+        arr.append(0)
+    evn = 0
+    odd = 1
+    res = [-1 for _ in range(24)]
+    for i in range(24):
+        if i % 2: # i: odd
+            if arr[i] == 0:
+                res[i] = odd
+                odd += 2
+            else:
+                res[i] = evn
+                evn += 2
+        else:
+            if arr[i] == 0:
+                res[i] = evn
+                evn += 2
+            else:
+                res[i] = odd
+                odd += 2
+    #print(idx, arr, res)
+    return res
+'''
 
-
+for idx in range(8388608):
+    ep_move_phase1 = [-1 for _ in range(len(move_arr))]
+    if idx % 10000 == 0:
+        print(idx, idx / 8388608)
+    #puzzle = Cube()
+    #puzzle.Ep = idx_to_ep_phase1(idx)
+    for twist in successor[1]:
+        #n_puzzle = puzzle.move(twist)
+        n_idx = move_ep_phase1_func(idx, twist)
+        #print([i % 2 for i in n_puzzle.Ep])
+        #print(idx_to_ep_phase1(n_idx))
+        #print('')
+        ep_move_phase1[twist_to_idx[twist]] = n_idx
+    with open('move_table/move_ep_phase1.csv', mode='a') as f:
+        writer = csv.writer(f, lineterminator='\n')
+        writer.writerow(ep_move_phase1)
 
 
 

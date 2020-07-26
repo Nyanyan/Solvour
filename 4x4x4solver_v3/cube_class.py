@@ -276,6 +276,13 @@ class Cube:
                 res_tmp += cnt * cmb(23 - i, 3 - i) * fac[3 - i]
             res[slc] = res_tmp
         return res
+    
+    def idx_ep_phase1(self):
+        res = 0
+        for i in range(23):
+            res *= 2
+            res += self.Ep[i] % 2
+        return res
 
     
     def ce_parity(self):
@@ -327,6 +334,15 @@ def axis(twist):
 def wide(twist):
     return (twist // 3) % 2
 
+def idx_to_ep_phase1(idx):
+    res = [(idx >> i) & 1 for i in reversed(range(23))]
+    if sum(res) % 2:
+        res.append(1)
+    else:
+        res.append(0)
+    return res
+
+
 def idx_ep_phase2(ep):
     arr1 = [ep[i] // 2 for i in range(1, 24, 2)]
     arr2 = [ep[i] // 2 for i in range(0, 23, 2)]
@@ -372,6 +388,74 @@ def move_ep_func(ep, mov):
         for i in range(4):
             res[arr[(i + mov_amount + 1) % 4]] = ep[arr[i]]
     return res
+
+def idx_ep_phase1_func(arr):
+    res = 0
+    for i in range(23):
+        res *= 2
+        if arr[i] % 2 != i % 2:
+            res += 1
+    return res
+
+def move_ep_phase1_func(idx, twist):
+    cnt = 0
+    for i in range(23):
+        cnt += (idx >> i) & 1
+    idx *= 2
+    if cnt % 2:
+        idx += 1
+    surface = [[[3, 12, 19, 10], [2, 13, 18, 11]], # R
+                [[3, 12, 19, 10], [2, 13, 18, 11], [4, 1, 20, 17]],  # Rw
+                [[7, 8, 23, 14], [6, 9, 22, 15]], # L
+                [[7, 8, 23, 14], [6, 9, 22, 15], [0, 5, 16, 21]], # Lw
+                [[0, 2, 4, 6], [1, 3, 5, 7]], # U
+                [[0, 2, 4, 6], [1, 3, 5, 7], [15, 12, 11, 8]], # Uw
+                [[16, 18, 20, 22], [17, 19, 21, 23]], # D
+                [[16, 18, 20, 22], [17, 19, 21, 23], [9, 10, 13, 14]], # Dw
+                [[5, 11, 17, 9], [4, 10, 16, 8]], # F
+                [[5, 11, 17, 9], [4, 10, 16, 8], [6, 3, 18, 23]], # Fw
+                [[1, 15, 21, 13], [0, 14, 20, 12]], # B
+                [[1, 15, 21, 13], [0, 14, 20, 12], [2, 7, 22, 19]] # Bw
+                ]
+    twist_type = twist // 3
+    twist_amount = twist % 3
+    res = idx
+    for arr in surface[twist_type]:
+        for i in range(4):
+            if (idx >> (23 - arr[i])) & 1:
+                if (res >> (23 - arr[(i + twist_amount + 1) % 4])) & 1 == 0:
+                    res += 2 ** (23 - arr[(i + twist_amount + 1) % 4])
+            else:
+                if (res >> (23 - arr[(i + twist_amount + 1) % 4])) & 1 == 1:
+                    res -= 2 ** (23 - arr[(i + twist_amount + 1) % 4])
+    return res // 2
+
+'''
+def ep_idx_to_cube(idxes):
+    ep = [-1 for _ in range(24)]
+    arr = [[4, 1, 20, 17], [0, 5, 16, 21], [6, 3, 18, 23], [2, 7, 22, 19], [11, 8, 15, 12], [9, 10, 13, 14]]
+    for slc in range(6):
+        num = idxes[slc]
+        tmp = [-1 for _ in range(4)]
+        for i in range(4):
+            cnt = num // (fac[3 - i] * cmb(23 - i, 3 - i))
+            for num_c in range(cnt, 24):
+                tmp_cnt = cnt
+                for j in tmp[:i]:
+                    if j < num_c:
+                        tmp_cnt += 1
+                    elif j == num_c:
+                        break
+                else:
+                    if num_c == tmp_cnt:
+                        tmp[i] = num_c
+                        break
+        for i in range(4):
+            ep[arr[slc][i]] = tmp[i]
+    print(ep)
+'''
+
+
 
 '''
 def move_idx_high_low_edge(num, twist):

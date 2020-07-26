@@ -1,4 +1,4 @@
-from cube_class import Cube, face, axis, wide, idx_ep_phase2, move_ep
+from cube_class import Cube, face, axis, wide, idx_ep_phase2, idx_to_ep_phase1
 from collections import deque, Counter
 import csv
 from time import time
@@ -177,14 +177,13 @@ with open('prun_table/prunning1.csv', mode='w') as f:
     writer = csv.writer(f, lineterminator='\n')
     writer.writerow(prunning)
 '''
-'''
+
 # phase1 low & high edges
 solved = Cube()
 print('phase 1 2/2')
-prunning = [[99 for _ in range(255024)] for _ in range(6)]
-solved_idxes = solved.idx_ep()
-for slc in range(6):
-    prunning[slc][solved_idxes[slc]] = 0
+prunning = [99 for _ in range(8388608)]
+solved_idx = solved.idx_ep_phase1()
+prunning[solved_idx] = 0
 que = deque([[solved, 0, -10, -10, -10]])
 cnt = 0
 while que:
@@ -197,28 +196,15 @@ while que:
         if face(twist) == face(l1_twist) or axis(twist) == axis(l1_twist) == axis(l2_twist) == axis(l3_twist) or (axis(twist) == axis(l1_twist) and wide(twist) == wide(l1_twist) == 1):
             continue
         n_puzzle = puzzle.move(twist)
-        n_idxes = n_puzzle.idx_ep()
-        flag = False
-        if n_puzzle.low_high_separated() and n_puzzle.ep_switch_parity() == 0:
-            for slc in range(6):
-                if prunning[slc][n_idxes[slc]] != 0:
-                    prunning[slc][n_idxes[slc]] = 0
-                    flag = True
-            if flag:
-                que.append([n_puzzle, 0, -10, -10, -10])
-        else:
-            for slc in range(6):
-                if prunning[slc][n_idxes[slc]] > num + 1:
-                    prunning[slc][n_idxes[slc]] = num + 1
-                    flag = True
-            if flag:
-                que.append([n_puzzle, num + 1, twist, l1_twist, l2_twist])
+        n_idx = n_puzzle.idx_ep_phase1()
+        if prunning[n_idx] > num + 1:
+            prunning[n_idx] = num + 1
+            que.append([n_puzzle, num + 1, twist, l1_twist, l2_twist])
 
 with open('prun_table/prunning1.csv', mode='a') as f:
     writer = csv.writer(f, lineterminator='\n')
-    for arr in prunning:
-        writer.writerow(arr)
-'''
+    writer.writerow(prunning)
+
 '''
 # phase2 CE
 print('phase 2 1/2')

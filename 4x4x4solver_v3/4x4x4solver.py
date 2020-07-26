@@ -18,7 +18,7 @@ phase 5: solve it!
 '''
 
 
-from cube_class import Cube, face, axis, wide, idx_ep_phase2, move_ep_func, fac, cmb
+from cube_class import Cube, face, axis, wide, idx_ep_phase2, move_ep_func, fac, cmb, move_ep_phase1_func
 from time import time
 
 '''
@@ -39,9 +39,7 @@ def initialize_puzzle_arr(phase, puzzle):
     if phase == 0:
         return [puzzle.idx_ce_phase0()]
     elif phase == 1:
-        res = [puzzle.idx_ce_phase1_fbud() * 70 + puzzle.idx_ce_phase1_rl(), None, None, None, None, None, None]
-        res[1:7] = puzzle.idx_ep()
-        return res
+        return [puzzle.idx_ce_phase1_fbud() * 70 + puzzle.idx_ce_phase1_rl(), puzzle.idx_ep_phase1()]
     elif phase == 2:
         res = [puzzle.idx_ce_phase2(), None, None]
         res[1:3] = idx_ep_phase2(puzzle.Ep)
@@ -52,23 +50,34 @@ def initialize_puzzle_arr(phase, puzzle):
 def distance(puzzle_arr, phase):
     #print(puzzle_arr)
     return sum(prunning[phase][i][puzzle_arr[i]] for i in range(prun_len[phase]))
-
+'''
+def idx_to_ep_phase1(idx):
+    arr = [idx >> i for i in range(23)]
+    if sum(arr) % 2:
+        arr.append(1)
+    else:
+        arr.append(0)
+    res = [-1 for _ in range(24)]
+    for i in range(24):
+        if i % 2: # i: odd
+            if arr[i] == 0:
+                res[i] = 1
+            else:
+                res[i] = 0
+        else:
+            if arr[i] == 0:
+                res[i] = 0
+            else:
+                res[i] = 1
+    #print(idx, arr, res)
+    return res
+'''
 def move_arr(puzzle_arr, phase, twist):
     if phase == 0:
         return [move_ce_phase0[puzzle_arr[0]][twist_to_idx[twist]]]
     elif phase == 1:
-        res = [move_ce_phase1_fbud[puzzle_arr[0] // 70][twist_to_idx[twist]] * 70 + move_ce_phase1_rl[puzzle_arr[0] % 70][twist_to_idx[twist]], None, None, None, None, None, None]
-        for i in range(6):
-            res[i + 1] = move_ep[puzzle_arr[i + 1]][twist_to_idx[twist]]
-        return res
+        return [move_ce_phase1_fbud[puzzle_arr[0] // 70][twist_to_idx[twist]] * 70 + move_ce_phase1_rl[puzzle_arr[0] % 70][twist_to_idx[twist]], move_ep_phase1_func(puzzle_arr[1], twist)]
     elif phase == 2:
-        '''
-        res = [move_ce_phase2[puzzle_arr[0]][twist_to_idx[twist]], None, None, None, None, None, None]
-        for i in range(6):
-            res[i + 1] = move_ep[puzzle_arr[i + 1]][twist_to_idx[twist]]
-        return res
-        '''
-        #print(puzzle_arr)
         ep = [-1 for _ in range(12)]
         idx_1 = puzzle_arr[1]
         idx_2 = puzzle_arr[2]
@@ -133,10 +142,10 @@ def phase_search(phase, puzzle_arr, depth):
                     return True
                 path.pop()
 
-def solver(puzzle):
-    global solution, path, cnt
+def solver():
+    global solution, path, cnt, puzzle
     solution = []
-    for phase in range(2):
+    for phase in range(4):
         print('phase', phase, 'depth', end=' ',flush=True)
         strt = time()
         cnt = 0
@@ -204,10 +213,6 @@ move_ce_phase2 = [[] for _ in range(343000)]
 with open('move_table/move_ce_phase2.csv', mode='r') as f:
     for idx in range(343000):
         move_ce_phase2[idx] = [int(i) for i in f.readline().replace('\n', '').split(',')]
-move_ep = [[] for _ in range(255024)]
-with open('move_table/move_ep.csv', mode='r') as f:
-    for idx in range(255024):
-        move_ep[idx] = [int(i) for i in f.readline().replace('\n', '').split(',')]
 move_ep_phase3 = [[] for _ in range(40320)]
 with open('move_table/move_ep_phase3.csv', mode='r') as f:
     for idx in range(40320):
@@ -216,7 +221,7 @@ with open('move_table/move_ep_phase3.csv', mode='r') as f:
 
 
 prunning = [None for _ in range(6)]
-prun_len = [1, 7, 3, 2, 2, 3]
+prun_len = [1, 2, 3, 2, 2, 3]
 for phase in range(4):
     prunning[phase] = [[] for _ in range(prun_len[phase])]
     with open('prun_table/prunning' + str(phase) + '.csv', mode='r') as f:
@@ -229,7 +234,7 @@ puzzle = Cube()
 for mov in scramble:
     puzzle = puzzle.move(mov)
 strt = time()
-solver(puzzle)
+solver()
 print('solution:',end=' ')
 #print(solution)
 for i in solution:
@@ -237,8 +242,4 @@ for i in solution:
 print('')
 print(len(solution), 'moves')
 print(time() - strt, 'sec')
-
-
-
-
 
