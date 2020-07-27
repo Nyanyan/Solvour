@@ -116,7 +116,7 @@ with open('move_table/move_ce_phase1_rl.csv', mode='w') as f:
     writer = csv.writer(f, lineterminator='\n')
     for arr in ce_move_phase1_rl:
         writer.writerow(arr)
-'''
+
 
 def idx_to_ep_phase1(idx):
     res = [-1 for _ in range(24)]
@@ -141,7 +141,7 @@ def idx_to_ep_phase1(idx):
     return res
 
 ep_move_phase1 = [[-1 for _ in range(len(move_arr))] for _ in range(10000)]
-for idx in range(2700000, 2704156):
+for idx in range(2704156):
     arr_idx = idx % 10000
     ep = idx_to_ep_phase1(idx)
     for twist in successor[1]:
@@ -159,3 +159,6 @@ with open('move/move_ep_phase1.csv', mode='a') as f:
         writer = csv.writer(f, lineterminator='\n')
         for arr in ep_move_phase1[:4156]:
             writer.writerow(arr)
+'''
+
+ep_move_phase2 = [[-1 for _ in range(len(move_arr))] for _ in range(10000)]

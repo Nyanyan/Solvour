@@ -4,11 +4,11 @@ Solver:
 --- Reduction phase ---
 phase 0: gather RL centers on RL faces
          use R, Rw, L, U, Uw, D, F, Fw, B
-phase 1: gather FB centers on FB faces, separate low & high edges, clear RL center parity, avoid last two edges
+phase 1: gather FB centers on FB faces, separate low & high edges, clear RL center parity, avoid last two edges (, which means clear OLL Parity)
          use R, Rw, L, U, Uw2, D, F, Fw2, B
 phase 2: make center columns and pair up 4 edges on the middle layer
          use R2, Rw2, L2, U, Uw2, D, F, Fw2, B
-phase 3: complete center, edge pairing and clear edge parity (= PP), which means complete reduction
+phase 3: complete center, edge pairing and clear edge parity (= PLL Parity), which means complete reduction
          use R2, Rw2, L2, U, Uw2, D, F2, Fw2, B2
 --- 3x3x3 phase ---
 phase 4: gather UD stickers on UD faces and clear EO
@@ -35,24 +35,28 @@ def move_arr(puzzle_arr, phase, twist):
 
 
 def distance(puzzle_arr, phase):
-    res = sum([prunning[phase][i][puzzle_arr[i]] for i in range(prun_len[phase])])
+    res = sum(set([prunning[phase][i][puzzle_arr[i]] for i in range(prun_len[phase])]))
     if res == 0 and phase == 1:
         puzzle_ep = [i for i in puzzle.Ep]
         for i in path:
             puzzle_ep = move_ep(puzzle_ep, i)
         if ep_switch_parity(puzzle_ep):
-            return 5
+            #print('a')
+            return 99
     return res
 
 
 def phase_search(phase, puzzle_arr, depth):
     global path, cnt
     cnt += 1
+    dis = distance(puzzle_arr, phase)
+    #print(l_dis, dis)
     if depth == 0:
-        if distance(puzzle_arr, phase) == 0:
+        if dis == 0:
+            #print(depth, dis)
             return True
     else:
-        if distance(puzzle_arr, phase) <= depth:
+        if dis <= depth:
             l1_twist = path[-1] if len(path) >= 1 else -10
             l2_twist = path[-2] if len(path) >= 2 else -10
             l3_twist = path[-3] if len(path) >= 3 else -10
@@ -61,14 +65,21 @@ def phase_search(phase, puzzle_arr, depth):
                     continue
                 n_puzzle_arr = move_arr(puzzle_arr, phase, twist)
                 path.append(twist)
-                if phase_search(phase, n_puzzle_arr, depth - 1):
+                tmp = phase_search(phase, n_puzzle_arr, depth - 1)
+                if tmp:
+                    #print(depth, dis)
                     return True
                 path.pop()
+                if tmp == None:
+                    return None
+        elif dis == 99:
+            return None
+    return False
 
 def solver():
     global solution, path, cnt, puzzle
     solution = []
-    for phase in range(4):
+    for phase in range(2):
         print('phase', phase, 'depth', end=' ',flush=True)
         strt = time()
         cnt = 0
@@ -111,7 +122,7 @@ with open('move/move_ep_phase1.csv', mode='r') as f:
 
 prunning = [None for _ in range(6)]
 prun_len = [1, 2, 3, 2, 2, 3]
-for phase in range(4):
+for phase in range(2):
     prunning[phase] = [[] for _ in range(prun_len[phase])]
     with open('prun/prunning' + str(phase) + '.csv', mode='r') as f:
         for lin in range(prun_len[phase]):

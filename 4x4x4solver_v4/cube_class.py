@@ -76,6 +76,15 @@ ud_center = [0, 1, 2, 3, 20, 21, 22, 23]
 def cmb(n, r):
     return fac[n] // fac[r] // fac[n - r]
 
+def face(twist):
+    return twist // 3
+
+def axis(twist):
+    return twist // 12
+
+def wide(twist):
+    return (twist // 3) % 2
+
 
 def move_cp(arr, mov):
     surface = [[3, 1, 7, 5], [0, 2, 4, 6], [0, 1, 3, 2], [4, 5, 7, 6], [2, 3, 5, 4], [1, 0, 6, 7]]
@@ -320,11 +329,3 @@ def ep_switch_parity_p(arr, res, strt):
                     return ep_switch_parity_p(arr, res + 1, i + 1)
     return res
 
-def face(twist):
-    return twist // 3
-
-def axis(twist):
-    return twist // 12
-
-def wide(twist):
-    return (twist // 3) % 2
