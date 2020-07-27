@@ -119,7 +119,7 @@ def move_ep(arr, mov):
     res = [i for i in arr]
     for m_surface in surface[mov_type]:
         for i in range(4):
-            res[arr[(i + mov_amount + 1) % 4]] = arr[m_surface[i]]
+            res[m_surface[(i + mov_amount + 1) % 4]] = arr[m_surface[i]]
     return res
 
 def move_ce(arr, mov):
@@ -142,7 +142,7 @@ def move_ce(arr, mov):
     res = [i for i in arr]
     for m_surface in surface[mov_type]:
         for i in range(4):
-            res[arr[(i + mov_amount + 1) % 4]] = arr[m_surface[i]]
+            res[m_surface[(i + mov_amount + 1) % 4]] = arr[m_surface[i]]
     return res
 
 class Cube:
@@ -298,21 +298,26 @@ class Cube:
 
 def idx_ep_phase1(ep):
     res = 0
-    for i in range(23):
-        res *= 2
-        res += ep[i] % 2
+    arr = [i % 2 for i in ep]
+    remain_1 = 12
+    for i in range(24):
+        if arr[i] == 1:
+            res += cmb(23 - i, remain_1)
+            remain_1 -= 1
+            if remain_1 == 0 or i + remain_1 == 23:
+                break
     return res
 
 def ep_switch_parity(ep): # "last 2 edge"
-    return ep_switch_parity_p([i for i in ep], 0) % 2
+    return ep_switch_parity_p([i for i in ep], 0, 0) % 2
 
-def ep_switch_parity_p(arr, res):
-    for i in range(24):
+def ep_switch_parity_p(arr, res, strt):
+    for i in range(strt, 24):
         if arr[i] != i:
             for j in range(i + 1, 24):
                 if arr[j] == i:
                     arr[i], arr[j] = arr[j], arr[i]
-                    return ep_switch_parity_p(arr, res + 1)
+                    return ep_switch_parity_p(arr, res + 1, i + 1)
     return res
 
 def face(twist):

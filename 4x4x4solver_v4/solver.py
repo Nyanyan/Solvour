@@ -25,30 +25,29 @@ def initialize_puzzle_arr(phase, puzzle):
     if phase == 0:
         return [puzzle.idx_ce_phase0()]
     elif phase == 1:
-        return [puzzle.idx_ce_phase1_fbud() * 70 + puzzle.idx_ce_phase1_rl(), puzzle.Ep]
+        return [puzzle.idx_ce_phase1_fbud() * 70 + puzzle.idx_ce_phase1_rl(), idx_ep_phase1(puzzle.Ep)]
 
 def move_arr(puzzle_arr, phase, twist):
     if phase == 0:
         return [move_ce_phase0[puzzle_arr[0]][twist_to_idx[twist]]]
     elif phase == 1:
-        return [move_ce_phase1_fbud[puzzle_arr[0] // 70][twist_to_idx[twist]] * 70 + move_ce_phase1_rl[puzzle_arr[0] % 70][twist_to_idx[twist]], move_ep(puzzle_arr[1], twist)]
+        return [move_ce_phase1_fbud[puzzle_arr[0] // 70][twist_to_idx[twist]] * 70 + move_ce_phase1_rl[puzzle_arr[0] % 70][twist_to_idx[twist]], move_ep_phase1[puzzle_arr[1]][twist_to_idx[twist]]]
 
 
 def distance(puzzle_arr, phase):
-    #print(puzzle_arr)
-    if phase == 1:
-        parity = ep_switch_parity(puzzle_arr[1])
-        idx = idx_ep_phase1(puzzle_arr[1])
-        return sum([prunning[phase][0][puzzle_arr[0]], prunning[phase][parity + 1][idx]])
-    else:
-        return sum([prunning[phase][i][puzzle_arr[i]] for i in range(prun_len[phase])])
+    res = sum([prunning[phase][i][puzzle_arr[i]] for i in range(prun_len[phase])])
+    if res == 0 and phase == 1:
+        puzzle_ep = [i for i in puzzle.Ep]
+        for i in path:
+            puzzle_ep = move_ep(puzzle_ep, i)
+        if ep_switch_parity(puzzle_ep):
+            return 5
+    return res
 
 
 def phase_search(phase, puzzle_arr, depth):
     global path, cnt
     cnt += 1
-    if cnt % 10000 == 0:
-        print(cnt)
     if depth == 0:
         if distance(puzzle_arr, phase) == 0:
             return True
@@ -69,7 +68,7 @@ def phase_search(phase, puzzle_arr, depth):
 def solver():
     global solution, path, cnt, puzzle
     solution = []
-    for phase in range(2):
+    for phase in range(4):
         print('phase', phase, 'depth', end=' ',flush=True)
         strt = time()
         cnt = 0
@@ -104,12 +103,15 @@ move_ce_phase1_rl = [[] for _ in range(70)]
 with open('move/ce_phase1_rl.csv', mode='r') as f:
     for idx in range(70):
         move_ce_phase1_rl[idx] = [int(i) for i in f.readline().replace('\n', '').split(',')]
-
+move_ep_phase1 = [[] for _ in range(2704156)]
+with open('move/move_ep_phase1.csv', mode='r') as f:
+    for idx in range(2704156):
+        move_ep_phase1[idx] = [int(i) for i in f.readline().replace('\n', '').split(',')]
 
 
 prunning = [None for _ in range(6)]
-prun_len = [1, 3, 3, 2, 2, 3]
-for phase in range(2):
+prun_len = [1, 2, 3, 2, 2, 3]
+for phase in range(4):
     prunning[phase] = [[] for _ in range(prun_len[phase])]
     with open('prun/prunning' + str(phase) + '.csv', mode='r') as f:
         for lin in range(prun_len[phase]):
