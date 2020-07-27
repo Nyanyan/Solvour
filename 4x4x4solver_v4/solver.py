@@ -39,14 +39,16 @@ def distance(puzzle_arr, phase):
     if phase == 1:
         parity = ep_switch_parity(puzzle_arr[1])
         idx = idx_ep_phase1(puzzle_arr[1])
-        return sum(prunning[phase][0][puzzle_arr[0]], prunning[phase][parity + 1][idx])
+        return sum([prunning[phase][0][puzzle_arr[0]], prunning[phase][parity + 1][idx]])
     else:
-        return sum(prunning[phase][i][puzzle_arr[i]] for i in range(prun_len[phase]))
+        return sum([prunning[phase][i][puzzle_arr[i]] for i in range(prun_len[phase])])
 
 
 def phase_search(phase, puzzle_arr, depth):
     global path, cnt
     cnt += 1
+    if cnt % 10000 == 0:
+        print(cnt)
     if depth == 0:
         if distance(puzzle_arr, phase) == 0:
             return True
@@ -67,7 +69,7 @@ def phase_search(phase, puzzle_arr, depth):
 def solver():
     global solution, path, cnt, puzzle
     solution = []
-    for phase in range(1):
+    for phase in range(2):
         print('phase', phase, 'depth', end=' ',flush=True)
         strt = time()
         cnt = 0
@@ -109,7 +111,7 @@ prunning = [None for _ in range(6)]
 prun_len = [1, 3, 3, 2, 2, 3]
 for phase in range(2):
     prunning[phase] = [[] for _ in range(prun_len[phase])]
-    with open('prun_table/prunning' + str(phase) + '.csv', mode='r') as f:
+    with open('prun/prunning' + str(phase) + '.csv', mode='r') as f:
         for lin in range(prun_len[phase]):
             prunning[phase][lin] = [int(i) for i in f.readline().replace('\n', '').split(',')]
 solution = []
