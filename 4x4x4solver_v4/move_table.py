@@ -159,7 +159,6 @@ with open('move/ep_phase1.csv', mode='a') as f:
         writer = csv.writer(f, lineterminator='\n')
         for arr in ep_move_phase1[:4156]:
             writer.writerow(arr)
-'''
 
 ce_move_phase2 = [[-1 for _ in range(len(move_arr))] for _ in range(343000)]
 solved = Cube()
@@ -171,17 +170,42 @@ while que:
     if cnt % 10000 == 0:
         print(cnt, len(que))
     puzzle = que.popleft()
-    idx = puzzle.idx_ce_phase2()
+    idx = puzzle.idx_ce_phase23()
     for twist in successor[2]:
         n_puzzle = puzzle.move(twist)
-        n_idx = n_puzzle.idx_ce_phase2()
+        n_idx = n_puzzle.idx_ce_phase23()
         if ce_move_phase2[idx][twist_to_idx[twist]] == -1:
             ce_move_phase2[idx][twist_to_idx[twist]] = n_idx
             que.append(n_puzzle)
-with open('move/ce_phase2.csv', mode='w') as f:
+with open('move/ce_phase23.csv', mode='w') as f:
     writer = csv.writer(f, lineterminator='\n')
     for arr in ce_move_phase2:
         writer.writerow(arr)
+'''
+
+ep_move_phase3 = [[-1 for _ in range(len(move_arr))] for _ in range(40320)]
+solved = Cube()
+que = deque([solved])
+cnt = 0
+print('EP move index phase2')
+while que:
+    cnt += 1
+    if cnt % 10000 == 0:
+        print(cnt, len(que))
+    puzzle = que.popleft()
+    idx = puzzle.idx_ep_phase3()
+    for twist in successor[3]:
+        n_puzzle = puzzle.move(twist)
+        n_idx = n_puzzle.idx_ep_phase3()
+        if ep_move_phase3[idx][twist_to_idx[twist]] == -1:
+            ep_move_phase3[idx][twist_to_idx[twist]] = n_idx
+            que.append(n_puzzle)
+with open('move/ep_phase3.csv', mode='w') as f:
+    writer = csv.writer(f, lineterminator='\n')
+    for arr in ep_move_phase3:
+        writer.writerow(arr)
+
+
 
 ''' 使っていない I don't use these
 ep_move_phase2 = [[-1 for _ in range(len(move_arr))] for _ in range(343000)]
@@ -194,10 +218,10 @@ while que:
     if cnt % 10000 == 0:
         print(cnt, len(que))
     puzzle = que.popleft()
-    idx = puzzle.idx_ce_phase2()
+    idx = puzzle.idx_ce_phase23()
     for twist in successor[2]:
         n_puzzle = puzzle.move(twist)
-        n_idx = n_puzzle.idx_ce_phase2()
+        n_idx = n_puzzle.idx_ce_phase23()
         if ce_move_phase2[idx][twist_to_idx[twist]] == -1:
             ce_move_phase2[idx][twist_to_idx[twist]] = n_idx
             que.append(n_puzzle)

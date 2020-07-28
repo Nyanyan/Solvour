@@ -214,7 +214,7 @@ class Cube:
                     break
         return res
     
-    def idx_ce_phase2(self):
+    def idx_ce_phase23(self):
         res = 0
         cnt = 0
         for i in range(7):
@@ -241,7 +241,7 @@ class Cube:
                     break
         return res
 
-    '''
+    
     def idx_ep_phase3(self):
         arr1 = [self.Ep[i] // 2 for i in [1, 3, 5, 7, 17, 19, 21, 23]]
         arr2 = [self.Ep[i] // 2 for i in [0, 2, 4, 6, 16, 18, 20, 22]]
@@ -256,7 +256,7 @@ class Cube:
                     cnt -= 1
             res += cnt * fac[7 - i]
         return res
-    
+    '''
     def idx_ep(self):
         arr = [[4, 1, 20, 17], [0, 5, 16, 21], [6, 3, 18, 23], [2, 7, 22, 19], [11, 8, 15, 12], [9, 10, 13, 14]]
         res = [-1 for _ in range(6)]
@@ -353,3 +353,17 @@ def idx_ep_phase2(ep):
         res2 += cnt * cmb(11 - i + 6, 5 - i + 6) * fac[5 - i + 6]
     return [res1, res2]
 
+def pll_parity(ep):
+    return pll_parity_p(ep, 0) % 2
+
+def pll_parity_p(ep, num):
+    res = 0
+    for i in range(num, 12):
+        if ep[i] != i:
+            for j in range(i, 12):
+                if ep[j] == i:
+                    res = 1 + pll_parity_p(ep, i + 1)
+                    ep[i], ep[j] = ep[j], ep[i]
+                    break
+            break
+    return res
