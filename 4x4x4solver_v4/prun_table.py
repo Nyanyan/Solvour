@@ -89,7 +89,7 @@ while que:
 with open('prun/prunning1.csv', mode='w') as f:
     writer = csv.writer(f, lineterminator='\n')
     writer.writerow(prunning)
-
+'''
 
 # phase1 ep
 solved = Cube()
@@ -115,4 +115,3 @@ while que:
 with open('prun/prunning1.csv', mode='a') as f:
     writer = csv.writer(f, lineterminator='\n')
     writer.writerow(prunning)
-'''

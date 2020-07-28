@@ -64,7 +64,6 @@ successor = [
     [   1,                7,               12, 13, 14,             18, 19, 20,                 25,                     31                ]  # phase 5
     ]
 
-
 fac = [1 for _ in range(25)]
 for i in range(1, 25):
     fac[i] = fac[i - 1] * i
