@@ -20,6 +20,7 @@ phase 5: solve it!
 
 from cube_class import Cube, face, axis, wide, move_cp, move_co, move_ep, move_ce, move_candidate, twist_to_idx, successor, ep_switch_parity, idx_ep_phase1
 from time import time
+from math import sqrt
 
 def initialize_puzzle_arr(phase, puzzle):
     if phase == 0:
@@ -36,13 +37,13 @@ def move_arr(puzzle_arr, phase, twist):
 def distance(puzzle_arr, phase):
     lst = [prunning[phase][i][puzzle_arr[i]] for i in range(prun_len[phase])]
     mx = max(lst)
-    sm = sum(lst)
-    shift1 = 1
-    ratio1 = 2 ** (mx - shift1)
+    sm = sqrt(sum([i ** 2 for i in lst]))
+    shift1 = 2
+    ratio1 = pow(2, mx - shift1)
     shift2 = 3
-    ratio2 = 2 ** (shift2 - sm)
-    #print(mx, sm, ratio1, ratio2)
+    ratio2 = pow(2, shift2 - sm)
     res = int((sm * ratio1 + mx * ratio2) / (ratio1 + ratio2))
+    #print(mx, sm, ratio1, ratio2, res)
     if res == 0 and phase == 1:
         puzzle_ep = [i for i in puzzle.Ep]
         for i in path:
@@ -75,7 +76,7 @@ def phase_search(phase, puzzle_arr, depth):
                 n_puzzle_arr = move_arr(puzzle_arr, phase, twist)
                 path.append(twist)
                 tmp = phase_search(phase, n_puzzle_arr, depth - 1)
-                threshold = 5
+                threshold = 8
                 if tmp >= 99 - threshold:
                     path.pop()
                     if tmp - 1 >= 99 - threshold:
