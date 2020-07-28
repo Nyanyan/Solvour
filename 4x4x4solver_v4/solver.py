@@ -37,10 +37,12 @@ def distance(puzzle_arr, phase):
     lst = [prunning[phase][i][puzzle_arr[i]] for i in range(prun_len[phase])]
     mx = max(lst)
     sm = sum(lst)
-    div = 4.5
-    shift = 1
-    ratio = max(0, (mx - shift) / div)
-    res = int((mx + sm * ratio) / (ratio + 1))
+    shift1 = 1
+    ratio1 = 2 ** (mx - shift1)
+    shift2 = 3
+    ratio2 = 2 ** (shift2 - sm)
+    #print(mx, sm, ratio1, ratio2)
+    res = int((sm * ratio1 + mx * ratio2) / (ratio1 + ratio2))
     if res == 0 and phase == 1:
         puzzle_ep = [i for i in puzzle.Ep]
         for i in path:
@@ -55,13 +57,13 @@ def phase_search(phase, puzzle_arr, depth):
     global path, cnt
     cnt += 1
     dis = distance(puzzle_arr, phase)
+    if dis == 99:
+        return 99
     #print(l_dis, dis)
     if depth == 0:
         if dis == 0:
             #print(depth, dis)
             return True
-        elif dis == 99:
-            return 99
     else:
         if dis <= depth:
             l1_twist = path[-1] if len(path) >= 1 else -10
@@ -73,9 +75,10 @@ def phase_search(phase, puzzle_arr, depth):
                 n_puzzle_arr = move_arr(puzzle_arr, phase, twist)
                 path.append(twist)
                 tmp = phase_search(phase, n_puzzle_arr, depth - 1)
-                if tmp >= 90:
+                threshold = 5
+                if tmp >= 99 - threshold:
                     path.pop()
-                    if tmp - 1 >= 90:
+                    if tmp - 1 >= 99 - threshold:
                         return tmp - 1
                     else:
                         continue
@@ -83,8 +86,6 @@ def phase_search(phase, puzzle_arr, depth):
                     #print(depth, dis)
                     return True
                 path.pop()
-        elif dis == 99:
-            return 99
     return False
 
 def solver():
