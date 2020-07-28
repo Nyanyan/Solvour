@@ -15,12 +15,12 @@ move_ce_phase1_rl = [[] for _ in range(70)]
 with open('move/move_ce_phase1_rl.csv', mode='r') as f:
     for idx in range(70):
         move_ce_phase1_rl[idx] = [int(i) for i in f.readline().replace('\n', '').split(',')]
-'''
+
 move_ep_phase1 = [[] for _ in range(2704156)]
 with open('move/move_ep_phase1.csv', mode='r') as f:
     for idx in range(2704156):
         move_ep_phase1[idx] = [int(i) for i in f.readline().replace('\n', '').split(',')]
-
+'''
 '''
 # phase 0
 solved = Cube()

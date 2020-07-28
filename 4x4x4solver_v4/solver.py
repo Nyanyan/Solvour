@@ -42,7 +42,7 @@ def distance(puzzle_arr, phase):
     shift1 = 2
     ratio1 = pow(2, mx - shift1)
     shift2 = 3
-    ratio2 = pow(2, shift2 - sm)
+    ratio2 = pow(3, shift2 - sm)
     res = int((sm * ratio1 + mx * ratio2) / (ratio1 + ratio2))
     #print(mx, sm, ratio1, ratio2, res)
     if res == 0 and phase == 1:
@@ -50,14 +50,15 @@ def distance(puzzle_arr, phase):
         for i in path:
             puzzle_ep = move_ep(puzzle_ep, i)
         if ep_switch_parity(puzzle_ep):
-            #print('a')
+            print('a', end='')
             return 99
     return res
 
 def phase_search(phase, puzzle_arr, depth):
-    global path, cnt
+    global path, cnt, blacklist
     dis = distance(puzzle_arr, phase)
     if dis == 99:
+        blacklist.add(path[0])
         return 99
     #print(l_dis, dis)
     if depth == 0:
@@ -70,19 +71,18 @@ def phase_search(phase, puzzle_arr, depth):
             l2_twist = path[-2] if len(path) >= 2 else -10
             l3_twist = path[-3] if len(path) >= 3 else -10
             for twist in successor[phase]:
-                if face(twist) == face(l1_twist) or axis(twist) == axis(l1_twist) == axis(l2_twist) == axis(l3_twist) or (axis(twist) == axis(l1_twist) and wide(twist) == wide(l1_twist) == 1):
+                if (len(path) == 0 and twist in blacklist) or face(twist) == face(l1_twist) or axis(twist) == axis(l1_twist) == axis(l2_twist) == axis(l3_twist) or (axis(twist) == axis(l1_twist) and wide(twist) == wide(l1_twist) == 1):
                     continue
                 cnt += 1
                 n_puzzle_arr = move_arr(puzzle_arr, phase, twist)
                 path.append(twist)
                 tmp = phase_search(phase, n_puzzle_arr, depth - 1)
-                threshold = 8
-                if tmp >= 99 - threshold:
+                if tmp == 99:
                     path.pop()
-                    if tmp - 1 >= 99 - threshold:
-                        return tmp - 1
-                    else:
+                    if len(path) == 0:
                         continue
+                    else:
+                        return 99
                 if tmp:
                     #print(depth, dis)
                     return True
@@ -96,6 +96,7 @@ def solver():
         print('phase', phase, 'depth', end=' ',flush=True)
         strt = time()
         cnt = 0
+        blacklist = set([])
         for depth in range(30):
             print(depth, end=' ', flush=True)
             path = []
@@ -114,6 +115,7 @@ def solver():
                 break
 
 cnt = 0
+blacklist = set([])
 
 move_ce_phase0 = [[] for _ in range(735471)]
 with open('move/ce_phase0.csv', mode='r') as f:
