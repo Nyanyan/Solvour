@@ -213,7 +213,7 @@ class Cube:
                 if cnt == 4 or i - cnt == 3:
                     break
         return res
-    '''
+    
     def idx_ce_phase2(self):
         res = 0
         cnt = 0
@@ -240,7 +240,8 @@ class Cube:
                 if cnt == 4 or i - cnt == 3:
                     break
         return res
-    
+
+    '''
     def idx_ep_phase3(self):
         arr1 = [self.Ep[i] // 2 for i in [1, 3, 5, 7, 17, 19, 21, 23]]
         arr2 = [self.Ep[i] // 2 for i in [0, 2, 4, 6, 16, 18, 20, 22]]
@@ -327,4 +328,28 @@ def ep_switch_parity_p(arr, res, strt):
                     arr[i], arr[j] = arr[j], arr[i]
                     return ep_switch_parity_p(arr, res + 1, i + 1)
     return res
+
+def idx_ep_phase2(ep):
+    arr1 = [ep[i] // 2 for i in range(1, 24, 2)]
+    arr2 = [ep[i] // 2 for i in range(0, 23, 2)]
+    arr3 = [-1 for _ in range(12)]
+    for i in range(12):
+        arr3[i] = arr2.index(arr1[i])
+    #print(arr3)
+    res1 = 0
+    for i in range(6):
+        cnt = arr3[i]
+        for j in arr3[:i]:
+            if j < arr3[i]:
+                cnt -= 1
+        res1 += cnt * cmb(11 - i, 5 - i) * fac[5 - i]
+    #print(res1)
+    res2 = 0
+    for i in range(6, 12):
+        cnt = arr3[i]
+        for j in arr3[6:i]:
+            if j < arr3[i]:
+                cnt -= 1
+        res2 += cnt * cmb(11 - i + 6, 5 - i + 6) * fac[5 - i + 6]
+    return [res1, res2]
 

@@ -155,8 +155,54 @@ for idx in range(2704156):
             for arr in ep_move_phase1:
                 writer.writerow(arr)
         ep_move_phase1 = [[-1 for _ in range(len(move_arr))] for _ in range(10000)]
-with open('move/move_ep_phase1.csv', mode='a') as f:
+with open('move/ep_phase1.csv', mode='a') as f:
         writer = csv.writer(f, lineterminator='\n')
         for arr in ep_move_phase1[:4156]:
             writer.writerow(arr)
+'''
+
+ce_move_phase2 = [[-1 for _ in range(len(move_arr))] for _ in range(343000)]
+solved = Cube()
+que = deque([solved])
+cnt = 0
+print('CE move index phase2')
+while que:
+    cnt += 1
+    if cnt % 10000 == 0:
+        print(cnt, len(que))
+    puzzle = que.popleft()
+    idx = puzzle.idx_ce_phase2()
+    for twist in successor[2]:
+        n_puzzle = puzzle.move(twist)
+        n_idx = n_puzzle.idx_ce_phase2()
+        if ce_move_phase2[idx][twist_to_idx[twist]] == -1:
+            ce_move_phase2[idx][twist_to_idx[twist]] = n_idx
+            que.append(n_puzzle)
+with open('move/ce_phase2.csv', mode='w') as f:
+    writer = csv.writer(f, lineterminator='\n')
+    for arr in ce_move_phase2:
+        writer.writerow(arr)
+
+''' 使っていない I don't use these
+ep_move_phase2 = [[-1 for _ in range(len(move_arr))] for _ in range(343000)]
+solved = Cube()
+que = deque([solved])
+cnt = 0
+print('CE move index phase2')
+while que:
+    cnt += 1
+    if cnt % 10000 == 0:
+        print(cnt, len(que))
+    puzzle = que.popleft()
+    idx = puzzle.idx_ce_phase2()
+    for twist in successor[2]:
+        n_puzzle = puzzle.move(twist)
+        n_idx = n_puzzle.idx_ce_phase2()
+        if ce_move_phase2[idx][twist_to_idx[twist]] == -1:
+            ce_move_phase2[idx][twist_to_idx[twist]] = n_idx
+            que.append(n_puzzle)
+with open('move/ce_phase2.csv', mode='w') as f:
+    writer = csv.writer(f, lineterminator='\n')
+    for arr in ce_move_phase2:
+        writer.writerow(arr)
 '''

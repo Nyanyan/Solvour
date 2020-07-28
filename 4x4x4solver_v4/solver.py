@@ -4,7 +4,7 @@ Solver:
 --- Reduction phase ---
 phase 0: gather RL centers on RL faces
          use R, Rw, L, U, Uw, D, F, Fw, B
-phase 1: gather FB centers on FB faces, separate low & high edges, clear RL center parity, avoid last two edges (, which means clear OLL Parity)
+phase 1: gather FB centers on FB faces, separate low & high edges, clear RL center parity, avoid last two edges (= OLL Parity)
          use R, Rw, L, U, Uw2, D, F, Fw2, B
 phase 2: make center columns and pair up 4 edges on the middle layer
          use R2, Rw2, L2, U, Uw2, D, F, Fw2, B
@@ -18,7 +18,7 @@ phase 5: solve it!
 '''
 
 
-from cube_class import Cube, face, axis, wide, move_cp, move_co, move_ep, move_ce, move_candidate, twist_to_idx, successor, ep_switch_parity, idx_ep_phase1
+from cube_class import Cube, face, axis, wide, move_cp, move_co, move_ep, move_ce, move_candidate, twist_to_idx, successor, ep_switch_parity, idx_ep_phase1, idx_ep_phase2
 from time import time
 from math import sqrt
 
@@ -27,16 +27,25 @@ def initialize_puzzle_arr(phase, puzzle):
         return [puzzle.idx_ce_phase0()]
     elif phase == 1:
         return [puzzle.idx_ce_phase1_fbud() * 70 + puzzle.idx_ce_phase1_rl(), idx_ep_phase1(puzzle.Ep)]
+    elif phase == 2:
+        return [puzzle.idx_ce_phase2(), puzzle.Ep]
 
 def move_arr(puzzle_arr, phase, twist):
     if phase == 0:
         return [move_ce_phase0[puzzle_arr[0]][twist_to_idx[twist]]]
     elif phase == 1:
         return [move_ce_phase1_fbud[puzzle_arr[0] // 70][twist_to_idx[twist]] * 70 + move_ce_phase1_rl[puzzle_arr[0] % 70][twist_to_idx[twist]], move_ep_phase1[puzzle_arr[1]][twist_to_idx[twist]]]
-        #return move_ce_phase1_fbud[puzzle_arr // 70][twist_to_idx[twist]] * 70 + move_ce_phase1_rl[puzzle_arr % 70][twist_to_idx[twist]]
+    elif phase == 2:
+        return [move_ce_phase2[puzzle_arr[0]][twist_to_idx[twist]], move_ep(puzzle_arr[1], twist)]
 
 def distance(puzzle_arr, phase):
-    lst = [prunning[phase][i][puzzle_arr[i]] for i in range(prun_len[phase])]
+    if phase == 2:
+        lst = [prunning[phase][0][puzzle_arr[0]], None, None]
+        idxes = idx_ep_phase2(puzzle_arr[1])
+        for i in range(2):
+            lst[i + 1] = prunning[phase][i + 1][idxes[i]]
+    else:
+        lst = [prunning[phase][i][puzzle_arr[i]] for i in range(prun_len[phase])]
     #res = prunning[phase][puzzle_arr]
     '''
     mean = sum(lst) / prun_len[phase]
@@ -73,7 +82,8 @@ def distance(puzzle_arr, phase):
 
 skip_axis = [
     [3, 3, 3, 6, 6, 6, 9, 9, 9, 12, 12, 12, 15, 15, 15, 18, 18, 18, 21, 21, 21, 24, 24, 24, 27, 27, 27], 
-    [3, 3, 3, 6, 6, 6, 9, 9, 9, 12, 12, 12, 13, 16, 16, 16, 19, 19, 19, 20, 23, 23, 23]
+    [3, 3, 3, 6, 6, 6, 9, 9, 9, 12, 12, 12, 13, 16, 16, 16, 19, 19, 19, 20, 23, 23, 23], 
+    [1, 2, 3, 6, 6, 6, 7, 10, 10, 10, 13, 13, 13, 14, 17, 17, 17]
     ]
 
 def phase_search(phase, puzzle_arr, depth):
@@ -114,7 +124,7 @@ def phase_search(phase, puzzle_arr, depth):
 def solver():
     global solution, path, cnt, puzzle, blacklist
     solution = []
-    for phase in range(2):
+    for phase in range(3):
         print('phase', phase, 'depth', end=' ',flush=True)
         strt = time()
         cnt = 0
@@ -149,15 +159,20 @@ with open('move/ce_phase1_rl.csv', mode='r') as f:
     for idx in range(70):
         move_ce_phase1_rl[idx] = [int(i) for i in f.readline().replace('\n', '').split(',')]
 move_ep_phase1 = [[] for _ in range(2704156)]
-with open('move/move_ep_phase1.csv', mode='r') as f:
+with open('move/ep_phase1.csv', mode='r') as f:
     for idx in range(2704156):
         move_ep_phase1[idx] = [int(i) for i in f.readline().replace('\n', '').split(',')]
+move_ce_phase2 = [[] for _ in range(343000)]
+with open('move/ce_phase2.csv', mode='r') as f:
+    for idx in range(343000):
+        move_ce_phase2[idx] = [int(i) for i in f.readline().replace('\n', '').split(',')]
+
 
 blacklist = set([])
 
 prunning = [None for _ in range(6)]
 prun_len = [1, 2, 3, 2, 2, 3]
-for phase in range(2):
+for phase in range(3):
     prunning[phase] = [[] for _ in range(prun_len[phase])]
     with open('prun/prunning' + str(phase) + '.csv', mode='r') as f:
         for lin in range(prun_len[phase]):

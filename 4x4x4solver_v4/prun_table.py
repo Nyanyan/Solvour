@@ -1,4 +1,4 @@
-from cube_class import Cube, face, axis, wide, move_cp, move_co, move_ep, move_ce, move_candidate, twist_to_idx, successor, idx_ep_phase1, ep_switch_parity
+from cube_class import Cube, face, axis, wide, move_cp, move_co, move_ep, move_ce, move_candidate, twist_to_idx, successor, idx_ep_phase1, ep_switch_parity, idx_ep_phase2
 from collections import deque
 import csv
 
@@ -15,11 +15,14 @@ move_ce_phase1_rl = [[] for _ in range(70)]
 with open('move/move_ce_phase1_rl.csv', mode='r') as f:
     for idx in range(70):
         move_ce_phase1_rl[idx] = [int(i) for i in f.readline().replace('\n', '').split(',')]
-
 move_ep_phase1 = [[] for _ in range(2704156)]
-with open('move/move_ep_phase1.csv', mode='r') as f:
+with open('move/ep_phase1.csv', mode='r') as f:
     for idx in range(2704156):
         move_ep_phase1[idx] = [int(i) for i in f.readline().replace('\n', '').split(',')]
+move_ce_phase2 = [[] for _ in range(343000)]
+with open('move/ep_phase1.csv', mode='r') as f:
+    for idx in range(343000):
+        move_ce_phase2[idx] = [int(i) for i in f.readline().replace('\n', '').split(',')]
 '''
 '''
 # phase 0
@@ -89,7 +92,7 @@ while que:
 with open('prun/prunning1.csv', mode='w') as f:
     writer = csv.writer(f, lineterminator='\n')
     writer.writerow(prunning)
-'''
+
 
 # phase1 ep
 solved = Cube()
@@ -115,3 +118,77 @@ while que:
 with open('prun/prunning1.csv', mode='a') as f:
     writer = csv.writer(f, lineterminator='\n')
     writer.writerow(prunning)
+
+
+# phase2 ce
+solved = Cube()
+print('phase 2 1/2')
+prunning = [99 for _ in range(343000)]
+solved_idx = solved.idx_ce_phase2()
+prunning[solved_idx] = 0
+que = deque([[solved, 0, -10, -10, -10]])
+cnt = 0
+while que:
+    cnt += 1
+    puzzle, num, l1_twist, l2_twist, l3_twist = que.popleft()
+    if cnt % 10000 == 0:
+        print(cnt, len(que))
+    for twist in successor[2]:
+        if face(twist) == face(l1_twist) or axis(twist) == axis(l1_twist) == axis(l2_twist) == axis(l3_twist) or (axis(twist) == axis(l1_twist) and wide(twist) == wide(l1_twist) == 1):
+            continue
+        n_puzzle = puzzle.move(twist)
+        n_idx = n_puzzle.idx_ce_phase2()
+        if n_puzzle.iscolumn():
+            if prunning[n_idx] > 0:
+                prunning[n_idx] = 0
+                que.append([n_puzzle, 0, -10, -10, -10])
+        else:
+            if prunning[n_idx] > num + 1:
+                prunning[n_idx] = num + 1
+                que.append([n_puzzle, num + 1, twist, l1_twist, l2_twist])
+
+with open('prun/prunning2.csv', mode='w') as f:
+    writer = csv.writer(f, lineterminator='\n')
+    writer.writerow(prunning)
+'''
+'''
+# phase2 ep
+solved = Cube()
+print('phase 2 2/2')
+prunning = [[99 for _ in range(665280)] for _ in range(2)]
+solved_idx = idx_ep_phase2(solved.Ep)
+for i in range(2):
+    prunning[i][solved_idx[i]] = 0
+que = deque([[solved, 0, -10, -10, -10]])
+cnt = 0
+while que:
+    cnt += 1
+    puzzle, num, l1_twist, l2_twist, l3_twist = que.popleft()
+    if cnt % 10000 == 0:
+        print(cnt, len(que))
+    for twist in successor[2]:
+        if face(twist) == face(l1_twist) or axis(twist) == axis(l1_twist) == axis(l2_twist) == axis(l3_twist) or (axis(twist) == axis(l1_twist) and wide(twist) == wide(l1_twist) == 1):
+            continue
+        n_puzzle = puzzle.move(twist)
+        n_idx = idx_ep_phase2(n_puzzle.Ep)
+        flag = False
+        if n_puzzle.edge_paired_4():
+            for i in range(2):
+                if prunning[i][n_idx[i]] > 0:
+                    prunning[i][n_idx[i]] = 0
+                    flag = True
+            if flag:
+                que.append([n_puzzle, 0, -10, -10, -10])
+        else:
+            for i in range(2):
+                if prunning[i][n_idx[i]] > num + 1:
+                    prunning[i][n_idx[i]] = num + 1
+                    flag = True
+            if flag:
+                que.append([n_puzzle, num + 1, twist, l1_twist, l2_twist])
+
+with open('prun/prunning2.csv', mode='a') as f:
+    writer = csv.writer(f, lineterminator='\n')
+    for arr in prunning:
+        writer.writerow(arr)
+'''
