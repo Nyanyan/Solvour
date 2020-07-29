@@ -206,7 +206,7 @@ with open('move/co.csv', mode='w') as f:
     writer = csv.writer(f, lineterminator='\n')
     for arr in co_move:
         writer.writerow(arr)
-
+'''
 
 
 ep_move_phase4 = [[-1 for _ in range(len(move_arr))] for _ in range(495)]
@@ -230,8 +230,8 @@ with open('move/ep_phase4.csv', mode='w') as f:
     writer = csv.writer(f, lineterminator='\n')
     for arr in ep_move_phase4:
         writer.writerow(arr)
-'''
 
+'''
 ep_move_phase5_ud = [[-1 for _ in range(len(move_arr))] for _ in range(40320)]
 solved = Cube()
 que = deque([solved])
@@ -276,7 +276,7 @@ with open('move/ep_phase5_fbrl.csv', mode='w') as f:
     writer = csv.writer(f, lineterminator='\n')
     for arr in ep_move_phase5_fbrl:
         writer.writerow(arr)
-
+'''
 
 
 

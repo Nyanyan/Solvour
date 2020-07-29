@@ -60,7 +60,8 @@ successor = [
     [0, 1, 2, 3, 4, 5, 6, 7, 8,            12, 13, 14,     16,     18, 19, 20,             24, 25, 26,     28,     30, 31, 32            ], # phase 1
     [   1,       4,       7,               12, 13, 14,     16,     18, 19, 20,             24, 25, 26,     28,     30, 31, 32            ], # phase 2
     [   1,       4,       7,               12, 13, 14,             18, 19, 20,                 25,         28,         31,               ], # phase 3
-    [                                      12, 13, 14,             18, 19, 20,             24,     26,             30,     32            ], # phase 4 # [0,    2,          6,    8,            12, 13, 14,             18, 19, 20,             24,     26,             30,     32            ], # phase 4
+    #[0,    2,          6,    8,            12, 13, 14,             18, 19, 20,             24,     26,             30,     32            ], # phase 4
+    [   1,                7,               12, 13, 14,             18, 19, 20,             24,     26,             30,     32            ], # phase 4
     [   1,                7,               12, 13, 14,             18, 19, 20,                 25,                     31                ]  # phase 5
     ]
 
@@ -354,6 +355,30 @@ class Cube:
             if self.Ep[i * 2] // 2 != self.Ep[i * 2 + 1] // 2:
                 return False
         return True
+    
+def ec_parity(ep, cp):
+    res1 = pp_ep_p(ep, 0)
+    res2 = pp_cp_p(cp, 0)
+    #print(res1, res2, res1 % 2 != res2 % 2)
+    return res1 % 2 != res2 % 2
+
+def pp_ep_p(arr, strt):
+    for i in range(strt, 12):
+        if arr[i] != i:
+            for j in range(i, 12):
+                if arr[j] == i:
+                    arr[i], arr[j] = arr[j], arr[i]
+                    return 1 + pp_ep_p(arr, i + 1)
+    return 0
+
+def pp_cp_p(arr, strt):
+    for i in range(strt, 8):
+        if arr[i] != i:
+            for j in range(i, 8):
+                if arr[j] == i:
+                    arr[i], arr[j] = arr[j], arr[i]
+                    return 1 + pp_cp_p(arr, i + 1)
+    return 0
 
 def idx_ep_phase1(ep):
     res = 0
@@ -403,17 +428,16 @@ def idx_ep_phase2(ep):
         res2 += cnt * cmb(11 - i + 6, 5 - i + 6) * fac[5 - i + 6]
     return [res1, res2]
 
+'''
 def pll_parity(ep):
     return pll_parity_p(ep, 0) % 2
 
 def pll_parity_p(ep, num):
-    res = 0
     for i in range(num, 12):
         if ep[i] != i:
             for j in range(i, 12):
                 if ep[j] == i:
-                    res = 1 + pll_parity_p(ep, i + 1)
                     ep[i], ep[j] = ep[j], ep[i]
-                    break
-            break
-    return res
+                    return 1 + pll_parity_p(ep, i + 1)
+    return 0
+'''
