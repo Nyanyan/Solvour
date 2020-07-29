@@ -6,50 +6,6 @@ move_arr = [0, 1, 2, 3, 4, 5, 6, 7, 8, 12, 13, 14, 15, 16, 17, 18, 19, 20, 24, 2
 
 '''
 solved = Cube()
-cp_move = [[-1 for _ in range(len(move_arr))] for _ in range(40320)]
-que = deque([solved])
-cnt = 0
-print('CP move index')
-while que:
-    cnt += 1
-    if cnt % 10000 == 0:
-        print(cnt, len(que))
-    puzzle = que.popleft()
-    idx = puzzle.idx_cp()
-    if cp_move[idx][0] == -1:
-        for twist in move_arr:
-            n_puzzle = puzzle.move(twist)
-            n_idx = n_puzzle.idx_cp()
-            cp_move[idx][twist_to_idx[twist]] = n_idx
-            que.append(n_puzzle)
-with open('move_table/move_cp.csv', mode='w') as f:
-    writer = csv.writer(f, lineterminator='\n')
-    for arr in cp_move:
-        writer.writerow(arr)
-
-solved = Cube()
-co_move = [[-1 for _ in range(len(move_arr))] for _ in range(2187)]
-que = deque([solved])
-cnt = 0
-print('CO move index')
-while que:
-    cnt += 1
-    if cnt % 10000 == 0:
-        print(cnt, len(que))
-    puzzle = que.popleft()
-    idx = puzzle.idx_co()
-    if co_move[idx][0] == -1:
-        for twist in move_arr:
-            n_puzzle = puzzle.move(twist)
-            n_idx = n_puzzle.idx_co()
-            co_move[idx][twist_to_idx[twist]] = n_idx
-            que.append(n_puzzle)
-with open('move_table/move_co.csv', mode='w') as f:
-    writer = csv.writer(f, lineterminator='\n')
-    for arr in co_move:
-        writer.writerow(arr)
-
-solved = Cube()
 ce_move_phase0 = [[-1 for _ in range(len(move_arr))] for _ in range(735471)]
 que = deque([solved])
 cnt = 0
@@ -181,7 +137,7 @@ with open('move/ce_phase23.csv', mode='w') as f:
     writer = csv.writer(f, lineterminator='\n')
     for arr in ce_move_phase2:
         writer.writerow(arr)
-'''
+
 
 ep_move_phase3 = [[-1 for _ in range(len(move_arr))] for _ in range(40320)]
 solved = Cube()
@@ -204,6 +160,80 @@ with open('move/ep_phase3.csv', mode='w') as f:
     writer = csv.writer(f, lineterminator='\n')
     for arr in ep_move_phase3:
         writer.writerow(arr)
+
+
+
+solved = Cube()
+cp_move = [[-1 for _ in range(len(move_arr))] for _ in range(40320)]
+que = deque([solved])
+cnt = 0
+print('CP move index')
+while que:
+    cnt += 1
+    if cnt % 10000 == 0:
+        print(cnt, len(que))
+    puzzle = que.popleft()
+    idx = puzzle.idx_cp()
+    if cp_move[idx][0] == -1:
+        for twist in move_arr:
+            n_puzzle = puzzle.move(twist)
+            n_idx = n_puzzle.idx_cp()
+            cp_move[idx][twist_to_idx[twist]] = n_idx
+            que.append(n_puzzle)
+with open('move/cp.csv', mode='w') as f:
+    writer = csv.writer(f, lineterminator='\n')
+    for arr in cp_move:
+        writer.writerow(arr)
+
+solved = Cube()
+co_move = [[-1 for _ in range(len(move_arr))] for _ in range(2187)]
+que = deque([solved])
+cnt = 0
+print('CO move index')
+while que:
+    cnt += 1
+    if cnt % 10000 == 0:
+        print(cnt, len(que))
+    puzzle = que.popleft()
+    idx = puzzle.idx_co()
+    if co_move[idx][0] == -1:
+        for twist in move_arr:
+            n_puzzle = puzzle.move(twist)
+            n_idx = n_puzzle.idx_co()
+            co_move[idx][twist_to_idx[twist]] = n_idx
+            que.append(n_puzzle)
+with open('move/co.csv', mode='w') as f:
+    writer = csv.writer(f, lineterminator='\n')
+    for arr in co_move:
+        writer.writerow(arr)
+
+
+
+ep_move_phase4 = [[-1 for _ in range(len(move_arr))] for _ in range(495)]
+solved = Cube()
+que = deque([solved])
+cnt = 0
+print('EP move index phase4')
+while que:
+    cnt += 1
+    if cnt % 10000 == 0:
+        print(cnt, len(que))
+    puzzle = que.popleft()
+    idx = puzzle.idx_ep_phase4()
+    for twist in successor[4]:
+        n_puzzle = puzzle.move(twist)
+        n_idx = n_puzzle.idx_ep_phase4()
+        if ep_move_phase4[idx][twist_to_idx[twist]] == -1:
+            ep_move_phase4[idx][twist_to_idx[twist]] = n_idx
+            que.append(n_puzzle)
+with open('move/ep_phase4.csv', mode='w') as f:
+    writer = csv.writer(f, lineterminator='\n')
+    for arr in ep_move_phase4:
+        writer.writerow(arr)
+'''
+
+
+
 
 
 

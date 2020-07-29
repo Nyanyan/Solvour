@@ -60,7 +60,7 @@ successor = [
     [0, 1, 2, 3, 4, 5, 6, 7, 8,            12, 13, 14,     16,     18, 19, 20,             24, 25, 26,     28,     30, 31, 32            ], # phase 1
     [   1,       4,       7,               12, 13, 14,     16,     18, 19, 20,             24, 25, 26,     28,     30, 31, 32            ], # phase 2
     [   1,       4,       7,               12, 13, 14,             18, 19, 20,                 25,         28,         31,               ], # phase 3
-    [0,    2,          6,    8,            12, 13, 14,             18, 19, 20,             24,     26,             30,     32            ], # phase 4
+    [                                      12, 13, 14,             18, 19, 20,             24,     26,             30,     32            ], # phase 4 # [0,    2,          6,    8,            12, 13, 14,             18, 19, 20,             24,     26,             30,     32            ], # phase 4
     [   1,                7,               12, 13, 14,             18, 19, 20,                 25,                     31                ]  # phase 5
     ]
 
@@ -256,6 +256,27 @@ class Cube:
                     cnt -= 1
             res += cnt * fac[7 - i]
         return res
+    
+    def idx_ep_phase4(self):
+        ep = [self.Ep[i] // 8 for i in range(0, 24, 2)]
+        res = 0
+        remain = 4
+        for i in range(12):
+            if ep[i] == 1:
+                res += cmb(11 - i, remain)
+                remain -= 1
+                if remain == 0:
+                    break
+        return res
+    '''
+    def idx_eo_phase4(self):
+        ep = [self.Ep[i] % 2 for i in range(0, 24, 2)]
+        res = 0
+        for i in range(12):
+            res *= 2
+            res += ep[i]
+        return res
+    '''
     '''
     def idx_ep(self):
         arr = [[4, 1, 20, 17], [0, 5, 16, 21], [6, 3, 18, 23], [2, 7, 22, 19], [11, 8, 15, 12], [9, 10, 13, 14]]

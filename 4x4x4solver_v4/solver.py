@@ -12,7 +12,7 @@ phase 3: complete center, edge pairing and clear edge parity (= PLL Parity), whi
          use R2, Rw2, L2, U, Uw2, D, F2, Fw2, B2
 --- 3x3x3 phase ---
 phase 4: gather UD stickers on UD faces and clear EO
-         use R, L, U, D, F, B, not use R2, L2, F2, B2
+         use U, D, F, B, not use F2, B2
 phase 5: solve it!
          use R2, L2, U, D, F2, B2
 '''
@@ -31,6 +31,8 @@ def initialize_puzzle_arr(phase, puzzle):
         return [puzzle.idx_ce_phase23(), puzzle.Ep]
     elif phase == 3:
         return [puzzle.idx_ce_phase23(), puzzle.idx_ep_phase3()]
+    elif phase == 4:
+        return [puzzle.idx_co(), puzzle.idx_ep_phase4()]
 
 def move_arr(puzzle_arr, phase, twist):
     if phase == 0:
@@ -41,6 +43,8 @@ def move_arr(puzzle_arr, phase, twist):
         return [move_ce_phase23[puzzle_arr[0]][twist_to_idx[twist]], move_ep(puzzle_arr[1], twist)]
     elif phase == 3:
         return [move_ce_phase23[puzzle_arr[0]][twist_to_idx[twist]], move_ep_phase3[puzzle_arr[1]][twist_to_idx[twist]]]
+    elif phase == 4:
+        return [move_co[puzzle_arr[0]][twist_to_idx[twist]], move_ep_phase4[puzzle_arr[1]][twist_to_idx[twist]]]
 
 def distance(puzzle_arr, phase):
     global parity_cnt
@@ -85,17 +89,14 @@ def distance(puzzle_arr, phase):
             if pll_parity(ep):
                 parity_cnt += 1
                 return 99
-
-
-
-    
     return res
 
 skip_axis = [
     [3, 3, 3, 6, 6, 6, 9, 9, 9, 12, 12, 12, 15, 15, 15, 18, 18, 18, 21, 21, 21, 24, 24, 24, 27, 27, 27], 
     [3, 3, 3, 6, 6, 6, 9, 9, 9, 12, 12, 12, 13, 16, 16, 16, 19, 19, 19, 20, 23, 23, 23], 
     [1, 2, 3, 6, 6, 6, 7, 10, 10, 10, 13, 13, 13, 14, 17, 17, 17],
-    [1, 2, 3, 6, 6, 6, 9, 9, 9, 10, 11, 12]
+    [1, 2, 3, 6, 6, 6, 9, 9, 9, 10, 11, 12],
+    [3, 3, 3, 6, 6, 6, 7, 8, 9, 10]
     ]
 
 def phase_search(phase, puzzle_arr, depth):
@@ -132,7 +133,7 @@ def phase_search(phase, puzzle_arr, depth):
 def solver():
     global solution, path, cnt, puzzle, parity_cnt
     solution = []
-    for phase in range(4):
+    for phase in range(5):
         print('phase', phase, 'depth', end=' ',flush=True)
         strt = time()
         cnt = 0
@@ -179,13 +180,21 @@ move_ep_phase3 = [[] for _ in range(40320)]
 with open('move/ep_phase3.csv', mode='r') as f:
     for idx in range(40320):
         move_ep_phase3[idx] = [int(i) for i in f.readline().replace('\n', '').split(',')]
+move_co = [[] for _ in range(2187)]
+with open('move/co.csv', mode='r') as f:
+    for idx in range(2187):
+        move_co[idx] = [int(i) for i in f.readline().replace('\n', '').split(',')]
+move_ep_phase4 = [[] for _ in range(495)]
+with open('move/ep_phase4.csv', mode='r') as f:
+    for idx in range(495):
+        move_ep_phase4[idx] = [int(i) for i in f.readline().replace('\n', '').split(',')]
 
 
 parity_cnt = 0
 
 prunning = [None for _ in range(6)]
 prun_len = [1, 2, 3, 2, 2, 3]
-for phase in range(4):
+for phase in range(5):
     prunning[phase] = [[] for _ in range(prun_len[phase])]
     with open('prun/prunning' + str(phase) + '.csv', mode='r') as f:
         for lin in range(prun_len[phase]):

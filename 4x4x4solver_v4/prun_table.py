@@ -23,11 +23,19 @@ move_ce_phase23 = [[] for _ in range(343000)]
 with open('move/ce_phase23.csv', mode='r') as f:
     for idx in range(343000):
         move_ce_phase23[idx] = [int(i) for i in f.readline().replace('\n', '').split(',')]
-'''
 move_ep_phase3 = [[] for _ in range(40320)]
 with open('move/ep_phase3.csv', mode='r') as f:
     for idx in range(40320):
         move_ep_phase3[idx] = [int(i) for i in f.readline().replace('\n', '').split(',')]
+move_co = [[] for _ in range(2187)]
+with open('move/co.csv', mode='r') as f:
+    for idx in range(2187):
+        move_co[idx] = [int(i) for i in f.readline().replace('\n', '').split(',')]
+move_ep_phase4 = [[] for _ in range(495)]
+with open('move/ep_phase4.csv', mode='r') as f:
+    for idx in range(495):
+        move_ep_phase4[idx] = [int(i) for i in f.readline().replace('\n', '').split(',')]
+'''
 
 
 '''
@@ -224,7 +232,7 @@ while que:
 with open('prun/prunning3.csv', mode='w') as f:
     writer = csv.writer(f, lineterminator='\n')
     writer.writerow(prunning)
-'''
+
 
 # phase3 ep
 solved = Cube()
@@ -248,5 +256,55 @@ while que:
             que.append([n_puzzle, num + 1, twist, l1_twist, l2_twist])
 
 with open('prun/prunning3.csv', mode='a') as f:
+    writer = csv.writer(f, lineterminator='\n')
+    writer.writerow(prunning)
+
+
+# phase4 co
+solved = Cube()
+print('phase 4 1/2')
+prunning = [99 for _ in range(2187)]
+solved_idx = solved.idx_co()
+prunning[solved_idx] = 0
+que = deque([[solved_idx, 0, -10, -10, -10]])
+cnt = 0
+while que:
+    cnt += 1
+    puzzle, num, l1_twist, l2_twist, l3_twist = que.popleft()
+    if cnt % 10000 == 0:
+        print(cnt, len(que))
+    for twist in successor[4]:
+        if face(twist) == face(l1_twist) or axis(twist) == axis(l1_twist) == axis(l2_twist) == axis(l3_twist) or (axis(twist) == axis(l1_twist) and wide(twist) == wide(l1_twist) == 1):
+            continue
+        n_puzzle = move_co[puzzle][twist_to_idx[twist]]
+        if prunning[n_puzzle] > num + 1:
+            prunning[n_puzzle] = num + 1
+            que.append([n_puzzle, num + 1, twist, l1_twist, l2_twist])
+with open('prun/prunning4.csv', mode='w') as f:
+    writer = csv.writer(f, lineterminator='\n')
+    writer.writerow(prunning)
+'''
+
+# phase4 ep
+solved = Cube()
+print('phase 4 2/2')
+prunning = [99 for _ in range(495)]
+solved_idx = solved.idx_ep_phase4()
+prunning[solved_idx] = 0
+que = deque([[solved_idx, 0, -10, -10, -10]])
+cnt = 0
+while que:
+    cnt += 1
+    puzzle, num, l1_twist, l2_twist, l3_twist = que.popleft()
+    if cnt % 10000 == 0:
+        print(cnt, len(que))
+    for twist in successor[4]:
+        if face(twist) == face(l1_twist) or axis(twist) == axis(l1_twist) == axis(l2_twist) == axis(l3_twist) or (axis(twist) == axis(l1_twist) and wide(twist) == wide(l1_twist) == 1):
+            continue
+        n_puzzle = move_ep_phase4[puzzle][twist_to_idx[twist]]
+        if prunning[n_puzzle] > num + 1:
+            prunning[n_puzzle] = num + 1
+            que.append([n_puzzle, num + 1, twist, l1_twist, l2_twist])
+with open('prun/prunning4.csv', mode='a') as f:
     writer = csv.writer(f, lineterminator='\n')
     writer.writerow(prunning)
