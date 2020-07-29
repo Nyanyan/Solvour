@@ -359,7 +359,6 @@ class Cube:
 def ec_parity(ep, cp):
     res1 = pp_ep_p(ep, 0)
     res2 = pp_cp_p(cp, 0)
-    #print(res1, res2, res1 % 2 != res2 % 2)
     return res1 % 2 != res2 % 2
 
 def pp_ep_p(arr, strt):

@@ -94,11 +94,11 @@ def distance(puzzle_arr, phase):
                 parity_cnt += 1
                 return 99
         elif phase == 3: # find PLL Parity
-            ep = [puzzle_ep[i] // 2 for i in range(0, 24, 2)]
-            cp = [i for i in puzzle.Cp]
+            puzzle_ep = [puzzle_ep[i] // 2 for i in range(0, 24, 2)]
+            puzzle_cp = [i for i in puzzle.Cp]
             for i in path:
-                cp = move_cp(cp, i)
-            if ec_parity(ep, cp):
+                puzzle_cp = move_cp(puzzle_cp, i)
+            if ec_parity(puzzle_ep, puzzle_cp):
                 parity_cnt += 1
                 return 99
     return res
@@ -130,14 +130,15 @@ def phase_search(phase, puzzle_arr, depth, dis):
                 continue
             cnt += 1
             n_puzzle_arr = move_arr(puzzle_arr, phase, twist)
+            path.append(twist)
             n_dis = distance(n_puzzle_arr, phase)
             if n_dis >= depth:
+                path.pop()
                 if n_dis > depth:
                     twist_idx = skip_axis[phase][twist_idx - 1]
                     if n_dis == 99:
                         return False
                 continue
-            path.append(twist)
             if phase_search(phase, n_puzzle_arr, depth - 1, n_dis):
                 return True
             path.pop()
@@ -155,11 +156,11 @@ def solver():
             print(depth, end=' ', flush=True)
             path = []
             puzzle_arr = initialize_puzzle_arr(phase, puzzle)
-            if phase_search(phase, puzzle_arr, depth, 99):
+            dis = distance(puzzle_arr, phase)
+            if phase_search(phase, puzzle_arr, depth, dis):
                 for twist in path:
                     puzzle = puzzle.move(twist)
                 solution.extend(path)
-                #print('phase', phase, end=': ')
                 print('')
                 for i in path:
                     print(move_candidate[i], end=' ')
