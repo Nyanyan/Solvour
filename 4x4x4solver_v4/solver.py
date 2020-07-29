@@ -43,6 +43,7 @@ def move_arr(puzzle_arr, phase, twist):
         return [move_ce_phase23[puzzle_arr[0]][twist_to_idx[twist]], move_ep_phase3[puzzle_arr[1]][twist_to_idx[twist]]]
 
 def distance(puzzle_arr, phase):
+    global parity_cnt
     if phase == 2:
         lst = [prunning[phase][0][puzzle_arr[0]], None, None]
         idxes = idx_ep_phase2(puzzle_arr[1])
@@ -65,7 +66,7 @@ def distance(puzzle_arr, phase):
     shift1 = 2
     ratio1 = pow(2, mx - shift1)
     shift2 = 3
-    ratio2 = pow(3, shift2 - sm)
+    ratio2 = pow(2, shift2 - sm)
     res = int((sm * ratio1 + mx * ratio2) / (ratio1 + ratio2))
     #res = int(sm)
     #print(mx, sm, ratio1, ratio2, res)
@@ -76,13 +77,13 @@ def distance(puzzle_arr, phase):
             puzzle_ep = move_ep(puzzle_ep, i)
         if phase == 1: # find OLL Parity
             if ep_switch_parity(puzzle_ep):
-                print('a', end='')
+                parity_cnt += 1
                 return 99
         elif phase == 3: # find PLL Parity
             ep = [puzzle_ep[i] // 2 for i in range(0, 24, 2)]
             #print(ep)
             if pll_parity(ep):
-                print('a', end='')
+                parity_cnt += 1
                 return 99
 
 
@@ -98,7 +99,7 @@ skip_axis = [
     ]
 
 def phase_search(phase, puzzle_arr, depth):
-    global path, cnt, blacklist
+    global path, cnt
     dis = distance(puzzle_arr, phase)
     if depth == 0:
         return dis == 0
@@ -110,7 +111,7 @@ def phase_search(phase, puzzle_arr, depth):
         while twist_idx < len(successor[phase]):
             twist = successor[phase][twist_idx]
             twist_idx += 1
-            if (len(path) == 0 and face(twist) in blacklist) or face(twist) == face(l1_twist) or axis(twist) == axis(l1_twist) == axis(l2_twist) == axis(l3_twist) or (axis(twist) == axis(l1_twist) and wide(twist) == wide(l1_twist) == 1):
+            if face(twist) == face(l1_twist) or axis(twist) == axis(l1_twist) == axis(l2_twist) == axis(l3_twist) or (axis(twist) == axis(l1_twist) and wide(twist) == wide(l1_twist) == 1):
                 twist_idx = skip_axis[phase][twist_idx - 1]
                 continue
             cnt += 1
@@ -120,27 +121,23 @@ def phase_search(phase, puzzle_arr, depth):
                 if n_dis > depth:
                     twist_idx = skip_axis[phase][twist_idx - 1]
                     if n_dis == 99:
-                        blacklist.add(face(path[0]))
-                        return None
+                        return False
                 continue
             path.append(twist)
-            tmp = phase_search(phase, n_puzzle_arr, depth - 1)
-            if tmp == None and len(path) - 1:
-                return None
-            if tmp:
+            if phase_search(phase, n_puzzle_arr, depth - 1):
                 return True
             path.pop()
         return False
 
 def solver():
-    global solution, path, cnt, puzzle, blacklist
+    global solution, path, cnt, puzzle, parity_cnt
     solution = []
     for phase in range(4):
         print('phase', phase, 'depth', end=' ',flush=True)
         strt = time()
         cnt = 0
-        blacklist = set([])
-        for depth in range(30):
+        parity_cnt = 0
+        for depth in range(40):
             print(depth, end=' ', flush=True)
             path = []
             puzzle_arr = initialize_puzzle_arr(phase, puzzle)
@@ -155,6 +152,7 @@ def solver():
                 print('')
                 print(time() - strt, 'sec')
                 print('cnt', cnt)
+                print('parity', parity_cnt)
                 break
 
 move_ce_phase0 = [[] for _ in range(735471)]
@@ -183,7 +181,7 @@ with open('move/ep_phase3.csv', mode='r') as f:
         move_ep_phase3[idx] = [int(i) for i in f.readline().replace('\n', '').split(',')]
 
 
-blacklist = set([])
+parity_cnt = 0
 
 prunning = [None for _ in range(6)]
 prun_len = [1, 2, 3, 2, 2, 3]
