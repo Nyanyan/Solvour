@@ -277,6 +277,35 @@ class Cube:
             res += ep[i]
         return res
     '''
+
+    def idx_ep_phase5_ud(self):
+        ud = [self.Ep[i] // 2 for i in [0, 2, 4, 6, 16, 18, 20, 22]]
+        for i in range(8):
+            if ud[i] >= 8:
+                ud[i] -= 4
+        res_ud = 0
+        for i in range(8):
+            cnt = ud[i]
+            for j in ud[:i]:
+                if j < ud[i]:
+                    cnt -= 1
+            res_ud += fac[7 - i] * cnt
+        return res_ud
+    
+    def idx_ep_phase5_fbrl(self):
+        fbrl = [self.Ep[i] // 2 - 4 for i in [8, 10, 12, 14]]
+        res_fbrl = 0
+        for i in range(4):
+            cnt = fbrl[i]
+            for j in fbrl[:i]:
+                if j < fbrl[i]:
+                    cnt -= 1
+            res_fbrl += fac[3 - i] * cnt
+        return res_fbrl
+    
+    def idx_ep_phase5(self):
+        return self.idx_ep_phase5_ud() * 24 + self.idx_ep_phase5_fbrl()
+
     '''
     def idx_ep(self):
         arr = [[4, 1, 20, 17], [0, 5, 16, 21], [6, 3, 18, 23], [2, 7, 22, 19], [11, 8, 15, 12], [9, 10, 13, 14]]

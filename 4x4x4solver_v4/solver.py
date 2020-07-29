@@ -33,6 +33,8 @@ def initialize_puzzle_arr(phase, puzzle):
         return [puzzle.idx_ce_phase23(), puzzle.idx_ep_phase3()]
     elif phase == 4:
         return [puzzle.idx_co(), puzzle.idx_ep_phase4()]
+    elif phase == 5:
+        return [puzzle.idx_cp(), puzzle.idx_ep_phase5()]
 
 def move_arr(puzzle_arr, phase, twist):
     if phase == 0:
@@ -45,6 +47,8 @@ def move_arr(puzzle_arr, phase, twist):
         return [move_ce_phase23[puzzle_arr[0]][twist_to_idx[twist]], move_ep_phase3[puzzle_arr[1]][twist_to_idx[twist]]]
     elif phase == 4:
         return [move_co[puzzle_arr[0]][twist_to_idx[twist]], move_ep_phase4[puzzle_arr[1]][twist_to_idx[twist]]]
+    elif phase == 5:
+        return [move_cp[puzzle_arr[0]][twist_to_idx[twist]], move_ep_phase5_ud[puzzle_arr[1] // 24][twist_to_idx[twist]] * 24 + move_ep_phase5_fbrl[puzzle_arr[1] % 24][twist_to_idx[twist]]]
 
 def distance(puzzle_arr, phase):
     global parity_cnt
@@ -55,6 +59,8 @@ def distance(puzzle_arr, phase):
             lst[i + 1] = prunning[phase][i + 1][idxes[i]]
     else:
         lst = [prunning[phase][i][puzzle_arr[i]] for i in range(prun_len[phase])]
+    if phase == 5:
+        print(lst)
     #res = prunning[phase][puzzle_arr]
     '''
     mean = sum(lst) / prun_len[phase]
@@ -96,7 +102,8 @@ skip_axis = [
     [3, 3, 3, 6, 6, 6, 9, 9, 9, 12, 12, 12, 13, 16, 16, 16, 19, 19, 19, 20, 23, 23, 23], 
     [1, 2, 3, 6, 6, 6, 7, 10, 10, 10, 13, 13, 13, 14, 17, 17, 17],
     [1, 2, 3, 6, 6, 6, 9, 9, 9, 10, 11, 12],
-    [3, 3, 3, 6, 6, 6, 7, 8, 9, 10]
+    [3, 3, 3, 6, 6, 6, 7, 8, 9, 10],
+    [1, 2, 5, 5, 5, 8, 8, 8, 9, 10]
     ]
 
 def phase_search(phase, puzzle_arr, depth):
@@ -133,7 +140,7 @@ def phase_search(phase, puzzle_arr, depth):
 def solver():
     global solution, path, cnt, puzzle, parity_cnt
     solution = []
-    for phase in range(5):
+    for phase in range(6):
         print('phase', phase, 'depth', end=' ',flush=True)
         strt = time()
         cnt = 0
@@ -188,13 +195,25 @@ move_ep_phase4 = [[] for _ in range(495)]
 with open('move/ep_phase4.csv', mode='r') as f:
     for idx in range(495):
         move_ep_phase4[idx] = [int(i) for i in f.readline().replace('\n', '').split(',')]
+move_cp = [[] for _ in range(40320)]
+with open('move/cp.csv', mode='r') as f:
+    for idx in range(40320):
+        move_cp[idx] = [int(i) for i in f.readline().replace('\n', '').split(',')]
+move_ep_phase5_ud = [[] for _ in range(40320)]
+with open('move/ep_phase5_ud.csv', mode='r') as f:
+    for idx in range(40320):
+        move_ep_phase5_ud[idx] = [int(i) for i in f.readline().replace('\n', '').split(',')]
+move_ep_phase5_fbrl = [[] for _ in range(24)]
+with open('move/ep_phase5_fbrl.csv', mode='r') as f:
+    for idx in range(24):
+        move_ep_phase5_fbrl[idx] = [int(i) for i in f.readline().replace('\n', '').split(',')]
 
 
 parity_cnt = 0
 
 prunning = [None for _ in range(6)]
-prun_len = [1, 2, 3, 2, 2, 3]
-for phase in range(5):
+prun_len = [1, 2, 3, 2, 2, 2]
+for phase in range(6):
     prunning[phase] = [[] for _ in range(prun_len[phase])]
     with open('prun/prunning' + str(phase) + '.csv', mode='r') as f:
         for lin in range(prun_len[phase]):

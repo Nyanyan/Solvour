@@ -232,7 +232,50 @@ with open('move/ep_phase4.csv', mode='w') as f:
         writer.writerow(arr)
 '''
 
+ep_move_phase5_ud = [[-1 for _ in range(len(move_arr))] for _ in range(40320)]
+solved = Cube()
+que = deque([solved])
+cnt = 0
+print('EP move index phase5 UD')
+while que:
+    cnt += 1
+    if cnt % 10000 == 0:
+        print(cnt, len(que))
+    puzzle = que.popleft()
+    idx = puzzle.idx_ep_phase5_ud()
+    for twist in successor[5]:
+        n_puzzle = puzzle.move(twist)
+        n_idx = n_puzzle.idx_ep_phase5_ud()
+        if ep_move_phase5_ud[idx][twist_to_idx[twist]] == -1:
+            ep_move_phase5_ud[idx][twist_to_idx[twist]] = n_idx
+            que.append(n_puzzle)
+with open('move/ep_phase5_ud.csv', mode='w') as f:
+    writer = csv.writer(f, lineterminator='\n')
+    for arr in ep_move_phase5_ud:
+        writer.writerow(arr)
 
+
+ep_move_phase5_fbrl = [[-1 for _ in range(len(move_arr))] for _ in range(24)]
+solved = Cube()
+que = deque([solved])
+cnt = 0
+print('EP move index phase5 FBRL')
+while que:
+    cnt += 1
+    if cnt % 10000 == 0:
+        print(cnt, len(que))
+    puzzle = que.popleft()
+    idx = puzzle.idx_ep_phase5_fbrl()
+    for twist in successor[5]:
+        n_puzzle = puzzle.move(twist)
+        n_idx = n_puzzle.idx_ep_phase5_fbrl()
+        if ep_move_phase5_fbrl[idx][twist_to_idx[twist]] == -1:
+            ep_move_phase5_fbrl[idx][twist_to_idx[twist]] = n_idx
+            que.append(n_puzzle)
+with open('move/ep_phase5_fbrl.csv', mode='w') as f:
+    writer = csv.writer(f, lineterminator='\n')
+    for arr in ep_move_phase5_fbrl:
+        writer.writerow(arr)
 
 
 
