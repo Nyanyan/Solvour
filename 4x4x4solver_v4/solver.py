@@ -20,7 +20,7 @@ phase 5: solve it!
 
 from cube_class import Cube, face, axis, wide, move_cp, move_co, move_ep, move_ce, move_candidate, twist_to_idx, successor, ep_switch_parity, idx_ep_phase1, idx_ep_phase2, ec_parity, ec_0_parity, skip_axis, reverse_move
 from time import time
-from math import sqrt
+import concurrent.futures
 
 def initialize_puzzle_arr(phase, puzzle):
     if phase == 0:
@@ -123,7 +123,7 @@ def phase_search(phase, puzzle_arr, depth, dis):
         return False
 
 def solver():
-    global solution, path, cnt, puzzle, parity_cnt
+    global path, cnt, puzzle, parity_cnt
     solution = []
     part_3_max_depth = 30
     max_depth = [20, 20, 20, 20, part_3_max_depth, 0]
@@ -166,6 +166,7 @@ def solver():
                 for i in reverse_move(phase4_path):
                     solution.pop()
                     puzzle = puzzle.move(i)
+    return solution
 
 move_ce_phase0 = [[] for _ in range(735471)]
 with open('move/ce_phase0.csv', mode='r') as f:
@@ -211,10 +212,6 @@ move_ep_phase5_fbrl = [[] for _ in range(24)]
 with open('move/ep_phase5_fbrl.csv', mode='r') as f:
     for idx in range(24):
         move_ep_phase5_fbrl[idx] = [int(i) for i in f.readline().replace('\n', '').split(',')]
-
-
-parity_cnt = 0
-
 prunning = [None for _ in range(7)]
 prun_len = [1, 2, 3, 2, 2, 2]
 for phase in range(6):
@@ -222,25 +219,34 @@ for phase in range(6):
     with open('prun/prunning' + str(phase) + '.csv', mode='r') as f:
         for lin in range(prun_len[phase]):
             prunning[phase][lin] = [int(i) for i in f.readline().replace('\n', '').split(',')]
-        #prunning[phase] = [int(i) for i in f.readline().replace('\n', '').split(',')]
-while True:
-    solution = []
-    path = []
-    cnt = 0
-    inpt = [i for i in input("scramble: ").split()]
-    if inpt[0] == 'exit':
-        exit()
-    scramble = [move_candidate.index(i) for i in inpt]
-    puzzle = Cube()
-    for mov in scramble:
-        puzzle = puzzle.move(mov)
-    strt = time()
-    solver()
-    print('solution:',end=' ')
-    #print(solution)
-    for i in solution:
-        print(move_candidate[i],end=' ')
-    print('')
-    print(len(solution), 'moves')
-    print(time() - strt, 'sec')
-    print('')
+
+parity_cnt = 0
+cnt = 0
+puzzle = Cube()
+path = []
+
+def main():
+    global parity_cnt, cnt, puzzle
+    while True:
+        cnt = 0
+        parity_cnt = 0
+        inpt = [i for i in input("scramble: ").split()]
+        if inpt[0] == 'exit':
+            exit()
+        scramble = [move_candidate.index(i) for i in inpt]
+        puzzle = Cube()
+        for mov in scramble:
+            puzzle = puzzle.move(mov)
+        strt = time()
+        solution = solver()
+        print('solution:',end=' ')
+        #print(solution)
+        for i in solution:
+            print(move_candidate[i],end=' ')
+        print('')
+        print(len(solution), 'moves')
+        print(time() - strt, 'sec')
+        print('')
+
+if __name__ == '__main__':
+    main()
