@@ -17,7 +17,6 @@ phase 5: solve it!
          use R2, L2, U, D, F2, B2
 '''
 
-
 from cube_class import Cube, face, axis, wide, move_cp, move_co, move_ep, move_ce, move_candidate, twist_to_idx, successor, ep_switch_parity, idx_ep_phase1, idx_ep_phase2, ec_parity, ec_0_parity, skip_axis, reverse_move
 from time import time
 import numpy as np
@@ -226,10 +225,8 @@ puzzle = Cube()
 path = []
 
 def main():
-    global parity_cnt, cnt, puzzle
+    global puzzle
     while True:
-        cnt = 0
-        parity_cnt = 0
         inpt = [i for i in input("scramble: ").split()]
         if inpt[0] == 'exit':
             exit()
