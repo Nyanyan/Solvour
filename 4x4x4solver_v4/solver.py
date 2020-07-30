@@ -20,7 +20,7 @@ phase 5: solve it!
 
 from cube_class import Cube, face, axis, wide, move_cp, move_co, move_ep, move_ce, move_candidate, twist_to_idx, successor, ep_switch_parity, idx_ep_phase1, idx_ep_phase2, ec_parity, ec_0_parity, skip_axis, reverse_move
 from time import time
-import concurrent.futures
+import numpy as np
 
 def initialize_puzzle_arr(phase, puzzle):
     if phase == 0:
@@ -168,7 +168,7 @@ def solver():
                     puzzle = puzzle.move(i)
     return solution
 
-move_ce_phase0 = [[] for _ in range(735471)]
+move_ce_phase0 = np.zeros((735471, 27), dtype=np.int)
 with open('move/ce_phase0.csv', mode='r') as f:
     for idx in range(735471):
         move_ce_phase0[idx] = [int(i) for i in f.readline().replace('\n', '').split(',')]
@@ -180,7 +180,7 @@ move_ce_phase1_rl = [[] for _ in range(70)]
 with open('move/ce_phase1_rl.csv', mode='r') as f:
     for idx in range(70):
         move_ce_phase1_rl[idx] = [int(i) for i in f.readline().replace('\n', '').split(',')]
-move_ep_phase1 = [[] for _ in range(2704156)]
+move_ep_phase1 = np.zeros((2704156, 27), dtype=np.int)
 with open('move/ep_phase1.csv', mode='r') as f:
     for idx in range(2704156):
         move_ep_phase1[idx] = [int(i) for i in f.readline().replace('\n', '').split(',')]
