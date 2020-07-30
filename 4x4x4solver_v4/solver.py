@@ -51,13 +51,13 @@ def move_arr(puzzle_arr, phase, twist):
         return [move_cp_arr[puzzle_arr[0]][twist_to_idx[twist]], move_ep_phase5_ud[puzzle_arr[1] // 24][twist_to_idx[twist]] * 24 + move_ep_phase5_fbrl[puzzle_arr[1] % 24][twist_to_idx[twist]]]
 
 def nyanyan_function(lst, phase):
-    if phase == 1 or phase == 2:
+    if phase == 5:
+        return max(lst)
+    else:
         sm = sum(lst)
         mx = max(lst)
         ratio = pow(2, max(mx - 5, mx * 2 - sm - 4)) # small when mx is small and sm neary equal to mx*2
         return int((mx + sm * ratio) / (1 + ratio))
-    else:
-        return max(lst)
 
 def distance(puzzle_arr, phase):
     global parity_cnt
