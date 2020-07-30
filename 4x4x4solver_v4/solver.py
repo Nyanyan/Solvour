@@ -18,7 +18,7 @@ phase 5: solve it!
 '''
 
 
-from cube_class import Cube, face, axis, wide, move_cp, move_co, move_ep, move_ce, move_candidate, twist_to_idx, successor, ep_switch_parity, idx_ep_phase1, idx_ep_phase2, ec_parity, ec_0_parity, skip_axis
+from cube_class import Cube, face, axis, wide, move_cp, move_co, move_ep, move_ce, move_candidate, twist_to_idx, successor, ep_switch_parity, idx_ep_phase1, idx_ep_phase2, ec_parity, ec_0_parity, skip_axis, reverse_move
 from time import time
 from math import sqrt
 
@@ -101,7 +101,7 @@ def phase_search(phase, puzzle_arr, depth, dis):
         while twist_idx < len(successor[phase]):
             twist = successor[phase][twist_idx]
             twist_idx += 1
-            if face(twist) == face(l1_twist) or axis(twist) == axis(l1_twist) == axis(l2_twist) == axis(l3_twist) or (axis(twist) == axis(l1_twist) and wide(twist) == wide(l1_twist) == 1):
+            if face(twist) == face(l1_twist) or axis(twist) == axis(l1_twist) == axis(l2_twist) == axis(l3_twist) or (axis(twist) == axis(l1_twist) and wide(twist) == wide(l1_twist) == 1) or (axis(twist) == axis(l1_twist) == axis(l2_twist) and wide(twist) == wide(l1_twist) == wide(l2_twist) == 0):
                 twist_idx = skip_axis[phase][twist_idx - 1]
                 continue
             cnt += 1
@@ -127,17 +127,18 @@ def solver():
     max_depth = [20, 20, 20, 20, part_3_max_depth, 0]
     strt_depth = [0, 0, 0, 0, 0, 0]
     phase = 0
+    phase4_path = []
     while phase < 6:
-        print('phase', phase, 'max depth', max_depth[phase], 'depth', end=' ',flush=True)
         strt = time()
         cnt = 0
         parity_cnt = 0
         depth = strt_depth[phase]
+        puzzle_arr = initialize_puzzle_arr(phase, puzzle)
+        dis = distance(puzzle_arr, phase)
+        print('phase', phase, 'max depth', max_depth[phase], 'depth', end=' ',flush=True)
         while depth < max_depth[phase]:
             print(depth, end=' ', flush=True)
             path = []
-            puzzle_arr = initialize_puzzle_arr(phase, puzzle)
-            dis = distance(puzzle_arr, phase)
             if phase_search(phase, puzzle_arr, depth, dis):
                 for twist in path:
                     puzzle = puzzle.move(twist)
@@ -150,6 +151,7 @@ def solver():
                 print('cnt', cnt)
                 print('parity', parity_cnt)
                 if phase == 4:
+                    phase4_path = [i for i in path]
                     max_depth[5] = part_3_max_depth - depth
                 phase += 1
                 break
@@ -157,8 +159,11 @@ def solver():
         else:
             if phase == 5:
                 print('phase5 failed. go back to phase 4')
-                strt_depth[4] = part_3_max_depth - max_depth[5]
+                strt_depth[4] = part_3_max_depth - max_depth[5] + 1
                 phase = 4
+                for i in reverse_move(phase4_path):
+                    solution.pop()
+                    puzzle = puzzle.move(i)
 
 move_ce_phase0 = [[] for _ in range(735471)]
 with open('move/ce_phase0.csv', mode='r') as f:
