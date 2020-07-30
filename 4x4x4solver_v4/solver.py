@@ -56,8 +56,6 @@ def move_arr(puzzle_arr, phase, twist):
 
 def distance(puzzle_arr, phase):
     global parity_cnt
-    #if phase == 4:
-    #    return 0#int(ec_parity([puzzle_arr[1][i] for i in range(0, 24, 2)], puzzle_arr[0]))
     if phase == 2:
         lst = [prunning[phase][0][puzzle_arr[0]], None, None]
         idxes = idx_ep_phase2(puzzle_arr[1])
@@ -65,24 +63,10 @@ def distance(puzzle_arr, phase):
             lst[i + 1] = prunning[phase][i + 1][idxes[i]]
     else:
         lst = [prunning[phase][i][puzzle_arr[i]] for i in range(prun_len[phase])]
-    #res = prunning[phase][puzzle_arr]
-    '''
-    mean = sum(lst) / prun_len[phase]
-    sd_sum = 0
-    for i in range(prun_len[phase]):
-        sd_sum += pow(lst[i] - mean, 2)
-    sd_sum = sqrt(sd_sum)
-    sm = mean + sd_sum
-    '''
     sm = sum(lst)
-    #sm = sqrt(sum([i ** 2 for i in lst]))
     mx = max(lst)
-    shift1 = 3
-    ratio1 = pow(2, mx - shift1)
-    shift2 = 5
-    ratio2 = pow(2, shift2 - sm)
-    res = int((sm * ratio1 + mx * ratio2) / (ratio1 + ratio2))
-
+    ratio = pow(2, max(mx - 5, mx * 2 - sm - 4)) # mxが小さいときは小さく、sm=mx*2くらいのときは小さく
+    res = int((mx + sm * ratio) / (1 + ratio))
     if res == 0:
         puzzle_ep = [i for i in puzzle.Ep]
         puzzle_cp = [i for i in puzzle.Cp]
