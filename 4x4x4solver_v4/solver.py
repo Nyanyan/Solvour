@@ -123,12 +123,17 @@ def phase_search(phase, puzzle_arr, depth, dis):
 def solver():
     global solution, path, cnt, puzzle, parity_cnt
     solution = []
-    for phase in range(6):
-        print('phase', phase, 'depth', end=' ',flush=True)
+    part_3_max_depth = 30
+    max_depth = [20, 20, 20, 20, part_3_max_depth, 0]
+    strt_depth = [0, 0, 0, 0, 0, 0]
+    phase = 0
+    while phase < 6:
+        print('phase', phase, 'max depth', max_depth[phase], 'depth', end=' ',flush=True)
         strt = time()
         cnt = 0
         parity_cnt = 0
-        for depth in range(40):
+        depth = strt_depth[phase]
+        while depth < max_depth[phase]:
             print(depth, end=' ', flush=True)
             path = []
             puzzle_arr = initialize_puzzle_arr(phase, puzzle)
@@ -144,7 +149,16 @@ def solver():
                 print(time() - strt, 'sec')
                 print('cnt', cnt)
                 print('parity', parity_cnt)
+                if phase == 4:
+                    max_depth[5] = part_3_max_depth - depth
+                phase += 1
                 break
+            depth += 1
+        else:
+            if phase == 5:
+                print('phase5 failed. go back to phase 4')
+                strt_depth[4] = part_3_max_depth - max_depth[5]
+                phase = 4
 
 move_ce_phase0 = [[] for _ in range(735471)]
 with open('move/ce_phase0.csv', mode='r') as f:
