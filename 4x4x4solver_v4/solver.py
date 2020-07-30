@@ -31,8 +31,6 @@ def initialize_puzzle_arr(phase, puzzle):
         return [puzzle.idx_ce_phase23(), puzzle.Ep]
     elif phase == 3:
         return [puzzle.idx_ce_phase23(), puzzle.idx_ep_phase3()]
-        #elif phase == 4:
-        #return [puzzle.Cp, puzzle.Ep]
     elif phase == 4:
         return [puzzle.idx_co(), puzzle.idx_ep_phase4()]
     elif phase == 5:
@@ -47,21 +45,19 @@ def move_arr(puzzle_arr, phase, twist):
         return [move_ce_phase23[puzzle_arr[0]][twist_to_idx[twist]], move_ep(puzzle_arr[1], twist)]
     elif phase == 3:
         return [move_ce_phase23[puzzle_arr[0]][twist_to_idx[twist]], move_ep_phase3[puzzle_arr[1]][twist_to_idx[twist]]]
-        #elif phase == 4:
-        #return [move_cp(puzzle_arr[0], twist), move_ep(puzzle_arr[1], twist)]
     elif phase == 4:
         return [move_co_arr[puzzle_arr[0]][twist_to_idx[twist]], move_ep_phase4[puzzle_arr[1]][twist_to_idx[twist]]]
     elif phase == 5:
         return [move_cp_arr[puzzle_arr[0]][twist_to_idx[twist]], move_ep_phase5_ud[puzzle_arr[1] // 24][twist_to_idx[twist]] * 24 + move_ep_phase5_fbrl[puzzle_arr[1] % 24][twist_to_idx[twist]]]
 
 def nyanyan_function(lst, phase):
-    if phase == 5:
-        return max(lst)
-    else:
+    if phase == 1 or phase == 2:
         sm = sum(lst)
         mx = max(lst)
         ratio = pow(2, max(mx - 5, mx * 2 - sm - 4)) # small when mx is small and sm neary equal to mx*2
         return int((mx + sm * ratio) / (1 + ratio))
+    else:
+        return max(lst)
 
 def distance(puzzle_arr, phase):
     global parity_cnt
