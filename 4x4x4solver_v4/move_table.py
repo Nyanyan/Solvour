@@ -4,7 +4,7 @@ import csv
 
 move_arr = [0, 1, 2, 3, 4, 5, 6, 7, 8, 12, 13, 14, 15, 16, 17, 18, 19, 20, 24, 25, 26, 27, 28, 29, 30, 31, 32]
 
-'''
+
 solved = Cube()
 ce_move_phase0 = [[-1 for _ in range(len(move_arr))] for _ in range(735471)]
 que = deque([solved])
@@ -27,8 +27,8 @@ with open('move_table/move_ce_phase0.csv', mode='w') as f:
     writer = csv.writer(f, lineterminator='\n')
     for arr in ce_move_phase0:
         writer.writerow(arr)
-'''
-'''
+
+
 solved = Cube()
 ce_move_phase1_fbud = [[-1 for _ in range(len(move_arr))] for _ in range(12870)]
 que = deque([solved])
@@ -72,8 +72,8 @@ with open('move_table/move_ce_phase1_rl.csv', mode='w') as f:
     writer = csv.writer(f, lineterminator='\n')
     for arr in ce_move_phase1_rl:
         writer.writerow(arr)
-'''
-'''
+
+
 def idx_to_ep_phase1(idx):
     res = [-1 for _ in range(24)]
     remain_1 = 12
@@ -206,7 +206,7 @@ with open('move/co.csv', mode='w') as f:
     writer = csv.writer(f, lineterminator='\n')
     for arr in co_move:
         writer.writerow(arr)
-'''
+
 
 
 ep_move_phase4 = [[-1 for _ in range(len(move_arr))] for _ in range(495)]
@@ -231,7 +231,7 @@ with open('move/ep_phase4.csv', mode='w') as f:
     for arr in ep_move_phase4:
         writer.writerow(arr)
 
-'''
+
 ep_move_phase5_ud = [[-1 for _ in range(len(move_arr))] for _ in range(40320)]
 solved = Cube()
 que = deque([solved])
@@ -276,30 +276,3 @@ with open('move/ep_phase5_fbrl.csv', mode='w') as f:
     writer = csv.writer(f, lineterminator='\n')
     for arr in ep_move_phase5_fbrl:
         writer.writerow(arr)
-'''
-
-
-
-''' 使っていない I don't use these
-ep_move_phase2 = [[-1 for _ in range(len(move_arr))] for _ in range(343000)]
-solved = Cube()
-que = deque([solved])
-cnt = 0
-print('CE move index phase2')
-while que:
-    cnt += 1
-    if cnt % 10000 == 0:
-        print(cnt, len(que))
-    puzzle = que.popleft()
-    idx = puzzle.idx_ce_phase23()
-    for twist in successor[2]:
-        n_puzzle = puzzle.move(twist)
-        n_idx = n_puzzle.idx_ce_phase23()
-        if ce_move_phase2[idx][twist_to_idx[twist]] == -1:
-            ce_move_phase2[idx][twist_to_idx[twist]] = n_idx
-            que.append(n_puzzle)
-with open('move/ce_phase2.csv', mode='w') as f:
-    writer = csv.writer(f, lineterminator='\n')
-    for arr in ce_move_phase2:
-        writer.writerow(arr)
-'''
