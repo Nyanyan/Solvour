@@ -12,13 +12,13 @@ phase 3: complete center, edge pairing and clear edge parity (= PLL Parity), whi
          use R2, Rw2, L2, U, Uw2, D, F2, Fw2, B2
 --- 3x3x3 phase ---
 phase 4: gather UD stickers on UD faces and clear EO
-         use U, D, F, B, not use F2, B2
+         use R2, L2, U, D, F, B, not use F2, B2
 phase 5: solve it!
          use R2, L2, U, D, F2, B2
 '''
 
 
-from cube_class import Cube, face, axis, wide, move_cp, move_co, move_ep, move_ce, move_candidate, twist_to_idx, successor, ep_switch_parity, idx_ep_phase1, idx_ep_phase2, ec_parity
+from cube_class import Cube, face, axis, wide, move_cp, move_co, move_ep, move_ce, move_candidate, twist_to_idx, successor, ep_switch_parity, idx_ep_phase1, idx_ep_phase2, ec_parity, ec_0_parity, skip_axis
 from time import time
 from math import sqrt
 
@@ -77,41 +77,33 @@ def distance(puzzle_arr, phase):
     sm = sum(lst)
     #sm = sqrt(sum([i ** 2 for i in lst]))
     mx = max(lst)
-    shift1 = 2
+    shift1 = 3
     ratio1 = pow(2, mx - shift1)
-    shift2 = 3
+    shift2 = 5
     ratio2 = pow(2, shift2 - sm)
     res = int((sm * ratio1 + mx * ratio2) / (ratio1 + ratio2))
-    #res = int(sm)
-    #print(mx, sm, ratio1, ratio2, res)
-    
+
     if res == 0:
         puzzle_ep = [i for i in puzzle.Ep]
+        puzzle_cp = [i for i in puzzle.Cp]
         for i in path:
             puzzle_ep = move_ep(puzzle_ep, i)
+            puzzle_cp = move_cp(puzzle_cp, i)
         if phase == 1: # find OLL Parity
             if ep_switch_parity(puzzle_ep):
                 parity_cnt += 1
                 return 99
         elif phase == 3: # find PLL Parity
             puzzle_ep = [puzzle_ep[i] // 2 for i in range(0, 24, 2)]
-            puzzle_cp = [i for i in puzzle.Cp]
-            for i in path:
-                puzzle_cp = move_cp(puzzle_cp, i)
             if ec_parity(puzzle_ep, puzzle_cp):
                 parity_cnt += 1
                 return 99
+        elif phase == 4:
+            puzzle_ep = [puzzle_ep[i] // 2 for i in range(0, 24, 2)]
+            if ec_0_parity(puzzle_ep, puzzle_cp):
+                parity_cnt += 1
+                return 99
     return res
-
-skip_axis = [
-    [3, 3, 3, 6, 6, 6, 9, 9, 9, 12, 12, 12, 15, 15, 15, 18, 18, 18, 21, 21, 21, 24, 24, 24, 27, 27, 27], # phase0
-    [3, 3, 3, 6, 6, 6, 9, 9, 9, 12, 12, 12, 13, 16, 16, 16, 19, 19, 19, 20, 23, 23, 23], # phase1
-    [1, 2, 3, 6, 6, 6, 7, 10, 10, 10, 13, 13, 13, 14, 17, 17, 17], # phase2
-    [1, 2, 3, 6, 6, 6, 9, 9, 9, 10, 11, 12], # phase3
-    # [2, 2, 4, 4, 7, 7, 7, 10, 10, 10, 12, 12, 14, 14], # phase4
-    [1, 2, 5, 5, 5, 8, 8, 8, 10, 10, 12, 12], # phase4
-    [1, 2, 5, 5, 5, 8, 8, 8, 9, 10] # phase5
-    ]
 
 def phase_search(phase, puzzle_arr, depth, dis):
     global path, cnt
