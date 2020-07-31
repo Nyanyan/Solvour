@@ -58,7 +58,7 @@ def nyanyan_function(lst, phase):
         ratio = pow(2, max(mx - 5, mx * 2 - sm - 4)) # small when mx is small and sm neary equal to mx*2
         return int((mx + sm * ratio) / (1 + ratio))
 
-def distance(puzzle_arr, phase):
+def distance(puzzle_arr, phase, first_twist_idx):
     global parity_cnt
     if phase == 2:
         lst = [prunning[phase][0][puzzle_arr[0]], None, None]
@@ -71,7 +71,7 @@ def distance(puzzle_arr, phase):
     if res == 0:
         puzzle_ep = [i for i in puzzle.Ep]
         puzzle_cp = [i for i in puzzle.Cp]
-        for i in path:
+        for i in path[first_twist_idx]:
             puzzle_ep = move_ep(puzzle_ep, i)
             puzzle_cp = move_cp(puzzle_cp, i)
         if phase == 1: # find OLL Parity
@@ -90,14 +90,14 @@ def distance(puzzle_arr, phase):
                 return 99
     return res
 
-def phase_search(phase, puzzle_arr, depth, dis):
+def phase_search(phase, puzzle_arr, depth, dis, first_twist_idx):
     global path, cnt
     if depth == 0:
         return dis == 0
     else:
-        l1_twist = path[-1] if len(path) >= 1 else -10
-        l2_twist = path[-2] if len(path) >= 2 else -10
-        l3_twist = path[-3] if len(path) >= 3 else -10
+        l1_twist = path[first_twist_idx][-1] if len(path[first_twist_idx]) >= 1 else -10
+        l2_twist = path[first_twist_idx][-2] if len(path[first_twist_idx]) >= 2 else -10
+        l3_twist = path[first_twist_idx][-3] if len(path[first_twist_idx]) >= 3 else -10
         twist_idx = 0
         while twist_idx < len(successor[phase]):
             twist = successor[phase][twist_idx]
@@ -107,21 +107,31 @@ def phase_search(phase, puzzle_arr, depth, dis):
                 continue
             cnt += 1
             n_puzzle_arr = move_arr(puzzle_arr, phase, twist)
-            path.append(twist)
-            n_dis = distance(n_puzzle_arr, phase)
+            path[first_twist_idx].append(twist)
+            n_dis = distance(n_puzzle_arr, phase, first_twist_idx)
             if n_dis >= depth:
-                path.pop()
+                path[first_twist_idx].pop()
                 if n_dis > depth:
                     twist_idx = skip_axis[phase][twist_idx - 1]
                     if n_dis == 99:
                         return False
                 continue
-            if phase_search(phase, n_puzzle_arr, depth - 1, n_dis):
+            if phase_search(phase, n_puzzle_arr, depth - 1, n_dis, first_twist_idx):
                 return True
-            path.pop()
+            path[first_twist_idx].pop()
         return False
 
-
+def phase_solver(phase, first_twist_idx, depth):
+    global path, cnt, puzzle, parity_cnt
+    strt = time()
+    puzzle_tmp = puzzle.move(successor[phase][first_twist_idx])
+    puzzle_arr = initialize_puzzle_arr(phase, puzzle_tmp)
+    dis = distance(puzzle_arr, phase, first_twist_idx)
+    if phase_search(phase, puzzle_arr, depth, dis, first_twist_idx):
+        print('')
+        print(time() - strt, 'sec', depth, 'moves No', first_twist_idx, 'answer found')
+        return True, path[first_twist_idx]
+    return False, []
 
 def solver():
     global path, cnt, puzzle, parity_cnt
@@ -224,7 +234,7 @@ for phase in range(6):
 parity_cnt = 0
 cnt = 0
 puzzle = Cube()
-path = []
+path = [[] for _ in range(27)]
 
 def main():
     global puzzle
@@ -236,8 +246,28 @@ def main():
         puzzle = Cube()
         for mov in scramble:
             puzzle = puzzle.move(mov)
+        solution = []
         strt = time()
-        solution = solver()
+        for phase in range(6):
+            path = [[] for _ in range(len(successor[phase]))]
+            puzzle_arr = initialize_puzzle_arr(phase, puzzle)
+            dis = distance(puzzle_arr, phase, 0)
+            print('phase', phase, 'depth 0', end=' ',flush=True)
+            if dis == 0:
+                continue
+            flag = False
+            for depth in range(20):
+                print(depth + 1, end=' ', flush=True)
+                for first_twist_idx in range(len(successor[phase])):
+                    path[first_twist_idx] = [successor[phase][first_twist_idx]]
+                    tmp = phase_solver(phase, first_twist_idx, depth)
+                    if tmp[0]:
+                        solution.extend(tmp[1])
+                        flag = True
+                    if flag:
+                        break
+                if flag:
+                    break
         print('solution:',end=' ')
         #print(solution)
         for i in solution:
