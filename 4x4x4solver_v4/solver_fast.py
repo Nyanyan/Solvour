@@ -21,6 +21,17 @@ from cube_class import Cube, face, axis, wide, move_cp, move_co, move_ep, move_c
 from time import time
 import numpy as np
 import concurrent.futures
+import os
+import signal, psutil
+
+def kill_child_processes(parent_pid, sig=signal.SIGTERM):
+    try:
+        parent = psutil.Process(parent_pid)
+    except psutil.NoSuchProcess:
+        return
+    children = parent.children(recursive=True)
+    for process in children:
+        process.send_signal(sig)
 
 def initialize_puzzle_arr(phase, puzzle):
     if phase == 0:
@@ -131,12 +142,12 @@ def phase_solver(phase, first_twist_idx, depth):
     dis = distance(puzzle_arr, phase, first_twist_idx)
     if phase_search(phase, puzzle_arr, depth, dis, first_twist_idx):
         print('')
-        print(time() - strt, 'sec', depth + 1, 'moves No', first_twist_idx, 'answer found', end=' ')
+        print('phase', phase, time() - strt, 'sec', depth + 1, 'moves No', first_twist_idx, 'answer found', end=' ')
         for i in path[first_twist_idx]:
             print(move_candidate[i], end=' ')
         print('')
-        return True
-    return False
+        return first_twist_idx
+    return -1
 
 move_ce_phase0 = np.zeros((735471, 27), dtype=np.int)
 with open('move/ce_phase0.csv', mode='r') as f:
@@ -197,7 +208,6 @@ path = [[] for _ in range(27)]
 
 def main():
     global puzzle, path
-    executor = concurrent.futures.ThreadPoolExecutor(max_workers=4)
     while True:
         inpt = [i for i in input("scramble: ").split()]
         if inpt[0] == 'exit':
@@ -210,7 +220,6 @@ def main():
         strt = time()
         for phase in range(6):
             path = [[] for _ in range(len(successor[phase]))]
-            print(puzzle.Ep)
             puzzle_arr = initialize_puzzle_arr(phase, puzzle)
             dis = distance(puzzle_arr, phase, 0)
             print('phase', phase, 'depth 0', end=' ',flush=True)
@@ -220,15 +229,19 @@ def main():
             flag = False
             for depth in range(20):
                 print(depth + 1, end=' ', flush=True)
-                for first_twist_idx in range(len(successor[phase])):
-                    tmp = executor.submit(phase_solver, phase, first_twist_idx, depth).result()
-                    if tmp:
-                        solution.extend(path[first_twist_idx])
-                        for i in path[first_twist_idx]:
-                            puzzle = puzzle.move(i)
-                        flag = True
-                    if flag:
-                        break
+                with concurrent.futures.ThreadPoolExecutor(max_workers=4) as executor:
+                    futures = [executor.submit(phase_solver, phase, first_twist_idx, depth) for first_twist_idx in range(len(successor[phase]))]
+                    for future in concurrent.futures.as_completed(futures):
+                        tmp = future.result()
+                        if tmp != -1:
+                            solution.extend(path[tmp])
+                            for i in path[tmp]:
+                                puzzle = puzzle.move(i)
+                            print('path', path[tmp])
+                            print('solution', solution)
+                            flag = True
+                        if flag:
+                            break
                 if flag:
                     break
         print('solution:',end=' ')
