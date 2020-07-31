@@ -441,6 +441,8 @@ def idx_ep_phase2(ep):
         res2 += cnt * cmb(11 - i + 6, 5 - i + 6) * fac[5 - i + 6]
     return [res1, res2]
 
+
+
 def reverse_move(arr):
     res = list(reversed(arr))
     for i in range(len(res)):
