@@ -69,7 +69,6 @@ skip_axis = [
     [3, 3, 3, 6, 6, 6, 9, 9, 9, 12, 12, 12, 13, 16, 16, 16, 19, 19, 19, 20, 23, 23, 23], # phase1
     [1, 2, 3, 6, 6, 6, 7, 10, 10, 10, 13, 13, 13, 14, 17, 17, 17], # phase2
     [1, 2, 3, 6, 6, 6, 9, 9, 9, 10, 11, 12], # phase3
-    #[1, 2, 5, 5, 5, 8, 8, 8, 10, 10, 12, 12], # phase4
     [3, 3, 3, 6, 6, 6, 8, 8, 10, 10], # phase4
     [1, 2, 5, 5, 5, 8, 8, 8, 9, 10] # phase5
     ]
@@ -82,7 +81,7 @@ rl_center = [8, 9, 10, 11, 16, 17, 18, 19]
 fb_center = [4, 5, 6, 7, 12, 13, 14, 15]
 ud_center = [0, 1, 2, 3, 20, 21, 22, 23]
 
-def cmb(n, r):
+cdef cmb(n, r):
     return fac[n] // fac[r] // fac[n - r]
 
 def face(twist):
@@ -315,29 +314,6 @@ class Cube:
     
     def idx_ep_phase5(self):
         return self.idx_ep_phase5_ud() * 24 + self.idx_ep_phase5_fbrl()
-
-    '''
-    def idx_ep(self):
-        arr = [[4, 1, 20, 17], [0, 5, 16, 21], [6, 3, 18, 23], [2, 7, 22, 19], [11, 8, 15, 12], [9, 10, 13, 14]]
-        res = [-1 for _ in range(6)]
-        for slc in range(6):
-            tmp_arr = [-1 for _ in range(4)]
-            for elm_idx in range(4):
-                for i in range(24):
-                    if arr[slc][elm_idx] == self.Ep[i]:
-                        tmp_arr[elm_idx] = i
-                        break
-            res_tmp = 0
-            for i in range(4):
-                cnt = tmp_arr[i]
-                for j in tmp_arr[:i]:
-                    if j < tmp_arr[i]:
-                        cnt -= 1
-                res_tmp += cnt * cmb(23 - i, 3 - i) * fac[3 - i]
-            res[slc] = res_tmp
-        return res
-    '''
-
     
     def ce_parity(self):
         arr = [[8, 11], [9, 10], [16, 19], [17, 18]]
@@ -450,17 +426,3 @@ def reverse_move(arr):
         elif tmp == 2:
             res[i] -= 2
     return res
-
-'''
-def pll_parity(ep):
-    return pll_parity_p(ep, 0) % 2
-
-def pll_parity_p(ep, num):
-    for i in range(num, 12):
-        if ep[i] != i:
-            for j in range(i, 12):
-                if ep[j] == i:
-                    ep[i], ep[j] = ep[j], ep[i]
-                    return 1 + pll_parity_p(ep, i + 1)
-    return 0
-'''

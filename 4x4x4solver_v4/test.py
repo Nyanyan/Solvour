@@ -1,31 +1,32 @@
-import select
-import socket
-
-def slow_syscall(timeout=1):
-    """遅いシステムコールを実行する関数"""
-    select.select([socket.socket()], [], [], timeout)
-
-def factorize(number):
-    """素因数分解する関数"""
-    for i in range(1, number + 1):
-        if number % i == 0:
-            yield i
-
-def call_factorize(number):
-    """イテレーターをリストに変換する"""
-    return list(factorize(number))
-
-from time import time
+import time
+import numpy as np
+from multiprocessing import Pool
 from concurrent.futures import ProcessPoolExecutor
 
-numbers = [53541233, 21235343, 11421443, 5423123]
-start = time()
+def f1(x):
+    a, b = x
+    return a * b
 
-with ProcessPoolExecutor(max_workers=2) as pool:
-    # mapは呼び出す関数をイテラブルな要素それぞれに対して実行する。
-    results = pool.map(call_factorize, numbers)
+def f2(a, b):
+    return a * b
 
-    for result in results:
-        print(result)
+def main():
+    p1 = Pool(4)
+    p2 = ProcessPoolExecutor(4)
+    a, b = np.random.rand(2, 10**2, 10**2)
+    alst = [a+x for x in range(1000)]
+    blst = [b+x for x in range(1000)]
 
-print('Took %.3f seconds' % (time() - start))
+    t1 = time.time()
+    result1 = p1.map(f1, zip(alst, blst))
+    t2 = time.time()
+    print("Pool:{:.6f}".format(t2 - t1))
+
+    t1 = time.time()
+    result2 = list(p2.map(f2, alst, blst))
+    t2 = time.time()
+    print("ProcessPoolExecutor:{:.6f}".format(t2 - t1))
+    print(np.array_equal(result1, result2))
+
+if __name__ == "__main__":
+    main()
