@@ -20,6 +20,7 @@ phase 5: solve it!
 from cube_class import Cube, face, axis, wide, move_cp, move_co, move_ep, move_ce, move_candidate, twist_to_idx, successor, ep_switch_parity, idx_ep_phase1, idx_ep_phase2, ec_parity, ec_0_parity, skip_axis, reverse_move
 from time import time
 import numpy as np
+import concurrent.futures
 
 def initialize_puzzle_arr(phase, puzzle):
     if phase == 0:
@@ -124,60 +125,18 @@ def phase_search(phase, puzzle_arr, depth, dis, first_twist_idx):
 def phase_solver(phase, first_twist_idx, depth):
     global path, cnt, puzzle, parity_cnt
     strt = time()
+    path[first_twist_idx] = [successor[phase][first_twist_idx]]
     puzzle_tmp = puzzle.move(successor[phase][first_twist_idx])
     puzzle_arr = initialize_puzzle_arr(phase, puzzle_tmp)
     dis = distance(puzzle_arr, phase, first_twist_idx)
     if phase_search(phase, puzzle_arr, depth, dis, first_twist_idx):
         print('')
-        print(time() - strt, 'sec', depth, 'moves No', first_twist_idx, 'answer found')
-        return True, path[first_twist_idx]
-    return False, []
-
-def solver():
-    global path, cnt, puzzle, parity_cnt
-    solution = []
-    part_3_max_depth = 30
-    max_depth = [20, 20, 20, 20, part_3_max_depth, 0]
-    strt_depth = [0, 0, 0, 0, 0, 0]
-    phase = 0
-    phase4_path = []
-    while phase < 6:
-        strt = time()
-        cnt = 0
-        parity_cnt = 0
-        depth = strt_depth[phase]
-        puzzle_arr = initialize_puzzle_arr(phase, puzzle)
-        dis = distance(puzzle_arr, phase)
-        print('phase', phase, 'max depth', max_depth[phase], 'depth', end=' ',flush=True)
-        while depth < max_depth[phase]:
-            print(depth, end=' ', flush=True)
-            path = []
-            if phase_search(phase, puzzle_arr, depth, dis):
-                for twist in path:
-                    puzzle = puzzle.move(twist)
-                solution.extend(path)
-                print('')
-                for i in path:
-                    print(move_candidate[i], end=' ')
-                print('')
-                print(time() - strt, 'sec')
-                print('cnt', cnt)
-                print('parity', parity_cnt)
-                if phase == 4:
-                    phase4_path = [i for i in path]
-                    max_depth[5] = part_3_max_depth - depth
-                phase += 1
-                break
-            depth += 1
-        else:
-            if phase == 5:
-                print('phase5 failed. go back to phase 4')
-                strt_depth[4] = part_3_max_depth - max_depth[5] + 1
-                phase = 4
-                for i in reverse_move(phase4_path):
-                    solution.pop()
-                    puzzle = puzzle.move(i)
-    return solution
+        print(time() - strt, 'sec', depth + 1, 'moves No', first_twist_idx, 'answer found', end=' ')
+        for i in path[first_twist_idx]:
+            print(move_candidate[i], end=' ')
+        print('')
+        return True
+    return False
 
 move_ce_phase0 = np.zeros((735471, 27), dtype=np.int)
 with open('move/ce_phase0.csv', mode='r') as f:
@@ -237,7 +196,8 @@ puzzle = Cube()
 path = [[] for _ in range(27)]
 
 def main():
-    global puzzle
+    global puzzle, path
+    executor = concurrent.futures.ThreadPoolExecutor(max_workers=4)
     while True:
         inpt = [i for i in input("scramble: ").split()]
         if inpt[0] == 'exit':
@@ -250,19 +210,22 @@ def main():
         strt = time()
         for phase in range(6):
             path = [[] for _ in range(len(successor[phase]))]
+            print(puzzle.Ep)
             puzzle_arr = initialize_puzzle_arr(phase, puzzle)
             dis = distance(puzzle_arr, phase, 0)
             print('phase', phase, 'depth 0', end=' ',flush=True)
             if dis == 0:
+                print('skip')
                 continue
             flag = False
             for depth in range(20):
                 print(depth + 1, end=' ', flush=True)
                 for first_twist_idx in range(len(successor[phase])):
-                    path[first_twist_idx] = [successor[phase][first_twist_idx]]
-                    tmp = phase_solver(phase, first_twist_idx, depth)
-                    if tmp[0]:
-                        solution.extend(tmp[1])
+                    tmp = executor.submit(phase_solver, phase, first_twist_idx, depth).result()
+                    if tmp:
+                        solution.extend(path[first_twist_idx])
+                        for i in path[first_twist_idx]:
+                            puzzle = puzzle.move(i)
                         flag = True
                     if flag:
                         break
