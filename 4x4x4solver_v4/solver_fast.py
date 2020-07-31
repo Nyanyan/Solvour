@@ -92,9 +92,13 @@ def distance(puzzle_arr, phase, first_twist_idx):
     return res
 
 def phase_search(phase, puzzle_arr, depth, dis, first_twist_idx):
-    global path, cnt
+    global path, cnt, quit_flag
+    if quit_flag:
+        return False
     if depth == 0:
-        return dis == 0
+        if dis == 0:
+            quit_flag = True
+            return True
     else:
         l1_twist = path[first_twist_idx][-1] if len(path[first_twist_idx]) >= 1 else -10
         l2_twist = path[first_twist_idx][-2] if len(path[first_twist_idx]) >= 2 else -10
@@ -130,13 +134,15 @@ def phase_solver(phase, first_twist_idx, depth):
     puzzle_arr = initialize_puzzle_arr(phase, puzzle_tmp)
     dis = distance(puzzle_arr, phase, first_twist_idx)
     if phase_search(phase, puzzle_arr, depth, dis, first_twist_idx):
+        '''
         print('')
         print(time() - strt, 'sec', depth + 1, 'moves No', first_twist_idx, 'answer found', end=' ')
         for i in path[first_twist_idx]:
             print(move_candidate[i], end=' ')
         print('')
-        return True
-    return False
+        '''
+        return first_twist_idx
+    return -1
 
 move_ce_phase0 = np.zeros((735471, 27), dtype=np.int)
 with open('move/ce_phase0.csv', mode='r') as f:
@@ -194,9 +200,10 @@ parity_cnt = 0
 cnt = 0
 puzzle = Cube()
 path = [[] for _ in range(27)]
+quit_flag = False
 
 def main():
-    global puzzle, path
+    global puzzle, path, quit_flag
     while True:
         inpt = [i for i in input("scramble: ").split()]
         if inpt[0] == 'exit':
@@ -206,10 +213,9 @@ def main():
         for mov in scramble:
             puzzle = puzzle.move(mov)
         solution = []
-        strt = time()
+        all_strt = time()
         for phase in range(6):
             path = [[] for _ in range(len(successor[phase]))]
-            print(puzzle.Ep)
             puzzle_arr = initialize_puzzle_arr(phase, puzzle)
             dis = distance(puzzle_arr, phase, 0)
             print('phase', phase, 'depth 0', end=' ',flush=True)
@@ -217,18 +223,22 @@ def main():
                 print('skip')
                 continue
             flag = False
+            strt = time()
             for depth in range(20):
                 print(depth + 1, end=' ', flush=True)
+                quit_flag = False
                 with concurrent.futures.ThreadPoolExecutor(max_workers=4) as executor:
                     futures = [executor.submit(phase_solver, phase, first_twist_idx, depth) for first_twist_idx in range(len(successor[phase]))]
                     for future in concurrent.futures.as_completed(futures):
                         tmp = future.result()
                         if tmp != -1:
                             solution.extend(path[tmp])
+                            print('')
+                            print(time() - strt, 'sec', depth + 1, 'moves No', tmp, 'answer found', end=' ')
                             for i in path[tmp]:
                                 puzzle = puzzle.move(i)
-                            print('path', path[tmp])
-                            print('solution', solution)
+                                print(move_candidate[i], end=' ')
+                            print('')
                             flag = True
                         if flag:
                             break
@@ -240,7 +250,7 @@ def main():
             print(move_candidate[i],end=' ')
         print('')
         print(len(solution), 'moves')
-        print(time() - strt, 'sec')
+        print(time() - all_strt, 'sec')
         print('')
 
 if __name__ == '__main__':
