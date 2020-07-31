@@ -77,10 +77,6 @@ def distance(puzzle_arr, phase):
             puzzle_ep = move_ep(puzzle_ep, i)
             puzzle_cp = move_cp(puzzle_cp, i)
         if phase == 1: # find OLL Parity
-            '''
-            if not low_high_separated(puzzle_ep):
-                return 99
-            '''
             if ep_switch_parity(puzzle_ep):
                 parity_cnt += 1
                 return 99, -1
