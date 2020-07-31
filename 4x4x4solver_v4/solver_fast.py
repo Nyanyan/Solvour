@@ -103,9 +103,15 @@ def distance(puzzle_arr, phase, first_twist_idx):
     return res
 
 def phase_search(phase, puzzle_arr, depth, dis, first_twist_idx):
-    global path, cnt
+    global path, cnt, quit_flag
+    if quit_flag:
+        return False
     if depth == 0:
-        return dis == 0
+        if dis == 0:
+            quit_flag = True
+            return True
+        else:
+            return False
     else:
         l1_twist = path[first_twist_idx][-1] if len(path[first_twist_idx]) >= 1 else -10
         l2_twist = path[first_twist_idx][-2] if len(path[first_twist_idx]) >= 2 else -10
@@ -205,9 +211,10 @@ parity_cnt = 0
 cnt = 0
 puzzle = Cube()
 path = [[] for _ in range(27)]
+quit_flag = False
 
 def main():
-    global puzzle, path
+    global puzzle, path, quit_flag
     while True:
         inpt = [i for i in input("scramble: ").split()]
         if inpt[0] == 'exit':
@@ -226,10 +233,12 @@ def main():
             if dis == 0:
                 print('skip')
                 continue
-            flag = False
+            strt = time()
             for depth in range(20):
                 print(depth + 1, end=' ', flush=True)
-                with concurrent.futures.ThreadPoolExecutor(max_workers=4) as executor:
+                quit_flag = False
+                flag = False
+                with concurrent.futures.ProcessPoolExecutor(max_workers=4) as executor: # Thread
                     futures = [executor.submit(phase_solver, phase, first_twist_idx, depth) for first_twist_idx in range(len(successor[phase]))]
                     for future in concurrent.futures.as_completed(futures):
                         tmp = future.result()
@@ -237,11 +246,17 @@ def main():
                             solution.extend(path[tmp])
                             for i in path[tmp]:
                                 puzzle = puzzle.move(i)
-                            print('path', path[tmp])
-                            print('solution', solution)
+                            print('No', tmp, 'path', end=' ')
+                            for i in path[tmp]:
+                                print(move_candidate[i], end=' ')
+                            print('')
+                            print(time() - strt, 'sec')
                             flag = True
-                        if flag:
                             break
+                    for future in futures:
+                        if future.running():
+                            future.cancel()
+                            print('Cancelled? ',future.cancelled())
                 if flag:
                     break
         print('solution:',end=' ')
