@@ -227,9 +227,15 @@ def main():
             for depth in range(20):
                 print(depth + 1, end=' ', flush=True)
                 quit_flag = False
-                with concurrent.futures.ThreadPoolExecutor(max_workers=4) as executor:
-                    futures = [executor.submit(phase_solver, phase, first_twist_idx, depth) for first_twist_idx in range(len(successor[phase]))]
-                    for future in concurrent.futures.as_completed(futures):
+                with concurrent.futures.ThreadPoolExecutor() as executor:
+                    '''
+                    arg1 = [phase for first_twist_idx in range(len(successor[phase]))]
+                    arg2 = [first_twist_idx for first_twist_idx in range(len(successor[phase]))]
+                    arg3 = [depth for first_twist_idx in range(len(successor[phase]))]
+                    executor.map(phase_solver, arg1, arg2, arg3, chunksize=1)
+                    '''
+                    fs = [executor.submit(phase_solver, phase, first_twist_idx, depth) for first_twist_idx in range(len(successor[phase]))]
+                    for future in concurrent.futures.as_completed(fs): # concurrent.futures.as_completed(futures)
                         tmp = future.result()
                         if tmp != -1:
                             solution.extend(path[tmp])
@@ -240,7 +246,6 @@ def main():
                                 print(move_candidate[i], end=' ')
                             print('')
                             flag = True
-                        if flag:
                             break
                 if flag:
                     break
