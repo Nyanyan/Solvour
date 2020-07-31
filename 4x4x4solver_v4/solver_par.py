@@ -152,7 +152,7 @@ def phase_solver(phase, first_twist_idx, depth, puzzle_arr):
 
 def init():
     global move_ce_phase0, move_ce_phase1_fbud, move_ce_phase1_rl, move_ep_phase1, move_ce_phase23, move_ep_phase3, move_co_arr, move_ep_phase4, move_cp_arr, move_ep_phase5_ud, move_ep_phase5_fbrl, prunning, move_ce_phase0_id, move_ce_phase1_fbud_id, move_ce_phase1_rl_id, move_ep_phase1_id, prunning_id
-    ray.init(num_cpus=4)
+    ray.init(num_cpus=8)
     print('getting moving array')
     move_ce_phase0 = np.zeros((735471, 27), dtype=np.int)
     with open('move/ce_phase0.csv', mode='r') as f:
@@ -160,13 +160,13 @@ def init():
             move_ce_phase0[idx] = [int(i) for i in f.readline().replace('\n', '').split(',')]
     move_ce_phase0_id = ray.put(move_ce_phase0)
     print('.',end='',flush=True)
-    move_ce_phase1_fbud = [[] for _ in range(12870)]
+    move_ce_phase1_fbud = np.zeros((12870, 27), dtype=np.int)#[[] for _ in range(12870)]
     with open('move/ce_phase1_fbud.csv', mode='r') as f:
         for idx in range(12870):
             move_ce_phase1_fbud[idx] = [int(i) for i in f.readline().replace('\n', '').split(',')]
     print('.',end='',flush=True)
     move_ce_phase1_fbud_id = ray.put(move_ce_phase1_fbud)
-    move_ce_phase1_rl = [[] for _ in range(70)]
+    move_ce_phase1_rl = np.zeros((70, 27), dtype=np.int)#[[] for _ in range(70)]
     with open('move/ce_phase1_rl.csv', mode='r') as f:
         for idx in range(70):
             move_ce_phase1_rl[idx] = [int(i) for i in f.readline().replace('\n', '').split(',')]
