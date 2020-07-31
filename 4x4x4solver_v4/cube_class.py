@@ -364,7 +364,13 @@ class Cube:
             if self.Ep[i * 2] // 2 != self.Ep[i * 2 + 1] // 2:
                 return False
         return True
-    
+'''
+def low_high_separated(ep):
+        for i in range(24):
+            if ep[i] % 2 != i % 2:
+                return False
+        return True
+'''
 def ec_parity(ep, cp):
     res1 = pp_ep_p(ep, 0)
     res2 = pp_cp_p(cp, 0)
