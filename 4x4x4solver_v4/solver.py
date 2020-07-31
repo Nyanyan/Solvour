@@ -55,7 +55,7 @@ def nyanyan_function(lst, phase):
     else:
         sm = sum(lst)
         mx = max(lst)
-        ratio = pow(2, max(mx - 5, mx * 2 - sm - 4)) # small when mx is small and sm neary equal to mx*2
+        ratio = pow(2, min(mx - 5, mx * 2 - sm - 4)) # small when mx is small and sm neary equal to mx*2
         return int((mx + sm * ratio) / (1 + ratio))
 
 def distance(puzzle_arr, phase):
@@ -167,58 +167,72 @@ def solver():
                     puzzle = puzzle.move(i)
     return solution
 
+print('getting moving array')
 move_ce_phase0 = np.zeros((735471, 27), dtype=np.int)
 with open('move/ce_phase0.csv', mode='r') as f:
     for idx in range(735471):
         move_ce_phase0[idx] = [int(i) for i in f.readline().replace('\n', '').split(',')]
+print('.',end='',flush=True)
 move_ce_phase1_fbud = [[] for _ in range(12870)]
 with open('move/ce_phase1_fbud.csv', mode='r') as f:
     for idx in range(12870):
         move_ce_phase1_fbud[idx] = [int(i) for i in f.readline().replace('\n', '').split(',')]
+print('.',end='',flush=True)
 move_ce_phase1_rl = [[] for _ in range(70)]
 with open('move/ce_phase1_rl.csv', mode='r') as f:
     for idx in range(70):
         move_ce_phase1_rl[idx] = [int(i) for i in f.readline().replace('\n', '').split(',')]
+print('.',end='',flush=True)
 move_ep_phase1 = np.zeros((2704156, 27), dtype=np.int)
 with open('move/ep_phase1.csv', mode='r') as f:
     for idx in range(2704156):
         move_ep_phase1[idx] = [int(i) for i in f.readline().replace('\n', '').split(',')]
+print('.',end='',flush=True)
 move_ce_phase23 = [[] for _ in range(343000)]
 with open('move/ce_phase23.csv', mode='r') as f:
     for idx in range(343000):
         move_ce_phase23[idx] = [int(i) for i in f.readline().replace('\n', '').split(',')]
+print('.',end='',flush=True)
 move_ep_phase3 = [[] for _ in range(40320)]
 with open('move/ep_phase3.csv', mode='r') as f:
     for idx in range(40320):
         move_ep_phase3[idx] = [int(i) for i in f.readline().replace('\n', '').split(',')]
+print('.',end='',flush=True)
 move_co_arr = [[] for _ in range(2187)]
 with open('move/co.csv', mode='r') as f:
     for idx in range(2187):
         move_co_arr[idx] = [int(i) for i in f.readline().replace('\n', '').split(',')]
+print('.',end='',flush=True)
 move_ep_phase4 = [[] for _ in range(495)]
 with open('move/ep_phase4.csv', mode='r') as f:
     for idx in range(495):
         move_ep_phase4[idx] = [int(i) for i in f.readline().replace('\n', '').split(',')]
+print('.',end='',flush=True)
 move_cp_arr = [[] for _ in range(40320)]
 with open('move/cp.csv', mode='r') as f:
     for idx in range(40320):
         move_cp_arr[idx] = [int(i) for i in f.readline().replace('\n', '').split(',')]
+print('.',end='',flush=True)
 move_ep_phase5_ud = [[] for _ in range(40320)]
 with open('move/ep_phase5_ud.csv', mode='r') as f:
     for idx in range(40320):
         move_ep_phase5_ud[idx] = [int(i) for i in f.readline().replace('\n', '').split(',')]
+print('.',end='',flush=True)
 move_ep_phase5_fbrl = [[] for _ in range(24)]
 with open('move/ep_phase5_fbrl.csv', mode='r') as f:
     for idx in range(24):
         move_ep_phase5_fbrl[idx] = [int(i) for i in f.readline().replace('\n', '').split(',')]
+print('.')
 prunning = [None for _ in range(7)]
 prun_len = [1, 2, 3, 2, 2, 2]
+print('getting prunning array')
 for phase in range(6):
     prunning[phase] = [[] for _ in range(prun_len[phase])]
     with open('prun/prunning' + str(phase) + '.csv', mode='r') as f:
         for lin in range(prun_len[phase]):
             prunning[phase][lin] = [int(i) for i in f.readline().replace('\n', '').split(',')]
-
+    print('.',end='',flush=True)
+print('')
 parity_cnt = 0
 cnt = 0
 puzzle = Cube()
