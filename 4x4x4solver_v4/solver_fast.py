@@ -23,11 +23,9 @@ import numpy as np
 import concurrent.futures
 import ray
 
-@ray.remote
 def initialize_puzzle_arr(phase, puzzle):
     if phase == 0:
         return [puzzle.idx_ce_phase0()]
-    '''
     elif phase == 1:
         return [puzzle.idx_ce_phase1_fbud() * 70 + puzzle.idx_ce_phase1_rl(), idx_ep_phase1(puzzle.Ep)]
     elif phase == 2:
@@ -40,15 +38,12 @@ def initialize_puzzle_arr(phase, puzzle):
         return [puzzle.idx_co(), puzzle.idx_ep_phase4()]
     elif phase == 5:
         return [puzzle.idx_cp(), puzzle.idx_ep_phase5()]
-    '''
 
-@ray.remote
-def move_arr(puzzle_arr, phase, twist, move_ce_phase0):
+def move_arr(puzzle_arr, phase, twist):
     if phase == 0:
-        return [move_ce_phase0[puzzle_arr[0]][twist_to_idx[twist]]]
-    '''
+        return [ray.get(move_ce_phase0_id)[puzzle_arr[0]][twist_to_idx[twist]]]
     elif phase == 1:
-        return [move_ce_phase1_fbud[puzzle_arr[0] // 70][twist_to_idx[twist]] * 70 + move_ce_phase1_rl[puzzle_arr[0] % 70][twist_to_idx[twist]], move_ep_phase1[puzzle_arr[1]][twist_to_idx[twist]]]
+        return [ray.get(move_ce_phase1_fbud_id)[puzzle_arr[0] // 70][twist_to_idx[twist]] * 70 + ray.get(move_ce_phase1_rl_id)[puzzle_arr[0] % 70][twist_to_idx[twist]], ray.get(move_ep_phase1_id)[puzzle_arr[1]][twist_to_idx[twist]]]
     elif phase == 2:
         return [move_ce_phase23[puzzle_arr[0]][twist_to_idx[twist]], move_ep(puzzle_arr[1:], twist)]
     elif phase == 3:
@@ -57,7 +52,6 @@ def move_arr(puzzle_arr, phase, twist, move_ce_phase0):
         return [move_co_arr[puzzle_arr[0]][twist_to_idx[twist]], move_ep_phase4[puzzle_arr[1]][twist_to_idx[twist]]]
     elif phase == 5:
         return [move_cp_arr[puzzle_arr[0]][twist_to_idx[twist]], move_ep_phase5_ud[puzzle_arr[1] // 24][twist_to_idx[twist]] * 24 + move_ep_phase5_fbrl[puzzle_arr[1] % 24][twist_to_idx[twist]]]
-    '''
 
 def nyanyan_function(lst, phase):
     if phase == 5:
@@ -68,16 +62,15 @@ def nyanyan_function(lst, phase):
         ratio = pow(2, max(mx - 5, mx * 2 - sm - 4)) # small when mx is small and sm neary equal to mx*2
         return int((mx + sm * ratio) / (1 + ratio))
 
-@ray.remote
-def distance(puzzle_arr, phase, first_twist_idx, prunning):
+def distance(puzzle_arr, phase, first_twist_idx):
     #global parity_cnt
     if phase == 2:
-        lst = [prunning[phase][0][puzzle_arr[0]], None, None]
+        lst = [ray.get(prunning_id)[phase][0][puzzle_arr[0]], None, None]
         idxes = idx_ep_phase2(puzzle_arr[1])
         for i in range(2):
-            lst[i + 1] = prunning[phase][i + 1][idxes[i]]
+            lst[i + 1] = ray.get(prunning_id)[phase][i + 1][idxes[i]]
     else:
-        lst = [prunning[phase][i][puzzle_arr[i]] for i in range(prun_len[phase])]
+        lst = [ray.get(prunning_id)[phase][i][puzzle_arr[i]] for i in range(prun_len[phase])]
     res = nyanyan_function(lst, phase)
     if res == 0:
         puzzle_ep = [i for i in puzzle.Ep]
@@ -101,8 +94,7 @@ def distance(puzzle_arr, phase, first_twist_idx, prunning):
                 return 99
     return res
 
-@ray.remote
-def phase_search(phase, puzzle_arr, depth, dis, first_twist_idx, move_ce_phase0, prunning):
+def phase_search(phase, puzzle_arr, depth, dis, first_twist_idx):
     global path, cnt, quit_flag
     if quit_flag:
         return False
@@ -122,9 +114,9 @@ def phase_search(phase, puzzle_arr, depth, dis, first_twist_idx, move_ce_phase0,
                 twist_idx = skip_axis[phase][twist_idx - 1]
                 continue
             cnt += 1
-            n_puzzle_arr = ray.get(move_arr.remote(puzzle_arr, phase, twist, move_ce_phase0))
+            n_puzzle_arr = move_arr(puzzle_arr, phase, twist)
             path[first_twist_idx].append(twist)
-            n_dis = ray.get(distance.remote(n_puzzle_arr, phase, first_twist_idx, prunning))
+            n_dis = distance(n_puzzle_arr, phase, first_twist_idx)
             if n_dis >= depth:
                 path[first_twist_idx].pop()
                 if n_dis > depth:
@@ -132,13 +124,13 @@ def phase_search(phase, puzzle_arr, depth, dis, first_twist_idx, move_ce_phase0,
                     if n_dis == 99:
                         return False
                 continue
-            if ray.get(phase_search.remote(phase, n_puzzle_arr, depth - 1, n_dis, first_twist_idx)):
+            if phase_search(phase, n_puzzle_arr, depth - 1, n_dis, first_twist_idx):
                 return True
             path[first_twist_idx].pop()
         return False
 
 @ray.remote
-def phase_solver(phase, first_twist_idx, depth, puzzle_arr, move_ce_phase0, prunning):
+def phase_solver(phase, first_twist_idx, depth, puzzle_arr):
     global path, cnt, puzzle, parity_cnt
     strt = time()
     path[first_twist_idx] = [successor[phase][first_twist_idx]]
@@ -146,8 +138,8 @@ def phase_solver(phase, first_twist_idx, depth, puzzle_arr, move_ce_phase0, prun
     puzzle_tmp = puzzle.move(successor[phase][first_twist_idx])
     puzzle_arr = initialize_puzzle_arr(phase, puzzle_tmp)
     '''
-    dis = ray.get(distance.remote(puzzle_arr, phase, first_twist_idx, prunning))
-    if ray.get(phase_search.remote(phase, puzzle_arr, depth, dis, first_twist_idx, move_ce_phase0, prunning)):
+    dis = distance(puzzle_arr, phase, first_twist_idx)
+    if phase_search(phase, puzzle_arr, depth, dis, first_twist_idx):
         '''
         print('')
         print(time() - strt, 'sec', depth + 1, 'moves No', first_twist_idx, 'answer found', end=' ')
@@ -155,40 +147,38 @@ def phase_solver(phase, first_twist_idx, depth, puzzle_arr, move_ce_phase0, prun
             print(move_candidate[i], end=' ')
         print('')
         '''
-        return first_twist_idx
-    return -1
+        return path[first_twist_idx]
+    return []
 
 def init():
-    global move_ce_phase0, move_ce_phase1_fbud, move_ce_phase1_rl, move_ep_phase1, move_ce_phase23, move_ep_phase3, move_co_arr, move_ep_phase4, move_cp_arr, move_ep_phase5_ud, move_ep_phase5_fbrl, prunning, move_ce_phase0_id, prunning_id
-    ray.init()
+    global move_ce_phase0, move_ce_phase1_fbud, move_ce_phase1_rl, move_ep_phase1, move_ce_phase23, move_ep_phase3, move_co_arr, move_ep_phase4, move_cp_arr, move_ep_phase5_ud, move_ep_phase5_fbrl, prunning, move_ce_phase0_id, move_ce_phase1_fbud_id, move_ce_phase1_rl_id, move_ep_phase1_id, prunning_id
+    ray.init(num_cpus=4)
     print('getting moving array')
     move_ce_phase0 = np.zeros((735471, 27), dtype=np.int)
-    '''
-    move_ce_phase0_base = Array('i', 735471 * 27)
-    move_ce_phase0 = np.ctypeslib.as_array(move_ce_phase0_base.get_obj())
-    move_ce_phase0 = move_ce_phase0.reshape(735471, 27)
-    '''
     with open('move/ce_phase0.csv', mode='r') as f:
         for idx in range(735471):
             move_ce_phase0[idx] = [int(i) for i in f.readline().replace('\n', '').split(',')]
     move_ce_phase0_id = ray.put(move_ce_phase0)
-    '''
     print('.',end='',flush=True)
     move_ce_phase1_fbud = [[] for _ in range(12870)]
     with open('move/ce_phase1_fbud.csv', mode='r') as f:
         for idx in range(12870):
             move_ce_phase1_fbud[idx] = [int(i) for i in f.readline().replace('\n', '').split(',')]
     print('.',end='',flush=True)
+    move_ce_phase1_fbud_id = ray.put(move_ce_phase1_fbud)
     move_ce_phase1_rl = [[] for _ in range(70)]
     with open('move/ce_phase1_rl.csv', mode='r') as f:
         for idx in range(70):
             move_ce_phase1_rl[idx] = [int(i) for i in f.readline().replace('\n', '').split(',')]
     print('.',end='',flush=True)
+    move_ce_phase1_rl_id = ray.put(move_ce_phase1_rl)
     move_ep_phase1 = np.zeros((2704156, 27), dtype=np.int)
     with open('move/ep_phase1.csv', mode='r') as f:
         for idx in range(2704156):
             move_ep_phase1[idx] = [int(i) for i in f.readline().replace('\n', '').split(',')]
     print('.',end='',flush=True)
+    move_ep_phase1_id = ray.put(move_ep_phase1)
+    '''
     move_ce_phase23 = [[] for _ in range(343000)]
     with open('move/ce_phase23.csv', mode='r') as f:
         for idx in range(343000):
@@ -229,7 +219,7 @@ def init():
     prunning = [None for _ in range(7)]
     #prun_max_idx = [[735471], [900970, 2704156], [343000, 665280, 665280], [343000, 40320], [2187, 495], [40320, 967704]]
     print('getting prunning array')
-    for phase in range(1):
+    for phase in range(2):
         prunning[phase] = [[] for i in range(prun_len[phase])]
         with open('prun/prunning' + str(phase) + '.csv', mode='r') as f:
             for lin in range(prun_len[phase]):
@@ -300,10 +290,10 @@ def main():
             puzzle = puzzle.move(mov)
         solution = []
         all_strt = time()
-        for phase in range(1):
+        for phase in range(2):
             path = [[] for _ in range(len(successor[phase]))]
-            puzzle_arr = ray.get(initialize_puzzle_arr.remote(phase, puzzle))
-            dis = ray.get(distance.remote(puzzle_arr, phase, 0, prunning_id))
+            puzzle_arr = initialize_puzzle_arr(phase, puzzle)
+            dis = distance(puzzle_arr, phase, 0)
             print('phase', phase, 'depth 0', end=' ',flush=True)
             if dis == 0:
                 print('skip')
@@ -313,12 +303,6 @@ def main():
             for depth in range(20):
                 print(depth + 1, end=' ', flush=True)
                 quit_flag = False
-<<<<<<< HEAD
-                with concurrent.futures.ThreadPoolExecutor() as executor:
-                    futures = [executor.submit(phase_solver, phase, first_twist_idx, depth) for first_twist_idx in range(len(successor[phase]))]
-                    for future in concurrent.futures.as_completed(futures):
-                        tmp = future.result()
-=======
                 with concurrent.futures.ProcessPoolExecutor() as executor:
                     '''
                     arg1 = [phase for first_twist_idx in range(len(successor[phase]))]
@@ -326,18 +310,17 @@ def main():
                     arg3 = [depth for first_twist_idx in range(len(successor[phase]))]
                     executor.map(phase_solver, arg1, arg2, arg3, chunksize=1)
                     '''
-                    fs = [phase_solver.remote(phase, first_twist_idx, depth, initialize_puzzle_arr.remote(phase, puzzle.move(successor[phase][first_twist_idx])), move_ce_phase0_id, prunning_id) for first_twist_idx in range(len(successor[phase]))]
+                    fs = ray.get([phase_solver.remote(phase, first_twist_idx, depth, initialize_puzzle_arr(phase, puzzle.move(successor[phase][first_twist_idx]))) for first_twist_idx in range(len(successor[phase]))])
                     #for future in concurrent.futures.as_completed(fs): # concurrent.futures.as_completed(futures)
                     #print(ray.get(fs))
-                    for output in ray.get(fs):
+                    for output in fs:
                         #tmp = future.result()
                         tmp = output
->>>>>>> 2647eca610fcc8ffb196c770af8b8bd65b069616
-                        if tmp != -1:
-                            solution.extend(path[tmp])
+                        if tmp != []:
+                            solution.extend(tmp)
                             print('')
-                            print(time() - strt, 'sec', depth + 1, 'moves No', tmp, 'answer found', end=' ')
-                            for i in path[tmp]:
+                            print(time() - strt, 'sec', depth + 1, 'moves', 'answer found', end=' ')
+                            for i in tmp:
                                 puzzle = puzzle.move(i)
                                 print(move_candidate[i], end=' ')
                             print('')

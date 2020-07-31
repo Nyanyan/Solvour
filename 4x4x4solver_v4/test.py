@@ -1,32 +1,25 @@
+import ray
 import time
-import numpy as np
-from multiprocessing import Pool
-from concurrent.futures import ProcessPoolExecutor
 
-def f1(x):
-    a, b = x
-    return a * b
+# ray.init() のように明示的に指定しなかった場合自動的にリソース数が決定されます
+ray.init(num_cpus=4)
 
-def f2(a, b):
-    return a * b
+# 時間計測をより正確にする都合上Rayの起動を少し待つ
+time.sleep(1)
 
-def main():
-    p1 = Pool(4)
-    p2 = ProcessPoolExecutor(4)
-    a, b = np.random.rand(2, 10**2, 10**2)
-    alst = [a+x for x in range(1000)]
-    blst = [b+x for x in range(1000)]
+@ray.remote
+def func(x):
+    time.sleep(3)
+    return x
 
-    t1 = time.time()
-    result1 = p1.map(f1, zip(alst, blst))
-    t2 = time.time()
-    print("Pool:{:.6f}".format(t2 - t1))
+begin_time = time.time()
+res1, res2 = func.remote(1), func.remote(2)
+print(res1) # 出力例: ObjectID(45b9....) 
 
-    t1 = time.time()
-    result2 = list(p2.map(f2, alst, blst))
-    t2 = time.time()
-    print("ProcessPoolExecutor:{:.6f}".format(t2 - t1))
-    print(np.array_equal(result1, result2))
+print(ray.get(res1), ray.get(res2)) # 出力: 1 2
 
-if __name__ == "__main__":
-    main()
+# ray.getはリストを受けとることもできる
+print(ray.get([res1, res2])) # 出力: [1, 2]
+
+end_time = time.time()
+print(end_time - begin_time) # 3秒ぐらい
