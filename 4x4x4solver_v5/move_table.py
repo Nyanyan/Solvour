@@ -4,18 +4,18 @@ import csv
 
 move_arr = [0, 1, 2, 3, 4, 5, 6, 7, 8, 12, 13, 14, 15, 16, 17, 18, 19, 20, 24, 25, 26, 27, 28, 29, 30, 31, 32]
 
-
+'''
 solved = Cube()
 ce_move_phase0 = [[-1 for _ in range(len(move_arr))] for _ in range(735471)]
 que = deque([solved])
 cnt = 0
-print('CE move index phase0')
+print('CE move index phase0 RL')
 while que:
     cnt += 1
     if cnt % 10000 == 0:
         print(cnt, len(que))
     puzzle = que.popleft()
-    idx = puzzle.idx_ce_phase0()
+    idx = puzzle.idx_ce_phase0_rl()
     #print(idx)
     if ce_move_phase0[idx][0] == -1:
         for twist in move_arr:
@@ -23,12 +23,35 @@ while que:
             n_idx = n_puzzle.idx_ce_phase0()
             ce_move_phase0[idx][twist_to_idx[twist]] = n_idx
             que.append(n_puzzle)
-with open('move_table/move_ce_phase0.csv', mode='w') as f:
+with open('move/ce_phase0_rl.csv', mode='w') as f:
+    writer = csv.writer(f, lineterminator='\n')
+    for arr in ce_move_phase0:
+        writer.writerow(arr)
+'''
+solved = Cube()
+ce_move_phase0 = [[-1 for _ in range(len(move_arr))] for _ in range(735471)]
+que = deque([solved])
+cnt = 0
+print('CE move index phase0 FB')
+while que:
+    cnt += 1
+    if cnt % 10000 == 0:
+        print(cnt, len(que))
+    puzzle = que.popleft()
+    idx = puzzle.idx_ce_phase0_fb()
+    #print(idx)
+    if ce_move_phase0[idx][0] == -1:
+        for twist in move_arr:
+            n_puzzle = puzzle.move(twist)
+            n_idx = n_puzzle.idx_ce_phase0_fb()
+            ce_move_phase0[idx][twist_to_idx[twist]] = n_idx
+            que.append(n_puzzle)
+with open('move/ce_phase0_fb.csv', mode='w') as f:
     writer = csv.writer(f, lineterminator='\n')
     for arr in ce_move_phase0:
         writer.writerow(arr)
 
-
+'''
 solved = Cube()
 ce_move_phase1_fbud = [[-1 for _ in range(len(move_arr))] for _ in range(12870)]
 que = deque([solved])
@@ -46,7 +69,7 @@ while que:
             n_idx = n_puzzle.idx_ce_phase1_fbud()
             ce_move_phase1_fbud[idx][twist_to_idx[twist]] = n_idx
             que.append(n_puzzle)
-with open('move_table/move_ce_phase1_fbud.csv', mode='w') as f:
+with open('move/move_ce_phase1_fbud.csv', mode='w') as f:
     writer = csv.writer(f, lineterminator='\n')
     for arr in ce_move_phase1_fbud:
         writer.writerow(arr)
@@ -68,7 +91,7 @@ while que:
             n_idx = n_puzzle.idx_ce_phase1_rl()
             ce_move_phase1_rl[idx][twist_to_idx[twist]] = n_idx
             que.append(n_puzzle)
-with open('move_table/move_ce_phase1_rl.csv', mode='w') as f:
+with open('move/move_ce_phase1_rl.csv', mode='w') as f:
     writer = csv.writer(f, lineterminator='\n')
     for arr in ce_move_phase1_rl:
         writer.writerow(arr)
@@ -276,3 +299,4 @@ with open('move/ep_phase5_fbrl.csv', mode='w') as f:
     writer = csv.writer(f, lineterminator='\n')
     for arr in ep_move_phase5_fbrl:
         writer.writerow(arr)
+'''
