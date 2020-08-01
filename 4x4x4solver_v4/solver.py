@@ -57,7 +57,7 @@ def nyanyan_function(lst, phase):
     else:
         sm = sum(lst)
         mx = max(lst)
-        ratio = pow(2, min(mx - 5, mx * 2 - sm - 4)) # small when mx is small and sm neary equal to mx*2
+        ratio = pow(2.0, min(mx - 5, mx * 2 - sm - 4)) # small when mx is small and sm neary equal to mx*2
         return int((mx + sm * ratio) / (1 + ratio))
 
 def distance(puzzle_arr, phase):
@@ -76,27 +76,29 @@ def distance(puzzle_arr, phase):
         for i in path:
             puzzle_ep = move_ep(puzzle_ep, i)
             puzzle_cp = move_cp(puzzle_cp, i)
-        if phase == 1: # find OLL Parity
+        if phase == 1: # find OLL Parity (2 edge remaining)
             if ep_switch_parity(puzzle_ep):
                 parity_cnt += 1
-                return 99, -1
+                return 99
         elif phase == 3: # find PLL Parity
             puzzle_ep = [puzzle_ep[i] // 2 for i in range(0, 24, 2)]
             if ec_parity(puzzle_ep, puzzle_cp):
                 parity_cnt += 1
-                return 99, -1
+                return 99
         elif phase == 4:
             puzzle_ep = [puzzle_ep[i] // 2 for i in range(0, 24, 2)]
             if ec_0_parity(puzzle_ep, puzzle_cp):
                 parity_cnt += 1
-                return 99, -1
-    return res, max(lst)
+                return 99
+    return res
 
 def phase_search(phase, puzzle_arr, depth, dis):
     global path, cnt
     if depth == 0:
-        return dis[0] == 0
+        return dis == 0
     else:
+        if dis == 0:
+            return False
         l1_twist = path[-1] if len(path) >= 1 else -10
         l2_twist = path[-2] if len(path) >= 2 else -10
         l3_twist = path[-3] if len(path) >= 3 else -10
@@ -110,9 +112,9 @@ def phase_search(phase, puzzle_arr, depth, dis):
             n_puzzle_arr = move_arr(puzzle_arr, phase, twist)
             path.append(twist)
             n_dis = distance(n_puzzle_arr, phase)
-            if n_dis[0] >= depth or n_dis[1] > dis[1]:
+            if n_dis >= depth:
                 path.pop()
-                if n_dis[0] > depth or n_dis[1] > dis[1]:
+                if n_dis > depth:
                     twist_idx = skip_axis[phase][twist_idx]
                     if n_dis == 99:
                         return False
