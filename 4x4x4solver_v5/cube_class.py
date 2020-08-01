@@ -51,6 +51,8 @@ L 23 22 R
     B
 '''
 
+from math import sqrt
+
 #                  0    1     2     3     4      5      6    7     8     9     10     11     12   13    14    15    16     17     18   19   20     21    22     23     24   25    26    27    28     29     30   31    32    33    34     35
 move_candidate = ["R", "R2", "R'", "Rw", "Rw2", "Rw'", "L", "L2", "L'", "Lw", "Lw2", "Lw'", "U", "U2", "U'", "Uw", "Uw2", "Uw'", "D", "D2", "D'", "Dw", "Dw2", "Dw'", "F", "F2", "F'", "Fw", "Fw2", "Fw'", "B", "B2", "B'", "Bw", "Bw2", "Bw'"]
 twist_to_idx = [0, 1, 2, 3, 4, 5, 6, 7, 8, -1, -1, -1, 9, 10, 11, 12, 13, 14, 15, 16, 17, -1, -1, -1, 18, 19, 20, 21, 22, 23, 24, 25, 26, -1, -1, -1]
@@ -424,7 +426,7 @@ def ep_switch_parity_p(arr, res, strt):
                     return ep_switch_parity_p(arr, res + 1, i + 1)
     return res
 
-def idx_ep_phase2(ep):
+def idx_ep_pair_4(ep):
     arr1 = [ep[i] // 2 for i in range(1, 24, 2)]
     arr2 = [ep[i] // 2 for i in range(0, 23, 2)]
     arr3 = [-1 for _ in range(12)]
@@ -448,6 +450,38 @@ def idx_ep_phase2(ep):
         res2 += cnt * cmb(11 - i + 6, 5 - i + 6) * fac[5 - i + 6]
     return [res1, res2]
 
+def distance_ep_pair_4(ep):
+    arr1 = [ep[i] // 2 for i in range(1, 24, 2)]
+    arr2 = [ep[i] // 2 for i in range(0, 23, 2)]
+    dist = [
+        [0, 3, 4, 3, 2, 2, 3, 3, 1, 2, 2, 2], # 0
+        [3, 0, 3, 4, 2, 3, 3, 2, 2, 2, 2, 1], # 1
+        [4, 3, 0, 3, 3, 3, 2, 2, 2, 2, 1, 2], # 2
+        [3, 4, 3, 0, 3, 2, 2, 3, 2, 1, 2, 2], # 3
+        [2, 2, 3, 3, 0, 4, 1, 2, 3, 2, 2, 3], # 4
+        [2, 3, 3, 2, 2, 0, 4, 1, 3, 3, 2, 2], # 5
+        [3, 3, 2, 2, 1, 2, 0, 4, 2, 3, 3, 2], # 6
+        [3, 2, 2, 3, 4, 1, 2, 0, 2, 2, 3, 3], # 7
+        [1, 2, 2, 2, 3, 3, 2, 2, 0, 3, 4, 3], # 8
+        [2, 2, 2, 1, 2, 3, 3, 2, 3, 0, 3, 4], # 9
+        [2, 2, 1, 2, 2, 2, 3, 3, 4, 3, 0, 3], # 10
+        [2, 1, 2, 2, 3, 2, 2, 3, 3, 4, 3, 0]  # 11
+        ]
+    res_arr = [-1 for _ in range(12)]
+    res_flag = 0
+    for i in range(12):
+        idx = arr2.index(arr1[i])
+        res_arr[i] = dist[i][idx]
+        if i in {4, 5, 6, 7} and idx != i:
+            res_flag = 1
+    res_arr.sort()
+    sm = sum(res_arr[:4])
+    average = sm / 4
+    sd = 0
+    for i in range(4):
+        sd += (res_arr[i] - average) ** 2
+    sd = sqrt(sd)
+    return int(sm + sd + res_flag)
 
 
 def reverse_move(arr):

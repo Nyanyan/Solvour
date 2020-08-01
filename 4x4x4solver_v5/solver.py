@@ -19,7 +19,7 @@ phase 5: solve it!
          use R2, L2, U, D, F2, B2
 '''
 
-from cube_class import Cube, face, axis, wide, move_cp, move_co, move_ep, move_ce, move_candidate, twist_to_idx, successor, ep_switch_parity, idx_ep_highlow, idx_ep_phase2, ec_parity, ec_0_parity, skip_axis, reverse_move
+from cube_class import Cube, face, axis, wide, move_cp, move_co, move_ep, move_ce, move_candidate, twist_to_idx, successor, ep_switch_parity, idx_ep_highlow, idx_ep_pair_4, distance_ep_pair_4, ec_parity, ec_0_parity, skip_axis, reverse_move
 from time import time
 import numpy as np
 
@@ -85,10 +85,13 @@ def nyanyan_function(lst, phase):
 def distance(puzzle_arr, phase):
     global parity_cnt
     if phase == 3:
+        '''
         lst = [prunning[phase][0][puzzle_arr[0]], None, None]
-        idxes = idx_ep_phase2(puzzle_arr[1])
+        idxes = idx_ep_pair_4(puzzle_arr[1])
         for i in range(2):
             lst[i + 1] = prunning[phase][i + 1][idxes[i]]
+        '''
+        lst = [prunning[phase][0][puzzle_arr[0]], distance_ep_pair_4(puzzle_arr[1])]
     else:
         lst = [prunning[phase][i][puzzle_arr[i]] for i in range(prun_len[phase])]
     res = nyanyan_function(lst, phase)
