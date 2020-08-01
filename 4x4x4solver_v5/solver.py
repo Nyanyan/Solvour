@@ -27,7 +27,7 @@ def initialize_puzzle_arr(phase, puzzle):
     if phase == 0:
         return [puzzle.idx_ce_rl()]
     elif phase == 1:
-        return [puzzle.idx_ce_fb()]
+        return [puzzle.idx_ce_fbud() * 70 + puzzle.idx_ce_rl_parity()]
     elif phase == 2:
         return [idx_ep_highlow(puzzle.Ep)]
     elif phase == 3:
@@ -52,7 +52,7 @@ def move_arr(puzzle_arr, phase, twist):
     if phase == 0:
         return [move_ce_rl[puzzle_arr[0]][twist_to_idx[twist]]]
     elif phase == 1:
-        return [move_ce_fb[puzzle_arr[0]][twist_to_idx[twist]]]
+        return [move_ce_fb[puzzle_arr[0] // 70][twist_to_idx[twist]] * 70 + move_ce_rl_parity[puzzle_arr[0] % 70][twist_to_idx[twist]]]
     elif phase == 2:
         return [move_ep_highlow[puzzle_arr[0]][twist_to_idx[twist]]]
     elif phase == 3:
@@ -201,10 +201,15 @@ with open('move/ce_rl.csv', mode='r') as f:
     for idx in range(735471):
         move_ce_rl[idx] = [int(i) for i in f.readline().replace('\n', '').split(',')]
 print('.',end='',flush=True)
-move_ce_fb = np.zeros((735471, 27), dtype=np.int)
+move_ce_fb = [[] for _ in range(12870)]
 with open('move/ce_fb.csv', mode='r') as f:
-    for idx in range(735471):
+    for idx in range(12870):
         move_ce_fb[idx] = [int(i) for i in f.readline().replace('\n', '').split(',')]
+print('.',end='',flush=True)
+move_ce_rl_parity = [[] for _ in range(70)]
+with open('move/ce_rl_parity.csv', mode='r') as f:
+    for idx in range(70):
+        move_ce_rl_parity[idx] = [int(i) for i in f.readline().replace('\n', '').split(',')]
 print('.',end='',flush=True)
 move_ep_highlow = np.zeros((2704156, 27), dtype=np.int)
 with open('move/ep_highlow.csv', mode='r') as f:
@@ -221,11 +226,6 @@ move_ce_phase1_fbud = [[] for _ in range(12870)]
 with open('move/ce_phase1_fbud.csv', mode='r') as f:
     for idx in range(12870):
         move_ce_phase1_fbud[idx] = [int(i) for i in f.readline().replace('\n', '').split(',')]
-print('.',end='',flush=True)
-move_ce_phase1_rl = [[] for _ in range(70)]
-with open('move/ce_phase1_rl.csv', mode='r') as f:
-    for idx in range(70):
-        move_ce_phase1_rl[idx] = [int(i) for i in f.readline().replace('\n', '').split(',')]
 print('.',end='',flush=True)
 move_ep_phase3 = [[] for _ in range(40320)]
 with open('move/ep_phase3.csv', mode='r') as f:

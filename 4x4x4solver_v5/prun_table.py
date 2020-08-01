@@ -7,12 +7,10 @@ move_ce_phase0_rl = [[] for _ in range(735471)]
 with open('move/move_ce_phase0_rl.csv', mode='r') as f:
     for idx in range(735471):
         move_ce_phase0_rl[idx] = [int(i) for i in f.readline().replace('\n', '').split(',')]
-'''
 move_ce_phase0_fb = [[] for _ in range(735471)]
 with open('move/move_ce_phase0_fb.csv', mode='r') as f:
     for idx in range(735471):
         move_ce_phase0_fb[idx] = [int(i) for i in f.readline().replace('\n', '').split(',')]
-'''
 move_ce_phase1_fbud = [[] for _ in range(12870)]
 with open('move/move_ce_phase1_fbud.csv', mode='r') as f:
     for idx in range(12870):
