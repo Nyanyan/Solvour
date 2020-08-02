@@ -22,6 +22,10 @@ from time import time
 import numpy as np
 from math import sqrt
 
+import urllib.request
+import csv
+import os
+
 def initialize_puzzle_arr(phase, puzzle):
     if phase == 0:
         return [puzzle.idx_ce_phase0()]
@@ -164,12 +168,14 @@ def phase_search(phase, puzzle_arr, depth, dis):
 
 def solver():
     global path, cnt, puzzle, parity_cnt
+    strt_all = time()
     solution = []
     part_3_max_depth = 30
     #max_depth = [20, 20, 20, 20, part_3_max_depth, 0]
     #strt_depth = [0, 0, 0, 0, 0, 0]
     phase = 0
     #phase4_path = []
+    analytics = [[-1 for _ in range(7)] for _ in range(2)]
     while phase < 6:
         strt = time()
         cnt = 0
@@ -185,13 +191,18 @@ def solver():
                 for twist in path:
                     puzzle = puzzle.move(twist)
                 solution.extend(path)
+                phase_time = time() - strt
+
                 print('')
                 for i in path:
                     print(move_candidate[i], end=' ')
                 print('')
-                print(time() - strt, 'sec')
+                print(phase_time, 'sec')
                 print('cnt', cnt)
                 print('parity', parity_cnt)
+                
+                analytics[0][phase] = depth
+                analytics[1][phase] = phase_time
                 '''
                 if phase == 4:
                     phase4_path = [i for i in path]
@@ -211,6 +222,15 @@ def solver():
                     solution.pop()
                     puzzle = puzzle.move(i)
             '''
+    all_time = time() - strt_all
+    analytics[0][6] = len(solution)
+    analytics[1][6] = all_time
+    with open('analytics_len.csv', mode='a') as f:
+        writer = csv.writer(f, lineterminator='\n')
+        writer.writerow(analytics[0])
+    with open('analytics_time.csv', mode='a') as f:
+        writer = csv.writer(f, lineterminator='\n')
+        writer.writerow(analytics[1])
     return solution
 
 print('getting moving array')
@@ -286,8 +306,14 @@ path = []
 
 def main():
     global puzzle
-    while True:
+    for num in range(100):
+        '''
+        response = urllib.request.urlopen('http://localhost:2014/scramble/.txt?e=444')
+        scramble = response.read().decode('utf8', 'ignore').rstrip(os.linesep)
+        inpt = [i for i in scramble.split()]
+        '''
         inpt = [i for i in input("scramble: ").split()]
+        print(num)
         if inpt[0] == 'exit':
             exit()
         scramble = [move_candidate.index(i) for i in inpt]
