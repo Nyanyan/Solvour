@@ -27,9 +27,9 @@ def initialize_puzzle_arr(phase, puzzle):
     if phase == 0:
         return [puzzle.idx_ce_rl()]
     elif phase == 1:
-        return [puzzle.idx_ce_fbud() * 70 + puzzle.idx_ce_rl_parity()]
+        return [puzzle.idx_ce_fbud()]
     elif phase == 2:
-        return [idx_ep_highlow(puzzle.Ep)]
+        return [puzzle.idx_ce_rl_parity(), idx_ep_highlow(puzzle.Ep)]
     elif phase == 3:
         return [puzzle.idx_ce_opposite(), puzzle.Ep]
     '''
@@ -52,9 +52,9 @@ def move_arr(puzzle_arr, phase, twist):
     if phase == 0:
         return [move_ce_rl[puzzle_arr[0]][twist_to_idx[twist]]]
     elif phase == 1:
-        return [move_ce_fb[puzzle_arr[0] // 70][twist_to_idx[twist]] * 70 + move_ce_rl_parity[puzzle_arr[0] % 70][twist_to_idx[twist]]]
+        return [move_ce_fb[puzzle_arr[0]][twist_to_idx[twist]]]
     elif phase == 2:
-        return [move_ep_highlow[puzzle_arr[0]][twist_to_idx[twist]]]
+        return [move_ce_rl_parity[puzzle_arr[0]][twist_to_idx[twist]], move_ep_highlow[puzzle_arr[1]][twist_to_idx[twist]]]
     elif phase == 3:
         return [move_ce_opposite[puzzle_arr[0]][twist_to_idx[twist]], move_ep(puzzle_arr[1], twist)]
     '''
@@ -263,7 +263,7 @@ with open('move/ep_phase5_fbrl.csv', mode='r') as f:
 print('.')
 '''
 prunning = [None for _ in range(7)]
-prun_len = [1, 1, 1, 1, 2, 2]
+prun_len = [1, 1, 2, 1, 2, 2]
 print('getting prunning array')
 for phase in range(4):
     prunning[phase] = [[] for _ in range(prun_len[phase])]

@@ -59,13 +59,16 @@ move_ep_highlow = np.zeros((2704156, 27), dtype=np.int)
 with open('move/ep_highlow.csv', mode='r') as f:
     for idx in range(2704156):
         move_ep_highlow[idx] = [int(i) for i in f.readline().replace('\n', '').split(',')]
-'''
 move_ce_opposite = [[] for _ in range(343000)]
 with open('move/ce_opposite.csv', mode='r') as f:
     for idx in range(343000):
         move_ce_opposite[idx] = [int(i) for i in f.readline().replace('\n', '').split(',')]
 print('.',end='',flush=True)
-
+'''
+move_ce_fb = [[] for _ in range(12870)]
+with open('move/ce_fb.csv', mode='r') as f:
+    for idx in range(12870):
+        move_ce_fb[idx] = [int(i) for i in f.readline().replace('\n', '').split(',')]
 
 '''
 # phase 0
@@ -93,25 +96,13 @@ while que:
 with open('prun/prunning0.csv', mode='w') as f:
     writer = csv.writer(f, lineterminator='\n')
     writer.writerow(prunning)
-
-
+'''
+'''
 # phase1 center
-ce_parity = [-1 for _ in range(70)]
-solved = Cube()
-que = deque([solved])
-while que:
-    puzzle = que.popleft()
-    for twist in successor[1]:
-        n_puzzle = puzzle.move(twist)
-        idx = n_puzzle.idx_ce_phase1_rl()
-        if ce_parity[idx] == -1:
-            ce_parity[idx] = n_puzzle.ce_parity()
-            que.append(n_puzzle)
-print(ce_parity)
 solved = Cube()
 print('phase 1 1/2')
-prunning = [99 for _ in range(900970)]
-solved_idx = solved.idx_ce_phase1_fbud() * 70 + solved.idx_ce_phase1_rl()
+prunning = [99 for _ in range(12870)]
+solved_idx = solved.idx_ce_fbud()
 prunning[solved_idx] = 0
 que = deque([[solved_idx, 0, -10, -10, -10]])
 cnt = 0
@@ -124,20 +115,32 @@ while que:
     for twist in successor[1]:
         if face(twist) == face(l1_twist) or axis(twist) == axis(l1_twist) == axis(l2_twist) == axis(l3_twist) or (axis(twist) == axis(l1_twist) and wide(twist) == wide(l1_twist) == 1):
             continue
-        n_puzzle = move_ce_phase1_fbud[puzzle // 70][twist_to_idx[twist]] * 70 + move_ce_phase1_rl[puzzle % 70][twist_to_idx[twist]]
-        if n_puzzle // 70 == 0 and ce_parity[n_puzzle % 70] == 0:
-            if prunning[n_puzzle] != 0:
-                prunning[n_puzzle] = 0
-                que.append([n_puzzle, 0, -10, -10, -10])
-        elif prunning[n_puzzle] > num + 1:
+        n_puzzle = move_ce_fb[puzzle][twist_to_idx[twist]]
+        if prunning[n_puzzle] > num + 1:
             prunning[n_puzzle] = num + 1
             que.append([n_puzzle, num + 1, twist, l1_twist, l2_twist])
 
 with open('prun/prunning1.csv', mode='w') as f:
     writer = csv.writer(f, lineterminator='\n')
     writer.writerow(prunning)
+'''
 
-
+ce_parity = [-1 for _ in range(70)]
+solved = Cube()
+que = deque([solved])
+while que:
+    puzzle = que.popleft()
+    for twist in successor[1]:
+        n_puzzle = puzzle.move(twist)
+        idx = n_puzzle.idx_ce_rl_parity()
+        if ce_parity[idx] == -1:
+            ce_parity[idx] = n_puzzle.ce_parity()
+            que.append(n_puzzle)
+print(ce_parity)
+with open('prun/prunning2.csv', mode='a') as f:
+    writer = csv.writer(f, lineterminator='\n')
+    writer.writerow(ce_parity)
+'''
 # phase2 ep
 solved = Cube()
 print('phase 1 2/2')
@@ -235,7 +238,7 @@ with open('prun/prunning2.csv', mode='a') as f:
     writer = csv.writer(f, lineterminator='\n')
     for arr in prunning:
         writer.writerow(arr)
-'''
+
 
 # phase3 ce
 solved = Cube()
@@ -387,7 +390,7 @@ while que:
 with open('prun/prunning5.csv', mode='a') as f:
     writer = csv.writer(f, lineterminator='\n')
     writer.writerow(prunning)
-
+'''
 
 
 '''ボツ
