@@ -92,6 +92,7 @@ def distance(puzzle_arr, phase):
             lst[i + 1] = prunning[phase][i + 1][idxes[i]]
         '''
         lst = [prunning[phase][0][puzzle_arr[0]], distance_ep_pair_4(puzzle_arr[1])]
+        #print(lst)
     else:
         lst = [prunning[phase][i][puzzle_arr[i]] for i in range(prun_len[phase])]
     res = nyanyan_function(lst, phase)
@@ -262,7 +263,7 @@ with open('move/ep_phase5_fbrl.csv', mode='r') as f:
 print('.')
 '''
 prunning = [None for _ in range(7)]
-prun_len = [1, 1, 1, 3, 2, 2]
+prun_len = [1, 1, 1, 1, 2, 2]
 print('getting prunning array')
 for phase in range(4):
     prunning[phase] = [[] for _ in range(prun_len[phase])]

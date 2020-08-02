@@ -54,10 +54,18 @@ with open('move/ep_phase5_fbrl.csv', mode='r') as f:
         move_ep_phase5_fbrl[idx] = [int(i) for i in f.readline().replace('\n', '').split(',')]
 '''
 
+'''
 move_ep_highlow = np.zeros((2704156, 27), dtype=np.int)
 with open('move/ep_highlow.csv', mode='r') as f:
     for idx in range(2704156):
         move_ep_highlow[idx] = [int(i) for i in f.readline().replace('\n', '').split(',')]
+'''
+move_ce_opposite = [[] for _ in range(343000)]
+with open('move/ce_opposite.csv', mode='r') as f:
+    for idx in range(343000):
+        move_ce_opposite[idx] = [int(i) for i in f.readline().replace('\n', '').split(',')]
+print('.',end='',flush=True)
+
 
 '''
 # phase 0
@@ -128,7 +136,7 @@ while que:
 with open('prun/prunning1.csv', mode='w') as f:
     writer = csv.writer(f, lineterminator='\n')
     writer.writerow(prunning)
-'''
+
 
 # phase2 ep
 solved = Cube()
@@ -227,13 +235,13 @@ with open('prun/prunning2.csv', mode='a') as f:
     writer = csv.writer(f, lineterminator='\n')
     for arr in prunning:
         writer.writerow(arr)
-
+'''
 
 # phase3 ce
 solved = Cube()
 print('phase 3 1/2')
 prunning = [99 for _ in range(343000)]
-solved_idx = solved.idx_ce_phase23()
+solved_idx = solved.idx_ce_opposite()
 prunning[solved_idx] = 0
 que = deque([[solved_idx, 0, -10, -10, -10]])
 cnt = 0
@@ -243,9 +251,9 @@ while que:
     if cnt % 10000 == 0:
         print(cnt, len(que))
     for twist in successor[3]:
-        if face(twist) == face(l1_twist) or axis(twist) == axis(l1_twist) == axis(l2_twist) == axis(l3_twist) or (axis(twist) == axis(l1_twist) and wide(twist) == wide(l1_twist) == 1):
+        if face(twist) == face(l1_twist) or axis(twist) == axis(l1_twist) == axis(l2_twist) == axis(l3_twist) or (axis(twist) == axis(l1_twist) and wide(twist) == wide(l1_twist) == 1) or (axis(twist) == axis(l1_twist) == axis(l2_twist) and wide(twist) == wide(l1_twist) == wide(l2_twist) == 0):
             continue
-        n_puzzle = move_ce_phase23[puzzle][twist_to_idx[twist]]
+        n_puzzle = move_ce_opposite[puzzle][twist_to_idx[twist]]
         if prunning[n_puzzle] > num + 1:
             prunning[n_puzzle] = num + 1
             que.append([n_puzzle, num + 1, twist, l1_twist, l2_twist])

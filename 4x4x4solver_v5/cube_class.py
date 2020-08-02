@@ -468,20 +468,30 @@ def distance_ep_pair_4(ep):
         [2, 1, 2, 2, 3, 2, 2, 3, 3, 4, 3, 0]  # 11
         ]
     res_arr = [-1 for _ in range(12)]
-    res_flag = 0
+    res_ad = 0
     for i in range(12):
         idx = arr2.index(arr1[i])
         res_arr[i] = dist[i][idx]
         if i in {4, 5, 6, 7} and idx != i:
-            res_flag = 1
+            res_ad += 1
     res_arr.sort()
     sm = sum(res_arr[:4])
     average = sm / 4
     sd = 0
     for i in range(4):
         sd += (res_arr[i] - average) ** 2
+    #sd = sqrt(sd)
+    return int(sm / 2 + sd) + res_ad
+    '''
+    sm = sum(res_arr)
+    average = sm / 12
+    sd = 0
+    for i in res_arr:
+        sd += (i - average) ** 2
     sd = sqrt(sd)
-    return int(sm + sd + res_flag)
+    return int(sm / 6 + sd)
+    '''
+
 
 
 def reverse_move(arr):
