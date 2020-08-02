@@ -146,7 +146,7 @@ def phase_search(phase, puzzle_arr, depth, dis):
                 if phase_search(phase, n_puzzle_arr, depth - 1, n_dis):
                     return True
                 path.pop()
-            if phase == 1:
+            else:
                 n_dises[twist_idx][0] = n_dis
                 n_dises[twist_idx][1] = n_puzzle_arr
             twist_idx += 1
