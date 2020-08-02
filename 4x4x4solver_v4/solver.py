@@ -21,6 +21,7 @@ from cube_class import Cube, face, axis, wide, move_cp, move_co, move_ep, move_c
 from time import time
 import numpy as np
 from math import sqrt
+from random import randint
 
 def initialize_puzzle_arr(phase, puzzle):
     if phase == 0:
@@ -53,6 +54,8 @@ def move_arr(puzzle_arr, phase, twist):
         return [move_cp_arr[puzzle_arr[0]][twist_to_idx[twist]], move_ep_phase5_ud[puzzle_arr[1] // 24][twist_to_idx[twist]] * 24 + move_ep_phase5_fbrl[puzzle_arr[1] % 24][twist_to_idx[twist]]]
 
 def nyanyan_function(lst, phase):
+    if phase == 5:
+        return max(lst)
     sm = sum(lst)
     mx = max(lst)
     mean = sm / len(lst)
@@ -60,11 +63,8 @@ def nyanyan_function(lst, phase):
     for i in lst:
         sd += (mean - i) ** 2
     sd = sqrt(sd)
-    if phase == 1 or phase == 2:
-        return sm
-    else:
-        ratio = (max(0, mx - 3) + sd) / 15 # ratio is small when mx is small
-        return int(mx * (1 - ratio) + sm * ratio)
+    ratio = (5 * max(0, mx - 3) + sd) / 15 # ratio is small when mx is small
+    return int(mx * (1 - ratio) + sm * ratio)
 
 def distance(puzzle_arr, phase):
     global parity_cnt
@@ -120,6 +120,7 @@ def phase_search(phase, puzzle_arr, depth, dis):
         l2_twist = path[-2] if len(path) >= 2 else -10
         l3_twist = path[-3] if len(path) >= 3 else -10
         twist_idx = 0
+        #n_dises = [[99, [], i] for i in range(len(successor[phase]))]
         while twist_idx < len(successor[phase]):
             twist = successor[phase][twist_idx]
             if skip(phase, twist, l1_twist, l2_twist, l3_twist):
@@ -135,13 +136,30 @@ def phase_search(phase, puzzle_arr, depth, dis):
                     twist_idx = skip_axis[phase][twist_idx]
                     if n_dis == 99:
                         return False
-                twist_idx += 1
+                else:
+                    twist_idx += 1
                 continue
             #print(dis, n_dis)
             if phase_search(phase, n_puzzle_arr, depth - 1, n_dis):
                 return True
             path.pop()
+            #n_dises[twist_idx][0] = n_dis
+            #n_dises[twist_idx][1] = n_puzzle_arr
             twist_idx += 1
+        '''
+        n_dises.sort()
+        left = randint(0, len(successor) - 1)
+        right = randint(left + 1, len(successor))
+        n_dises[left], n_dises[right] = n_dises[right], n_dises[left]
+        for i in range(len(successor[phase])):
+            if n_dises[i][0] == 99:
+                return False
+            twist_idx = n_dises[i][2]
+            path.append(successor[phase][twist_idx])
+            if phase_search(phase, n_dises[i][1], depth - 1, n_dises[i][0]):
+                return True
+            path.pop()
+        '''
         return False
 
 def solver():
@@ -151,7 +169,7 @@ def solver():
     #max_depth = [20, 20, 20, 20, part_3_max_depth, 0]
     #strt_depth = [0, 0, 0, 0, 0, 0]
     phase = 0
-    phase4_path = []
+    #phase4_path = []
     while phase < 6:
         strt = time()
         cnt = 0
@@ -160,7 +178,7 @@ def solver():
         puzzle_arr = initialize_puzzle_arr(phase, puzzle)
         dis = distance(puzzle_arr, phase)
         print('phase', phase, 'depth', end=' ',flush=True)
-        while depth < 20: #max_depth[phase]:
+        while depth < 30: #max_depth[phase]:
             print(depth, end=' ', flush=True)
             path = []
             if phase_search(phase, puzzle_arr, depth, dis):
