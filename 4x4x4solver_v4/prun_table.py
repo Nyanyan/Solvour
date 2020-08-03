@@ -2,23 +2,25 @@ from cube_class import Cube, face, axis, wide, move_cp, move_co, move_ep, move_c
 from collections import deque
 import csv
 
-
+'''
 move_ce_phase0 = [[] for _ in range(735471)]
-with open('move/move_ce_phase0.csv', mode='r') as f:
+with open('move/ce_phase0.csv', mode='r') as f:
     for idx in range(735471):
         move_ce_phase0[idx] = [int(i) for i in f.readline().replace('\n', '').split(',')]
 move_ce_phase1_fbud = [[] for _ in range(12870)]
-with open('move/move_ce_phase1_fbud.csv', mode='r') as f:
+with open('move/ce_phase1_fbud.csv', mode='r') as f:
     for idx in range(12870):
         move_ce_phase1_fbud[idx] = [int(i) for i in f.readline().replace('\n', '').split(',')]
 move_ce_phase1_rl = [[] for _ in range(70)]
-with open('move/move_ce_phase1_rl.csv', mode='r') as f:
+with open('move/ce_phase1_rl.csv', mode='r') as f:
     for idx in range(70):
         move_ce_phase1_rl[idx] = [int(i) for i in f.readline().replace('\n', '').split(',')]
+'''
 move_ep_phase1 = [[] for _ in range(2704156)]
 with open('move/ep_phase1.csv', mode='r') as f:
     for idx in range(2704156):
         move_ep_phase1[idx] = [int(i) for i in f.readline().replace('\n', '').split(',')]
+'''
 move_ce_phase23 = [[] for _ in range(343000)]
 with open('move/ce_phase23.csv', mode='r') as f:
     for idx in range(343000):
@@ -47,9 +49,9 @@ move_ep_phase5_fbrl = [[] for _ in range(24)]
 with open('move/ep_phase5_fbrl.csv', mode='r') as f:
     for idx in range(24):
         move_ep_phase5_fbrl[idx] = [int(i) for i in f.readline().replace('\n', '').split(',')]
+'''
 
-
-
+'''
 # phase 0
 solved = Cube()
 print('phase 0 1/1')
@@ -117,7 +119,7 @@ while que:
 with open('prun/prunning1.csv', mode='w') as f:
     writer = csv.writer(f, lineterminator='\n')
     writer.writerow(prunning)
-
+'''
 
 # phase1 ep
 solved = Cube()
@@ -136,6 +138,9 @@ while que:
         if face(twist) == face(l1_twist) or axis(twist) == axis(l1_twist) == axis(l2_twist) == axis(l3_twist) or (axis(twist) == axis(l1_twist) and wide(twist) == wide(l1_twist) == 1):
             continue
         n_puzzle = move_ep_phase1[puzzle][twist_to_idx[twist]]
+        if n_puzzle == 1830270 and prunning[n_puzzle] > 0:
+            prunning[n_puzzle] = 0
+            que.append([n_puzzle, 0, -10, -10, -10])
         if prunning[n_puzzle] > num + 1:
             prunning[n_puzzle] = num + 1
             que.append([n_puzzle, num + 1, twist, l1_twist, l2_twist])
@@ -144,7 +149,7 @@ with open('prun/prunning1.csv', mode='a') as f:
     writer = csv.writer(f, lineterminator='\n')
     writer.writerow(prunning)
 
-
+'''
 # phase2 ce
 solved = Cube()
 print('phase 2 1/2')
@@ -368,3 +373,4 @@ while que:
 with open('prun/prunning5.csv', mode='a') as f:
     writer = csv.writer(f, lineterminator='\n')
     writer.writerow(prunning)
+'''
