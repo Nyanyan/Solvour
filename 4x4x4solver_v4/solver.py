@@ -64,12 +64,16 @@ def nyanyan_function(lst, phase):
     for i in lst:
         sd += (mean - i) ** 2
     sd = sqrt(sd)
-    #if phase == 5:
-    return int(mx + sd)
-    '''
+    l = 0
+    for i in lst:
+        l += i ** 2
+    l = sqrt(l)
+    return int(l + sd)
+    if phase == 5:
+        return int(mx + sd)
     ratio = (5 * max(0, mx - 3) + sd) / 18 # ratio is small when mx is small and sd is small
     return int(mx * (1 - ratio) + sm * ratio)
-    '''
+    
 
 def distance(puzzle_arr, phase):
     global parity_cnt
