@@ -135,22 +135,18 @@ def phase_search(phase, puzzle_arr, depth, dis):
         l2_twist = path[-2] if len(path) >= 2 else -10
         l3_twist = path[-3] if len(path) >= 3 else -10
         twist_idx = 0
-        '''
-        if phase == 1:
-            n_dises = [[99, [], i] for i in range(len(successor[phase]))]
-        '''
         for _ in range(27):
+            if twist_idx >= len(successor[phase]):
+                return False
             twist = successor[phase][twist_idx]
             if skip(phase, twist, l1_twist, l2_twist, l3_twist):
                 twist_idx = skip_axis[phase][twist_idx]
                 continue
             cnt += 1
             n_puzzle_arr = move_arr(puzzle_arr, phase, twist)
-            #if phase != 1:
             path.append(twist)
             n_dis = distance(n_puzzle_arr, phase)
             if n_dis >= depth:
-                #if phase != 1:
                 path.pop()
                 if n_dis > depth:
                     twist_idx = skip_axis[phase][twist_idx]
@@ -159,42 +155,17 @@ def phase_search(phase, puzzle_arr, depth, dis):
                 else:
                     twist_idx += 1
                 continue
-            #print(dis, n_dis)
-            #if phase != 1:
             if phase_search(phase, n_puzzle_arr, depth - 1, n_dis):
                 return True
             path.pop()
-            '''
-            else:
-                n_dises[twist_idx][0] = n_dis
-                n_dises[twist_idx][1] = n_puzzle_arr
-            '''
             twist_idx += 1
-            if twist_idx >= len(successor[phase]):
-                break
-        '''
-        if phase == 1:
-            n_dises.sort()
-            for i in range(len(successor[phase])):
-                if n_dises[i][0] == 99:
-                    return False
-                twist_idx = n_dises[i][2]
-                path.append(successor[phase][twist_idx])
-                if phase_search(phase, n_dises[i][1], depth - 1, n_dises[i][0]):
-                    return True
-                path.pop()
-        '''
-        return False
 
 def solver():
     global path, cnt, puzzle, parity_cnt
     strt_all = time()
     solution = []
     part_3_max_depth = 30
-    #max_depth = [20, 20, 20, 20, part_3_max_depth, 0]
-    #strt_depth = [0, 0, 0, 0, 0, 0]
     phase = 0
-    #phase4_path = []
     analytics = [[-1 for _ in range(7)] for _ in range(2)]
     while phase < 6:
         strt = time()
@@ -202,7 +173,7 @@ def solver():
         parity_cnt = 0
         puzzle_arr = initialize_puzzle_arr(phase, puzzle)
         dis = distance(puzzle_arr, phase)
-        depth = dis #strt_depth[phase]
+        depth = dis
         print('phase', phase, 'depth', end=' ',flush=True)
         while depth < 30: #max_depth[phase]:
             print(depth, end=' ', flush=True)
@@ -223,25 +194,11 @@ def solver():
                 
                 analytics[0][phase] = depth
                 analytics[1][phase] = phase_time
-                '''
-                if phase == 4:
-                    phase4_path = [i for i in path]
-                    max_depth[5] = part_3_max_depth - depth
-                '''
                 phase += 1
                 break
             depth += 1
         else:
             print('failed!')
-            '''
-            if phase == 5:
-                print('phase5 failed. go back to phase 4')
-                strt_depth[4] = part_3_max_depth - max_depth[5] + 1
-                phase = 4
-                for i in reverse_move(phase4_path):
-                    solution.pop()
-                    puzzle = puzzle.move(i)
-            '''
     all_time = time() - strt_all
     analytics[0][6] = len(solution)
     analytics[1][6] = all_time
