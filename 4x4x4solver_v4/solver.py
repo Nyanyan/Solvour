@@ -42,19 +42,20 @@ def initialize_puzzle_arr(phase, puzzle):
         return [puzzle.idx_cp(), puzzle.idx_ep_phase5()]
 
 def move_arr(puzzle_arr, phase, twist):
+    tmp = twist_to_idx[twist]
     if phase == 0:
-        return [move_ce_phase0[puzzle_arr[0]][twist_to_idx[twist]]]
+        return [move_ce_phase0[puzzle_arr[0]][tmp]]
     elif phase == 1:
         #return [move_ce_phase1_fbud[puzzle_arr[0] // 70][twist_to_idx[twist]] * 70 + move_ce_phase1_rl[puzzle_arr[0] % 70][twist_to_idx[twist]]]
-        return [move_ce_phase1_fbud[puzzle_arr[0] // 70][twist_to_idx[twist]] * 70 + move_ce_phase1_rl[puzzle_arr[0] % 70][twist_to_idx[twist]], move_ep_phase1[puzzle_arr[1]][twist_to_idx[twist]]]
+        return [move_ce_phase1_fbud[puzzle_arr[0] // 70][tmp] * 70 + move_ce_phase1_rl[puzzle_arr[0] % 70][tmp], move_ep_phase1[puzzle_arr[1]][tmp]]
     elif phase == 2:
-        return [move_ce_phase23[puzzle_arr[0]][twist_to_idx[twist]], move_ep(puzzle_arr[1], twist)]
+        return [move_ce_phase23[puzzle_arr[0]][tmp], move_ep(puzzle_arr[1], twist)]
     elif phase == 3:
-        return [move_ce_phase23[puzzle_arr[0]][twist_to_idx[twist]], move_ep_phase3[puzzle_arr[1]][twist_to_idx[twist]]]
+        return [move_ce_phase23[puzzle_arr[0]][tmp], move_ep_phase3[puzzle_arr[1]][tmp]]
     elif phase == 4:
-        return [move_co_arr[puzzle_arr[0]][twist_to_idx[twist]], move_ep_phase4[puzzle_arr[1]][twist_to_idx[twist]]]
+        return [move_co_arr[puzzle_arr[0]][tmp], move_ep_phase4[puzzle_arr[1]][tmp]]
     elif phase == 5:
-        return [move_cp_arr[puzzle_arr[0]][twist_to_idx[twist]], move_ep_phase5_ud[puzzle_arr[1] // 24][twist_to_idx[twist]] * 24 + move_ep_phase5_fbrl[puzzle_arr[1] % 24][twist_to_idx[twist]]]
+        return [move_cp_arr[puzzle_arr[0]][tmp], move_ep_phase5_ud[puzzle_arr[1] // 24][tmp] * 24 + move_ep_phase5_fbrl[puzzle_arr[1] % 24][tmp]]
 
 def nyanyan_function(lst, phase):
     sm = sum(lst)
@@ -68,11 +69,13 @@ def nyanyan_function(lst, phase):
     for i in lst:
         l += i ** 2
     l = sqrt(l)
-    return int(l + sd)
+    #return int(l + sd)
+    '''
     if phase == 5:
         return int(mx + sd)
-    ratio = (5 * max(0, mx - 3) + sd) / 18 # ratio is small when mx is small and sd is small
-    return int(mx * (1 - ratio) + sm * ratio)
+    '''
+    ratio = (5 * max(0, mx - 5) + sd) / 10 # ratio is small when mx is small and sd is small
+    return int(mx * (1 - ratio) + l * ratio)
     
 
 def distance(puzzle_arr, phase):
@@ -108,13 +111,16 @@ def distance(puzzle_arr, phase):
     return res
 
 def skip(phase, twist, l1_twist, l2_twist, l3_twist):
-    if axis(twist) == axis(l1_twist) and face(twist) <= face(l1_twist):
+    axis_twist = axis(twist)
+    axis_l1_twist = axis(l1_twist)
+    face_twist = face(twist)
+    if axis_twist == axis_l1_twist and face_twist <= face(l1_twist):
         return True
     if phase < 4:
-        if axis(twist) == axis(l1_twist) == axis(l2_twist) == axis(l3_twist) or (axis(twist) == axis(l1_twist) and face(twist) == face(l2_twist)):
+        if axis_twist == axis_l1_twist == axis(l2_twist) == axis(l3_twist) or (axis_twist == axis_l1_twist and face_twist == face(l2_twist)):
             return True
     elif phase >= 4:
-        if axis(twist) == axis(l1_twist) == axis(l2_twist):
+        if axis_twist == axis_l1_twist == axis(l2_twist):
             return True
     return False
 
@@ -133,7 +139,7 @@ def phase_search(phase, puzzle_arr, depth, dis):
         if phase == 1:
             n_dises = [[99, [], i] for i in range(len(successor[phase]))]
         '''
-        while twist_idx < len(successor[phase]):
+        for _ in range(27):
             twist = successor[phase][twist_idx]
             if skip(phase, twist, l1_twist, l2_twist, l3_twist):
                 twist_idx = skip_axis[phase][twist_idx]
@@ -164,6 +170,8 @@ def phase_search(phase, puzzle_arr, depth, dis):
                 n_dises[twist_idx][1] = n_puzzle_arr
             '''
             twist_idx += 1
+            if twist_idx >= len(successor[phase]):
+                break
         '''
         if phase == 1:
             n_dises.sort()
