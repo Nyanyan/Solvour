@@ -72,6 +72,8 @@ def nyanyan_function(lst, phase):
     if phase == 5:
         return int(mx + sd)
     '''
+    ratio = min(1, max(0, mx + sd - 8) / 5) # ratio is small when mx is small and sd is small
+    return int(mx * (1 - ratio) + (l + sd) * ratio)
     ratio = (5 * max(0, mx - 5) + sd) / 10 # ratio is small when mx is small and sd is small
     return int(mx * (1 - ratio) + l * ratio)
     
