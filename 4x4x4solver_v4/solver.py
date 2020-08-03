@@ -31,7 +31,6 @@ def initialize_puzzle_arr(phase, puzzle):
         return [puzzle.idx_ce_phase0()]
     elif phase == 1:
         return [puzzle.idx_ce_phase1_fbud() * 70 + puzzle.idx_ce_phase1_rl(), idx_ep_phase1(puzzle.Ep)]
-        #return [puzzle.idx_ce_phase1_fbud() * 70 + puzzle.idx_ce_phase1_rl()]
     elif phase == 2:
         return [puzzle.idx_ce_phase23(), puzzle.Ep]
     elif phase == 3:
@@ -46,7 +45,6 @@ def move_arr(puzzle_arr, phase, twist):
     if phase == 0:
         return [move_ce_phase0[puzzle_arr[0]][tmp]]
     elif phase == 1:
-        #return [move_ce_phase1_fbud[puzzle_arr[0] // 70][twist_to_idx[twist]] * 70 + move_ce_phase1_rl[puzzle_arr[0] % 70][twist_to_idx[twist]]]
         return [move_ce_phase1_fbud[puzzle_arr[0] // 70][tmp] * 70 + move_ce_phase1_rl[puzzle_arr[0] % 70][tmp], move_ep_phase1[puzzle_arr[1]][tmp]]
     elif phase == 2:
         return [move_ce_phase23[puzzle_arr[0]][tmp], move_ep(puzzle_arr[1], twist)]
