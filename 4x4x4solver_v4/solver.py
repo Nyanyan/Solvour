@@ -120,7 +120,7 @@ def phase_search(phase, puzzle_arr, depth, dis):
         return dis == 0
     else:
         if dis == 0:
-            return False
+            return True
         l1_twist = path[-1] if len(path) >= 1 else -10
         l2_twist = path[-2] if len(path) >= 2 else -10
         l3_twist = path[-3] if len(path) >= 3 else -10
@@ -315,12 +315,12 @@ path = []
 def main():
     global puzzle
     for num in range(100):
-        '''
+        
         response = urllib.request.urlopen('http://localhost:2014/scramble/.txt?e=444')
         scramble = response.read().decode('utf8', 'ignore').rstrip(os.linesep)
         inpt = [i for i in scramble.split()]
-        '''
-        inpt = [i for i in input("scramble: ").split()]
+        
+        #inpt = [i for i in input("scramble: ").split()]
         print(num)
         if inpt == []:
             exit()
