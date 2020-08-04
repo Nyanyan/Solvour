@@ -7,7 +7,7 @@ import os
 
 def main():
     global puzzle
-    for num in range(100):
+    for num in range(1000):
         
         response = urllib.request.urlopen('http://localhost:2014/scramble/.txt?e=444')
         scramble = response.read().decode('utf8', 'ignore').rstrip(os.linesep)

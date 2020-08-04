@@ -185,7 +185,7 @@ def solver(p):
         dis = distance(puzzle_arr, phase)
         depth = dis
         #print('phase', phase, 'depth', end=' ',flush=True)
-        while depth < 30: #max_depth[phase]:
+        while depth < 40: #max_depth[phase]:
             #print(depth, end=' ', flush=True)
             path = []
             if phase_search(phase, puzzle_arr, depth, dis):
