@@ -23,7 +23,9 @@ import numpy as np
 from math import sqrt
 import csv
 cimport cython
-from joblib import Parallel, delayed
+#from cython.parallel import prange
+#from joblib import Parallel, delayed
+import concurrent.futures
 
 cdef initialize_puzzle_arr(int phase, puzzle):
     if phase == 0:
@@ -178,20 +180,37 @@ def solver(p):
     global puzzle, path
     puzzle = p
     solution = []
-    cdef int min_depth
+    cdef int min_depth, phase, max_depth
     for phase in range(6):
-        first_idxes = range(len(successor[phase]))
+        #first_idxes = list(range(len(successor[phase])))
         flag = False
         min_depth = distance(initialize_puzzle_arr(phase, puzzle), phase, 0)
         if min_depth == 0:
             continue
         for max_depth in range(min_depth, 30):
             '''
-            res = [[] for _ in range(len(successor[phase]))]
-            for first_idx in first_idxes:
-                res[first_idx] = phase_solver(phase, first_idx, max_depth)
+            #res = [False for _ in range(len(successor[phase]))]
+            tmp = -1
+            l = len(successor[phase])
+            for first_idx in prange(l, nogil=True):
+                if phase_solver(phase, first_idx, max_depth):
+                    tmp = first_idx
+                    break
+            if tmp >= 0:
+                print(phase, path[tmp])
+                solution.extend(path[tmp])
+                for twist in path[tmp]:
+                    puzzle = puzzle.move(twist)
+                #flag = True
+                break
+            
+            res = Parallel(n_jobs=-1, verbose=3)([delayed(phase_solver)(int(phase), int(first_idx), int(max_depth)) for first_idx in list(range(len(successor[phase])))])
             '''
-            res = Parallel(n_jobs=-1, verbose=3)([delayed(phase_solver)(phase, first_idx, max_depth) for first_idx in first_idxes])
+            arg1 = [phase for _ in range(len(successor[phase]))]
+            arg2 = [first_idx for first_idx in range(len(successor[phase]))]
+            arg3 = [max_depth for _ in range(len(successor[phase]))]
+            with concurrent.futures.ThreadPoolExecutor() as executor:
+                res = list(executor.map(phase_solver, arg1, arg2, arg3, chunksize=1))
             for i in range(len(successor[phase])):
                 if res[i]:
                     print(phase, path[i])
@@ -202,6 +221,7 @@ def solver(p):
                     break
             if flag:
                 break
+            
     return solution
 
 move_ce_phase0 = np.zeros((735471, 27), dtype=np.int)
@@ -218,7 +238,7 @@ move_ep_phase5_fbrl = [[] for _ in range(24)]
 prunning = [None for _ in range(7)]
 prun_len = [1, 2, 3, 2, 2, 2]
 
-if __name__ == 'solver_par_c_17':
+if __name__ == 'solver_par_c_24':
     global move_ce_phase0, move_ce_phase1_fbud, move_ce_phase1_rl, move_ep_phase1, move_ce_phase23, move_ep_phase3, move_co_arr, move_ep_phase4, move_cp_arr, move_ep_phase5_ud, move_ep_phase5_fbrl, prunning, prun_len
     print('getting moving array')
     with open('move/ce_phase0.csv', mode='r') as f:

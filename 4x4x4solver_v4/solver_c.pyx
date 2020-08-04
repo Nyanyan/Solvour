@@ -16,7 +16,7 @@ phase 4: gather UD stickers on UD faces and clear EO
 phase 5: solve it!
          use R2, L2, U, D, F2, B2
 '''
-from cube_class_c_2 import Cube, face, axis, wide, move_cp, move_co, move_ep, move_ce, move_candidate, twist_to_idx, successor, ep_switch_parity, idx_ep_phase1, idx_ep_phase2, ec_parity, ec_0_parity, skip_axis, reverse_move
+from cube_class_c_4 import Cube, face, axis, wide, move_cp, move_co, move_ep, move_ce, move_candidate, twist_to_idx, successor, ep_switch_parity, idx_ep_phase1, idx_ep_phase2, ec_parity, ec_0_parity, skip_axis, reverse_move
 from time import time
 import numpy as np
 from math import sqrt

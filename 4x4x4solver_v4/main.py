@@ -1,4 +1,4 @@
-from solver_par_c_17 import solver
+from solver_par_c_24 import solver
 from cube_class_c_4 import move_candidate, Cube
 from time import time
 import urllib.request
