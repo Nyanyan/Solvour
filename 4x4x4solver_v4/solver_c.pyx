@@ -23,6 +23,7 @@ from math import sqrt
 import csv
 cimport cython
 
+@cython.boundscheck(False)
 cdef initialize_puzzle_arr(int phase, puzzle):
     if phase == 0:
         return [puzzle.idx_ce_phase0()]
@@ -37,6 +38,7 @@ cdef initialize_puzzle_arr(int phase, puzzle):
     elif phase == 5:
         return [puzzle.idx_cp(), puzzle.idx_ep_phase5()]
 
+@cython.boundscheck(False)
 cdef move_arr(puzzle_arr, int phase, int twist):
     cdef int tmp = twist_to_idx[twist]
     if phase == 0:
@@ -52,6 +54,7 @@ cdef move_arr(puzzle_arr, int phase, int twist):
     elif phase == 5:
         return [move_cp_arr[puzzle_arr[0]][tmp], move_ep_phase5_ud[puzzle_arr[1] // 24][tmp] * 24 + move_ep_phase5_fbrl[puzzle_arr[1] % 24][tmp]]
 
+@cython.boundscheck(False)
 cdef nyanyan_function(lst, int phase):
     cdef int sm = sum(lst)
     cdef int mx = max(lst)
@@ -74,8 +77,8 @@ cdef nyanyan_function(lst, int phase):
     #return int(mx * (1 - ratio) + (l + sd) * ratio)
     cdef float ratio = min(1, (3 * max(0, mx - 5) + sd) / 7) # ratio is small when mx is small and sd is small
     return int(mx * (1 - ratio) + euclid * ratio)
-    
 
+@cython.boundscheck(False)
 cdef distance(puzzle_arr, int phase):
     #global parity_cnt
     if phase == 2:
@@ -111,6 +114,7 @@ cdef distance(puzzle_arr, int phase):
                 return 99
     return res
 
+@cython.boundscheck(False)
 cdef skip(int phase, int twist, int l1_twist, int l2_twist, int l3_twist):
     cdef int axis_twist = axis(twist)
     cdef int axis_l1_twist = axis(l1_twist)
@@ -125,6 +129,7 @@ cdef skip(int phase, int twist, int l1_twist, int l2_twist, int l3_twist):
             return True
     return False
 
+@cython.boundscheck(False)
 cdef phase_search(int phase, puzzle_arr, int depth, int dis):
     global path, cnt
     cdef int l1_twist, l2_twist, l3_twist, twist_idx, len_successor, n_dis, twist
