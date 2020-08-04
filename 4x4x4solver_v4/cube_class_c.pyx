@@ -50,6 +50,8 @@ Bottom layer
 L 23 22 R
     B
 '''
+cimport numpy as np
+#from cpython cimport array as c_array
 
 #                  0    1     2     3     4      5      6    7     8     9     10     11     12   13    14    15    16     17     18   19   20     21    22     23     24   25    26    27    28     29     30   31    32    33    34     35
 move_candidate = ["R", "R2", "R'", "Rw", "Rw2", "Rw'", "L", "L2", "L'", "Lw", "Lw2", "Lw'", "U", "U2", "U'", "Uw", "Uw2", "Uw'", "D", "D2", "D'", "Dw", "Dw2", "Dw'", "F", "F2", "F'", "Fw", "Fw2", "Fw'", "B", "B2", "B'", "Bw", "Bw2", "Bw'"]
@@ -73,50 +75,54 @@ skip_axis = [
     [1, 2, 5, 5, 5, 8, 8, 8, 9, 10] # phase5
     ]
 
+cdef int[8] rl_center = [8, 9, 10, 11, 16, 17, 18, 19]
+cdef int[8] fb_center = [4, 5, 6, 7, 12, 13, 14, 15]
+cdef int[8] ud_center = [0, 1, 2, 3, 20, 21, 22, 23]
+
 fac = [1 for _ in range(25)]
 for i in range(1, 25):
     fac[i] = fac[i - 1] * i
 
-rl_center = [8, 9, 10, 11, 16, 17, 18, 19]
-fb_center = [4, 5, 6, 7, 12, 13, 14, 15]
-ud_center = [0, 1, 2, 3, 20, 21, 22, 23]
-
-cdef cmb(n, r):
+def cmb(n, r):
     return fac[n] // fac[r] // fac[n - r]
 
-def face(twist):
+def face(int twist):
     return twist // 3
 
-def axis(twist):
+def axis(int twist):
     return twist // 12
 
-def wide(twist):
+def wide(int twist):
     return (twist // 3) % 2
 
 
-def move_cp(arr, mov):
-    surface = [[3, 1, 7, 5], [0, 2, 4, 6], [0, 1, 3, 2], [4, 5, 7, 6], [2, 3, 5, 4], [1, 0, 6, 7]]
-    res = [i for i in arr]
-    mov_type = mov // 6
-    mov_amount = mov % 3
+cpdef move_cp(arr, mov):
+    cdef int[6][4] surface = [[3, 1, 7, 5], [0, 2, 4, 6], [0, 1, 3, 2], [4, 5, 7, 6], [2, 3, 5, 4], [1, 0, 6, 7]]
+    cdef int[3][4] shift = [[1, 2, 3, 0], [2, 3, 0, 1], [3, 0, 1, 2]]
+    cdef int[8] res = [i for i in arr]
+    cdef int mov_type = mov // 6
+    cdef int mov_amount = mov % 3
+    cdef int i
     for i in range(4):
-        res[surface[mov_type][(i + mov_amount + 1) % 4]] = arr[surface[mov_type][i]]
+        res[surface[mov_type][shift[mov_amount][i]]] = arr[surface[mov_type][i]]
     return res
 
-def move_co(arr, mov):
-    surface = [[3, 1, 7, 5], [0, 2, 4, 6], [0, 1, 3, 2], [4, 5, 7, 6], [2, 3, 5, 4], [1, 0, 6, 7]]
-    pls = [2, 1, 2, 1]
-    res = [i for i in arr]
-    mov_type = mov // 6
-    mov_amount = mov % 3
+cpdef move_co(arr, mov):
+    cdef int[6][4] surface = [[3, 1, 7, 5], [0, 2, 4, 6], [0, 1, 3, 2], [4, 5, 7, 6], [2, 3, 5, 4], [1, 0, 6, 7]]
+    cdef int[4] pls = [2, 1, 2, 1]
+    cdef int[3][4] shift = [[1, 2, 3, 0], [2, 3, 0, 1], [3, 0, 1, 2]]
+    cdef int[8] res = [i for i in arr]
+    cdef int mov_type = mov // 6
+    cdef int mov_amount = mov % 3
+    cdef int i
     for i in range(4):
-        res[surface[mov_type][(i + mov_amount + 1) % 4]] = arr[surface[mov_type][i]]
+        res[surface[mov_type][shift[mov_amount][i]]] = arr[surface[mov_type][i]]
         if mov_type // 2 != 1 and mov_amount != 1:
-            res[surface[mov_type][(i + mov_amount + 1) % 4]] += pls[(i + mov_amount + 1) % 4]
-            res[surface[mov_type][(i + mov_amount + 1) % 4]] %= 3
+            res[surface[mov_type][shift[mov_amount][i]]] += pls[shift[mov_amount][i]]
+            res[surface[mov_type][shift[mov_amount][i]]] %= 3
     return res
 
-def move_ep(arr, mov):
+cpdef move_ep(arr, mov):
     surface = [
         [[3, 12, 19, 10], [2, 13, 18, 11]], # R
         [[3, 12, 19, 10], [2, 13, 18, 11], [4, 1, 20, 17]],  # Rw
@@ -131,15 +137,17 @@ def move_ep(arr, mov):
         [[1, 15, 21, 13], [0, 14, 20, 12]], # B
         [[1, 15, 21, 13], [0, 14, 20, 12], [2, 7, 22, 19]] # Bw
         ]
-    mov_type = mov // 3
-    mov_amount = mov % 3
-    res = [i for i in arr]
+    cdef int[3][4] shift = [[1, 2, 3, 0], [2, 3, 0, 1], [3, 0, 1, 2]]
+    cdef int mov_type = mov // 3
+    cdef int mov_amount = mov % 3
+    cdef int[24] res = [i for i in arr]
+    cdef int i
     for m_surface in surface[mov_type]:
         for i in range(4):
-            res[m_surface[(i + mov_amount + 1) % 4]] = arr[m_surface[i]]
+            res[m_surface[shift[mov_amount][i]]] = arr[m_surface[i]]
     return res
 
-def move_ce(arr, mov):
+cpdef move_ce(arr, mov):
     surface = [
         [[8, 9, 10, 11]], # R
         [[8, 9, 10, 11], [2, 12, 22, 6], [1, 15, 21, 5]], # Rw
@@ -154,12 +162,14 @@ def move_ce(arr, mov):
         [[12, 13, 14, 15]], # B
         [[12, 13, 14, 15], [1, 16, 23, 10], [0, 19, 22, 9]] # Bw
         ]
-    mov_type = mov // 3
-    mov_amount = mov % 3
-    res = [i for i in arr]
+    cdef int[3][4] shift = [[1, 2, 3, 0], [2, 3, 0, 1], [3, 0, 1, 2]]
+    cdef int mov_type = mov // 3
+    cdef int mov_amount = mov % 3
+    cdef int[24] res = [i for i in arr]
+    cdef int i
     for m_surface in surface[mov_type]:
         for i in range(4):
-            res[m_surface[(i + mov_amount + 1) % 4]] = arr[m_surface[i]]
+            res[m_surface[shift[mov_amount][i]]] = arr[m_surface[i]]
     return res
 
 class Cube:
@@ -173,7 +183,9 @@ class Cube:
         return Cube(cp=move_cp(self.Cp, mov), co=move_co(self.Co, mov), ep=move_ep(self.Ep, mov), ce=move_ce(self.Ce, mov))
 
     def idx_cp(self):
-        res = 0
+        cdef int res = 0
+        cdef int i
+        cdef int j
         for i in range(8):
             cnt = self.Cp[i]
             for j in self.Cp[:i]:
@@ -183,15 +195,17 @@ class Cube:
         return res
     
     def idx_co(self):
-        res = 0
+        cdef int res = 0
+        cdef int i
         for i in range(7):
             res *= 3
             res += self.Co[i]
         return res
 
     def idx_ce_phase0(self):
-        res = 0
-        cnt = 0
+        cdef int res = 0
+        cdef int cnt = 0
+        cdef int i
         for i in range(23):
             if self.Ce[i] == 2 or self.Ce[i] == 4:
                 res += cmb(23 - i, 8 - cnt)
@@ -201,9 +215,10 @@ class Cube:
         return res
 
     def idx_ce_phase1_fbud(self):
-        res = 0
-        cnt = 0
-        arr = [0, 1, 2, 3, 20, 21, 22, 23, 4, 5, 6, 7, 12, 13, 14, 15] # FBUD centers
+        cdef int res = 0
+        cdef int cnt = 0
+        cdef int[16] arr = [0, 1, 2, 3, 20, 21, 22, 23, 4, 5, 6, 7, 12, 13, 14, 15] # FBUD centers
+        cdef int i
         for i in range(15):
             if self.Ce[arr[i]] == 1 or self.Ce[arr[i]] == 3:
                 res += cmb(15 - i, 8 - cnt)
@@ -213,8 +228,9 @@ class Cube:
         return res
     
     def idx_ce_phase1_rl(self):
-        res = 0
-        cnt = 0
+        cdef int res = 0
+        cdef int cnt = 0
+        cdef int i
         for i in range(7): # RL centers
             if self.Ce[rl_center[i]] == 4:
                 res += cmb(7 - i, 4 - cnt)
@@ -224,8 +240,9 @@ class Cube:
         return res
     
     def idx_ce_phase23(self):
-        res = 0
-        cnt = 0
+        cdef int res = 0
+        cdef int cnt = 0
+        cdef int i
         for i in range(7):
             if self.Ce[rl_center[i]] == 4:
                 res += cmb(7 - i, 4 - cnt)
@@ -252,12 +269,15 @@ class Cube:
 
     
     def idx_ep_phase3(self):
-        arr1 = [self.Ep[i] // 2 for i in [1, 3, 5, 7, 17, 19, 21, 23]]
-        arr2 = [self.Ep[i] // 2 for i in [0, 2, 4, 6, 16, 18, 20, 22]]
-        arr3 = [-1 for _ in range(8)]
+        cdef int[8] arr1 = [self.Ep[i] // 2 for i in [1, 3, 5, 7, 17, 19, 21, 23]]
+        cdef int[8] arr2 = [self.Ep[i] // 2 for i in [0, 2, 4, 6, 16, 18, 20, 22]]
+        cdef int[8] arr3
+        cdef int i
+        cdef int j
+        cdef int cnt
         for i in range(8):
             arr3[i] = arr2.index(arr1[i])
-        res = 0
+        cdef int res = 0
         for i in range(8):
             cnt = arr3[i]
             for j in arr3[:i]:
@@ -267,9 +287,10 @@ class Cube:
         return res
     
     def idx_ep_phase4(self):
-        ep = [self.Ep[i] // 8 for i in range(0, 24, 2)]
-        res = 0
-        remain = 4
+        cdef int[12] ep = [self.Ep[i] // 8 for i in range(0, 24, 2)]
+        cdef int res = 0
+        cdef int remain = 4
+        cdef int i
         for i in range(12):
             if ep[i] == 1:
                 res += cmb(11 - i, remain)
@@ -288,11 +309,13 @@ class Cube:
     '''
 
     def idx_ep_phase5_ud(self):
-        ud = [self.Ep[i] // 2 for i in [0, 2, 4, 6, 16, 18, 20, 22]]
+        cdef int[8] ud = [self.Ep[i] // 2 for i in [0, 2, 4, 6, 16, 18, 20, 22]]
+        cdef int i
+        cdef int j
         for i in range(8):
             if ud[i] >= 8:
                 ud[i] -= 4
-        res_ud = 0
+        cdef int res_ud = 0
         for i in range(8):
             cnt = ud[i]
             for j in ud[:i]:
@@ -302,8 +325,11 @@ class Cube:
         return res_ud
     
     def idx_ep_phase5_fbrl(self):
-        fbrl = [self.Ep[i] // 2 - 4 for i in [8, 10, 12, 14]]
-        res_fbrl = 0
+        cdef int[4] fbrl = [self.Ep[i] // 2 - 4 for i in [8, 10, 12, 14]]
+        cdef int res_fbrl = 0
+        cdef int i
+        cdef int j
+        cdef int cnt
         for i in range(4):
             cnt = fbrl[i]
             for j in fbrl[:i]:
@@ -314,44 +340,49 @@ class Cube:
     
     def idx_ep_phase5(self):
         return self.idx_ep_phase5_ud() * 24 + self.idx_ep_phase5_fbrl()
+
     
     def ce_parity(self):
-        arr = [[8, 11], [9, 10], [16, 19], [17, 18]]
+        cdef int[4][2] arr = [[8, 11], [9, 10], [16, 19], [17, 18]]
         for m_arr in arr:
             if self.Ce[m_arr[0]] != self.Ce[m_arr[1]]:
                 return 1
         return 0
     
     def iscolumn(self):
-        arr = [[4, 7], [5, 6], [8, 11], [9, 10], [12, 15], [13, 14], [16, 19], [17, 18]]
+        cdef int[8][2] arr = [[4, 7], [5, 6], [8, 11], [9, 10], [12, 15], [13, 14], [16, 19], [17, 18]]
         for m_arr in arr:
             if self.Ce[m_arr[0]] != self.Ce[m_arr[1]]:
                 return False
         return True
     
     def low_high_separated(self):
+        cdef int i
         for i in range(24):
             if self.Ep[i] % 2 != i % 2:
                 return False
         return True
     
     def edge_paired_4(self):
+        cdef int i
         for i in range(4, 8):
             if self.Ep[i * 2] // 2 != self.Ep[i * 2 + 1] // 2:
                 return False
         return True
-    
+
 def ec_parity(ep, cp):
-    res1 = pp_ep_p(ep, 0)
-    res2 = pp_cp_p(cp, 0)
+    cdef int res1 = pp_ep_p(ep, 0)
+    cdef int res2 = pp_cp_p(cp, 0)
     return res1 % 2 != res2 % 2
 
 def ec_0_parity(ep, cp):
-    res1 = pp_ep_p(ep, 0)
-    res2 = pp_cp_p(cp, 0)
+    cdef int res1 = pp_ep_p(ep, 0)
+    cdef int res2 = pp_cp_p(cp, 0)
     return not(res1 % 2 == res2 % 2 == 0)
 
 def pp_ep_p(arr, strt):
+    cdef int i
+    cdef int j
     for i in range(strt, 12):
         if arr[i] != i:
             for j in range(i, 12):
@@ -361,6 +392,8 @@ def pp_ep_p(arr, strt):
     return 0
 
 def pp_cp_p(arr, strt):
+    cdef int i
+    cdef int j
     for i in range(strt, 8):
         if arr[i] != i:
             for j in range(i, 8):
@@ -370,9 +403,10 @@ def pp_cp_p(arr, strt):
     return 0
 
 def idx_ep_phase1(ep):
-    res = 0
-    arr = [i % 2 for i in ep]
-    remain_1 = 12
+    cdef int res = 0
+    cdef int[24] arr = [i % 2 for i in ep]
+    cdef int remain_1 = 12
+    cdef int i
     for i in range(24):
         if arr[i] == 1:
             res += cmb(23 - i, remain_1)
@@ -385,6 +419,8 @@ def ep_switch_parity(ep): # "last 2 edge"
     return ep_switch_parity_p([i for i in ep], 0, 0) % 2
 
 def ep_switch_parity_p(arr, res, strt):
+    cdef int i
+    cdef int j
     for i in range(strt, 24):
         if arr[i] != i:
             for j in range(i + 1, 24):
@@ -394,13 +430,15 @@ def ep_switch_parity_p(arr, res, strt):
     return res
 
 def idx_ep_phase2(ep):
-    arr1 = [ep[i] // 2 for i in range(1, 24, 2)]
-    arr2 = [ep[i] // 2 for i in range(0, 23, 2)]
-    arr3 = [-1 for _ in range(12)]
+    cdef int[12] arr1 = [ep[i] // 2 for i in range(1, 24, 2)]
+    cdef int[12] arr2 = [ep[i] // 2 for i in range(0, 23, 2)]
+    cdef int[12] arr3 = [-1 for _ in range(12)]
+    cdef int i
+    cdef int j
     for i in range(12):
         arr3[i] = arr2.index(arr1[i])
     #print(arr3)
-    res1 = 0
+    cdef int res1 = 0
     for i in range(6):
         cnt = arr3[i]
         for j in arr3[:i]:
@@ -408,7 +446,7 @@ def idx_ep_phase2(ep):
                 cnt -= 1
         res1 += cnt * cmb(11 - i, 5 - i) * fac[5 - i]
     #print(res1)
-    res2 = 0
+    cdef int res2 = 0
     for i in range(6, 12):
         cnt = arr3[i]
         for j in arr3[6:i]:
@@ -416,6 +454,8 @@ def idx_ep_phase2(ep):
                 cnt -= 1
         res2 += cnt * cmb(11 - i + 6, 5 - i + 6) * fac[5 - i + 6]
     return [res1, res2]
+
+
 
 def reverse_move(arr):
     res = list(reversed(arr))

@@ -21,10 +21,7 @@ from cube_class_c_2 import Cube, face, axis, wide, move_cp, move_co, move_ep, mo
 from time import time
 import numpy as np
 from math import sqrt
-
-import urllib.request
 import csv
-import os
 
 def initialize_puzzle_arr(phase, puzzle):
     if phase == 0:
@@ -160,8 +157,9 @@ def phase_search(phase, puzzle_arr, depth, dis):
             path.pop()
             twist_idx += 1
 
-def solver():
-    global path, cnt, puzzle, parity_cnt
+def solver(p):
+    global path, cnt, puzzle, parity_cnt, puzzle
+    puzzle = p
     strt_all = time()
     solution = []
     part_3_max_depth = 30
@@ -174,24 +172,26 @@ def solver():
         puzzle_arr = initialize_puzzle_arr(phase, puzzle)
         dis = distance(puzzle_arr, phase)
         depth = dis
-        print('phase', phase, 'depth', end=' ',flush=True)
+        #print('phase', phase, 'depth', end=' ',flush=True)
         while depth < 30: #max_depth[phase]:
-            print(depth, end=' ', flush=True)
+            #print(depth, end=' ', flush=True)
             path = []
             if phase_search(phase, puzzle_arr, depth, dis):
                 for twist in path:
                     puzzle = puzzle.move(twist)
                 solution.extend(path)
                 phase_time = time() - strt
-
+                '''
                 print('')
                 for i in path:
                     print(move_candidate[i], end=' ')
                 print('')
+                
+                print(len(path))
                 print(phase_time, 'sec')
                 print('cnt', cnt)
                 print('parity', parity_cnt)
-                
+                '''
                 analytics[0][phase] = depth
                 analytics[1][phase] = phase_time
                 phase += 1
@@ -210,103 +210,76 @@ def solver():
         writer.writerow(analytics[1])
     return solution
 
-print('getting moving array')
 move_ce_phase0 = np.zeros((735471, 27), dtype=np.int)
-with open('move/ce_phase0.csv', mode='r') as f:
-    for idx in range(735471):
-        move_ce_phase0[idx] = [int(i) for i in f.readline().replace('\n', '').split(',')]
-print('.',end='',flush=True)
 move_ce_phase1_fbud = [[] for _ in range(12870)]
-with open('move/ce_phase1_fbud.csv', mode='r') as f:
-    for idx in range(12870):
-        move_ce_phase1_fbud[idx] = [int(i) for i in f.readline().replace('\n', '').split(',')]
-print('.',end='',flush=True)
 move_ce_phase1_rl = [[] for _ in range(70)]
-with open('move/ce_phase1_rl.csv', mode='r') as f:
-    for idx in range(70):
-        move_ce_phase1_rl[idx] = [int(i) for i in f.readline().replace('\n', '').split(',')]
-print('.',end='',flush=True)
 move_ep_phase1 = np.zeros((2704156, 27), dtype=np.int)
-with open('move/ep_phase1.csv', mode='r') as f:
-    for idx in range(2704156):
-        move_ep_phase1[idx] = [int(i) for i in f.readline().replace('\n', '').split(',')]
-print('.',end='',flush=True)
 move_ce_phase23 = [[] for _ in range(343000)]
-with open('move/ce_phase23.csv', mode='r') as f:
-    for idx in range(343000):
-        move_ce_phase23[idx] = [int(i) for i in f.readline().replace('\n', '').split(',')]
-print('.',end='',flush=True)
 move_ep_phase3 = [[] for _ in range(40320)]
-with open('move/ep_phase3.csv', mode='r') as f:
-    for idx in range(40320):
-        move_ep_phase3[idx] = [int(i) for i in f.readline().replace('\n', '').split(',')]
-print('.',end='',flush=True)
 move_co_arr = [[] for _ in range(2187)]
-with open('move/co.csv', mode='r') as f:
-    for idx in range(2187):
-        move_co_arr[idx] = [int(i) for i in f.readline().replace('\n', '').split(',')]
-print('.',end='',flush=True)
 move_ep_phase4 = [[] for _ in range(495)]
-with open('move/ep_phase4.csv', mode='r') as f:
-    for idx in range(495):
-        move_ep_phase4[idx] = [int(i) for i in f.readline().replace('\n', '').split(',')]
-print('.',end='',flush=True)
 move_cp_arr = [[] for _ in range(40320)]
-with open('move/cp.csv', mode='r') as f:
-    for idx in range(40320):
-        move_cp_arr[idx] = [int(i) for i in f.readline().replace('\n', '').split(',')]
-print('.',end='',flush=True)
 move_ep_phase5_ud = [[] for _ in range(40320)]
-with open('move/ep_phase5_ud.csv', mode='r') as f:
-    for idx in range(40320):
-        move_ep_phase5_ud[idx] = [int(i) for i in f.readline().replace('\n', '').split(',')]
-print('.',end='',flush=True)
 move_ep_phase5_fbrl = [[] for _ in range(24)]
-with open('move/ep_phase5_fbrl.csv', mode='r') as f:
-    for idx in range(24):
-        move_ep_phase5_fbrl[idx] = [int(i) for i in f.readline().replace('\n', '').split(',')]
-print('.')
 prunning = [None for _ in range(7)]
 prun_len = [1, 2, 3, 2, 2, 2]
-print('getting prunning array')
-for phase in range(6):
-    prunning[phase] = [[] for _ in range(prun_len[phase])]
-    with open('prun/prunning' + str(phase) + '.csv', mode='r') as f:
-        for lin in range(prun_len[phase]):
-            prunning[phase][lin] = [int(i) for i in f.readline().replace('\n', '').split(',')]
-    print('.',end='',flush=True)
-print('')
+
+if __name__ == 'solver_c_6':
+    global move_ce_phase0, move_ce_phase1_fbud, move_ce_phase1_rl, move_ep_phase1, move_ce_phase23, move_ep_phase3, move_co_arr, move_ep_phase4, move_cp_arr, move_ep_phase5_ud, move_ep_phase5_fbrl, prunning, prun_len
+    print('getting moving array')
+    with open('move/ce_phase0.csv', mode='r') as f:
+        for idx in range(735471):
+            move_ce_phase0[idx] = [int(i) for i in f.readline().replace('\n', '').split(',')]
+    #print('.',end='',flush=True)
+    with open('move/ce_phase1_fbud.csv', mode='r') as f:
+        for idx in range(12870):
+            move_ce_phase1_fbud[idx] = [int(i) for i in f.readline().replace('\n', '').split(',')]
+    #print('.',end='',flush=True)
+    with open('move/ce_phase1_rl.csv', mode='r') as f:
+        for idx in range(70):
+            move_ce_phase1_rl[idx] = [int(i) for i in f.readline().replace('\n', '').split(',')]
+    #print('.',end='',flush=True)
+    with open('move/ep_phase1.csv', mode='r') as f:
+        for idx in range(2704156):
+            move_ep_phase1[idx] = [int(i) for i in f.readline().replace('\n', '').split(',')]
+    #print('.',end='',flush=True)
+    with open('move/ce_phase23.csv', mode='r') as f:
+        for idx in range(343000):
+            move_ce_phase23[idx] = [int(i) for i in f.readline().replace('\n', '').split(',')]
+    #print('.',end='',flush=True)
+    with open('move/ep_phase3.csv', mode='r') as f:
+        for idx in range(40320):
+            move_ep_phase3[idx] = [int(i) for i in f.readline().replace('\n', '').split(',')]
+    #print('.',end='',flush=True)
+    with open('move/co.csv', mode='r') as f:
+        for idx in range(2187):
+            move_co_arr[idx] = [int(i) for i in f.readline().replace('\n', '').split(',')]
+    #print('.',end='',flush=True)
+    with open('move/ep_phase4.csv', mode='r') as f:
+        for idx in range(495):
+            move_ep_phase4[idx] = [int(i) for i in f.readline().replace('\n', '').split(',')]
+    #print('.',end='',flush=True)
+    with open('move/cp.csv', mode='r') as f:
+        for idx in range(40320):
+            move_cp_arr[idx] = [int(i) for i in f.readline().replace('\n', '').split(',')]
+    #print('.',end='',flush=True)
+    with open('move/ep_phase5_ud.csv', mode='r') as f:
+        for idx in range(40320):
+            move_ep_phase5_ud[idx] = [int(i) for i in f.readline().replace('\n', '').split(',')]
+    #print('.',end='',flush=True)
+    with open('move/ep_phase5_fbrl.csv', mode='r') as f:
+        for idx in range(24):
+            move_ep_phase5_fbrl[idx] = [int(i) for i in f.readline().replace('\n', '').split(',')]
+    #print('.')
+    print('getting prunning array')
+    for phase in range(6):
+        prunning[phase] = [[] for _ in range(prun_len[phase])]
+        with open('prun/prunning' + str(phase) + '.csv', mode='r') as f:
+            for lin in range(prun_len[phase]):
+                prunning[phase][lin] = [int(i) for i in f.readline().replace('\n', '').split(',')]
+        #print('.',end='',flush=True)
+    #print('')
 parity_cnt = 0
 cnt = 0
 puzzle = Cube()
 path = []
-
-def main():
-    global puzzle
-    for num in range(100):
-        
-        response = urllib.request.urlopen('http://localhost:2014/scramble/.txt?e=444')
-        scramble = response.read().decode('utf8', 'ignore').rstrip(os.linesep)
-        inpt = [i for i in scramble.split()]
-        
-        #inpt = [i for i in input("scramble: ").split()]
-        print(num)
-        if inpt == []:
-            exit()
-        scramble = [move_candidate.index(i) for i in inpt]
-        puzzle = Cube()
-        for mov in scramble:
-            puzzle = puzzle.move(mov)
-        strt = time()
-        solution = solver()
-        print('solution:',end=' ')
-        #print(solution)
-        for i in solution:
-            print(move_candidate[i],end=' ')
-        print('')
-        print(len(solution), 'moves')
-        print(time() - strt, 'sec')
-        print('')
-
-if __name__ == '__main__':
-    main()
