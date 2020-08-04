@@ -23,7 +23,7 @@ import numpy as np
 from math import sqrt
 import csv
 
-def initialize_puzzle_arr(phase, puzzle):
+cdef initialize_puzzle_arr(int phase, puzzle):
     if phase == 0:
         return [puzzle.idx_ce_phase0()]
     elif phase == 1:
@@ -37,8 +37,8 @@ def initialize_puzzle_arr(phase, puzzle):
     elif phase == 5:
         return [puzzle.idx_cp(), puzzle.idx_ep_phase5()]
 
-def move_arr(puzzle_arr, phase, twist):
-    tmp = twist_to_idx[twist]
+cdef move_arr(puzzle_arr, int phase, int twist):
+    cdef int tmp = twist_to_idx[twist]
     if phase == 0:
         return [move_ce_phase0[puzzle_arr[0]][tmp]]
     elif phase == 1:
@@ -52,18 +52,19 @@ def move_arr(puzzle_arr, phase, twist):
     elif phase == 5:
         return [move_cp_arr[puzzle_arr[0]][tmp], move_ep_phase5_ud[puzzle_arr[1] // 24][tmp] * 24 + move_ep_phase5_fbrl[puzzle_arr[1] % 24][tmp]]
 
-def nyanyan_function(lst, phase):
-    sm = sum(lst)
-    mx = max(lst)
-    mean = sm / len(lst)
-    sd = 0
+cdef nyanyan_function(lst, int phase):
+    cdef int sm = sum(lst)
+    cdef int mx = max(lst)
+    cdef float mean = sm / len(lst)
+    cdef float sd = 0
+    cdef int i
     for i in lst:
         sd += (mean - i) ** 2
     sd = sqrt(sd)
-    l = 0
+    cdef float euclid = 0
     for i in lst:
-        l += i ** 2
-    l = sqrt(l)
+        euclid += i ** 2
+    euclid = sqrt(euclid)
     #return int(l + sd)
     '''
     if phase == 5:
@@ -71,12 +72,12 @@ def nyanyan_function(lst, phase):
     '''
     #ratio = min(1, max(0, mx + sd - 8) / 5) # ratio is small when mx is small and sd is small
     #return int(mx * (1 - ratio) + (l + sd) * ratio)
-    ratio = min(1, (3 * max(0, mx - 5) + sd) / 7) # ratio is small when mx is small and sd is small
-    return int(mx * (1 - ratio) + l * ratio)
+    cdef float ratio = min(1, (3 * max(0, mx - 5) + sd) / 7) # ratio is small when mx is small and sd is small
+    return int(mx * (1 - ratio) + euclid * ratio)
     
 
-def distance(puzzle_arr, phase):
-    global parity_cnt
+cdef distance(puzzle_arr, int phase):
+    #global parity_cnt
     if phase == 2:
         lst = [prunning[phase][0][puzzle_arr[0]], None, None]
         idxes = idx_ep_phase2(puzzle_arr[1])
@@ -84,7 +85,10 @@ def distance(puzzle_arr, phase):
             lst[i + 1] = prunning[phase][i + 1][idxes[i]]
     else:
         lst = [prunning[phase][i][puzzle_arr[i]] for i in range(prun_len[phase])]
-    res = nyanyan_function(lst, phase)
+    cdef int res = nyanyan_function(lst, phase)
+    cdef int[24] puzzle_ep
+    cdef int[8] puzzle_cp
+    cdef int[12] puzzle_ep_p
     if res == 0:
         puzzle_ep = [i for i in puzzle.Ep]
         puzzle_cp = [i for i in puzzle.Cp]
@@ -93,24 +97,24 @@ def distance(puzzle_arr, phase):
             puzzle_cp = move_cp(puzzle_cp, i)
         if phase == 1: # find OLL Parity (2 edge remaining)
             if ep_switch_parity(puzzle_ep):
-                parity_cnt += 1
+                #parity_cnt += 1
                 return 99
         elif phase == 3: # find PLL Parity
-            puzzle_ep = [puzzle_ep[i] // 2 for i in range(0, 24, 2)]
-            if ec_parity(puzzle_ep, puzzle_cp):
-                parity_cnt += 1
+            puzzle_ep_p = [puzzle_ep[i] // 2 for i in range(0, 24, 2)]
+            if ec_parity(puzzle_ep_p, puzzle_cp):
+                #parity_cnt += 1
                 return 99
         elif phase == 4:
-            puzzle_ep = [puzzle_ep[i] // 2 for i in range(0, 24, 2)]
-            if ec_0_parity(puzzle_ep, puzzle_cp):
-                parity_cnt += 1
+            puzzle_ep_p = [puzzle_ep[i] // 2 for i in range(0, 24, 2)]
+            if ec_0_parity(puzzle_ep_p, puzzle_cp):
+                #parity_cnt += 1
                 return 99
     return res
 
-def skip(phase, twist, l1_twist, l2_twist, l3_twist):
-    axis_twist = axis(twist)
-    axis_l1_twist = axis(l1_twist)
-    face_twist = face(twist)
+cdef skip(int phase, int twist, int l1_twist, int l2_twist, int l3_twist):
+    cdef int axis_twist = axis(twist)
+    cdef int axis_l1_twist = axis(l1_twist)
+    cdef int face_twist = face(twist)
     if axis_twist == axis_l1_twist and face_twist <= face(l1_twist):
         return True
     if phase < 4:
@@ -121,8 +125,9 @@ def skip(phase, twist, l1_twist, l2_twist, l3_twist):
             return True
     return False
 
-def phase_search(phase, puzzle_arr, depth, dis):
+cdef phase_search(int phase, puzzle_arr, int depth, int dis):
     global path, cnt
+    cdef int l1_twist, l2_twist, l3_twist, twist_idx, len_successor, n_dis, twist
     if depth == 0:
         return dis == 0
     else:
@@ -132,14 +137,15 @@ def phase_search(phase, puzzle_arr, depth, dis):
         l2_twist = path[-2] if len(path) >= 2 else -10
         l3_twist = path[-3] if len(path) >= 3 else -10
         twist_idx = 0
+        len_successor = len(successor[phase])
         for _ in range(27):
-            if twist_idx >= len(successor[phase]):
+            if twist_idx >= len_successor:
                 return False
             twist = successor[phase][twist_idx]
             if skip(phase, twist, l1_twist, l2_twist, l3_twist):
                 twist_idx = skip_axis[phase][twist_idx]
                 continue
-            cnt += 1
+            #cnt += 1
             n_puzzle_arr = move_arr(puzzle_arr, phase, twist)
             path.append(twist)
             n_dis = distance(n_puzzle_arr, phase)
@@ -162,13 +168,14 @@ def solver(p):
     puzzle = p
     strt_all = time()
     solution = []
-    part_3_max_depth = 30
-    phase = 0
+    #part_3_max_depth = 30
+    cdef int phase = 0
     analytics = [[-1 for _ in range(7)] for _ in range(2)]
+    cdef int dis, depth, twist
     while phase < 6:
         strt = time()
-        cnt = 0
-        parity_cnt = 0
+        #cnt = 0
+        #parity_cnt = 0
         puzzle_arr = initialize_puzzle_arr(phase, puzzle)
         dis = distance(puzzle_arr, phase)
         depth = dis
@@ -224,7 +231,7 @@ move_ep_phase5_fbrl = [[] for _ in range(24)]
 prunning = [None for _ in range(7)]
 prun_len = [1, 2, 3, 2, 2, 2]
 
-if __name__ == 'solver_c_6':
+if __name__ == 'solver_c_8':
     global move_ce_phase0, move_ce_phase1_fbud, move_ce_phase1_rl, move_ep_phase1, move_ce_phase23, move_ep_phase3, move_co_arr, move_ep_phase4, move_cp_arr, move_ep_phase5_ud, move_ep_phase5_fbrl, prunning, prun_len
     print('getting moving array')
     with open('move/ce_phase0.csv', mode='r') as f:
@@ -279,7 +286,7 @@ if __name__ == 'solver_c_6':
                 prunning[phase][lin] = [int(i) for i in f.readline().replace('\n', '').split(',')]
         #print('.',end='',flush=True)
     #print('')
-parity_cnt = 0
-cnt = 0
+cdef int parity_cnt = 0
+cdef int cnt = 0
 puzzle = Cube()
 path = []
