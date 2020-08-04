@@ -51,7 +51,7 @@ L 23 22 R
     B
 '''
 cimport numpy as np
-#from cpython cimport array as c_array
+cimport cython
 
 #                  0    1     2     3     4      5      6    7     8     9     10     11     12   13    14    15    16     17     18   19   20     21    22     23     24   25    26    27    28     29     30   31    32    33    34     35
 move_candidate = ["R", "R2", "R'", "Rw", "Rw2", "Rw'", "L", "L2", "L'", "Lw", "Lw2", "Lw'", "U", "U2", "U'", "Uw", "Uw2", "Uw'", "D", "D2", "D'", "Dw", "Dw2", "Dw'", "F", "F2", "F'", "Fw", "Fw2", "Fw'", "B", "B2", "B'", "Bw", "Bw2", "Bw'"]
@@ -83,16 +83,16 @@ fac = [1 for _ in range(25)]
 for i in range(1, 25):
     fac[i] = fac[i - 1] * i
 
-def cmb(n, r):
+cpdef cmb(n, r):
     return fac[n] // fac[r] // fac[n - r]
 
-def face(int twist):
+cpdef face(int twist):
     return twist // 3
 
-def axis(int twist):
+cpdef axis(int twist):
     return twist // 12
 
-def wide(int twist):
+cpdef wide(int twist):
     return (twist // 3) % 2
 
 

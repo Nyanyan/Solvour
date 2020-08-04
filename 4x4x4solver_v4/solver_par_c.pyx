@@ -16,12 +16,14 @@ phase 4: gather UD stickers on UD faces and clear EO
 phase 5: solve it!
          use R2, L2, U, D, F2, B2
 '''
-from cube_class_c_2 import Cube, face, axis, wide, move_cp, move_co, move_ep, move_ce, move_candidate, twist_to_idx, successor, ep_switch_parity, idx_ep_phase1, idx_ep_phase2, ec_parity, ec_0_parity, skip_axis, reverse_move
+
+from cube_class_c_4 import Cube, face, axis, wide, move_cp, move_co, move_ep, move_ce, move_candidate, twist_to_idx, successor, ep_switch_parity, idx_ep_phase1, idx_ep_phase2, ec_parity, ec_0_parity, skip_axis, reverse_move
 from time import time
 import numpy as np
 from math import sqrt
 import csv
 cimport cython
+from joblib import Parallel, delayed
 
 cdef initialize_puzzle_arr(int phase, puzzle):
     if phase == 0:
@@ -76,7 +78,7 @@ cdef nyanyan_function(lst, int phase):
     return int(mx * (1 - ratio) + euclid * ratio)
     
 
-cdef distance(puzzle_arr, int phase):
+cdef distance(puzzle_arr, int phase, int first_idx):
     #global parity_cnt
     if phase == 2:
         lst = [prunning[phase][0][puzzle_arr[0]], None, None]
@@ -92,7 +94,7 @@ cdef distance(puzzle_arr, int phase):
     if res == 0:
         puzzle_ep = [i for i in puzzle.Ep]
         puzzle_cp = [i for i in puzzle.Cp]
-        for i in path:
+        for i in path[first_idx]:
             puzzle_ep = move_ep(puzzle_ep, i)
             puzzle_cp = move_cp(puzzle_cp, i)
         if phase == 1: # find OLL Parity (2 edge remaining)
@@ -125,17 +127,17 @@ cdef skip(int phase, int twist, int l1_twist, int l2_twist, int l3_twist):
             return True
     return False
 
-cdef phase_search(int phase, puzzle_arr, int depth, int dis):
-    global path, cnt
+cdef phase_search(int phase, puzzle_arr, int depth, int dis, int first_idx):
+    global path
     cdef int l1_twist, l2_twist, l3_twist, twist_idx, len_successor, n_dis, twist
     if depth == 0:
         return dis == 0
     else:
         if dis == 0:
             return True
-        l1_twist = path[-1] if len(path) >= 1 else -10
-        l2_twist = path[-2] if len(path) >= 2 else -10
-        l3_twist = path[-3] if len(path) >= 3 else -10
+        l1_twist = path[first_idx][-1] if len(path[first_idx]) >= 1 else -10
+        l2_twist = path[first_idx][-2] if len(path[first_idx]) >= 2 else -10
+        l3_twist = path[first_idx][-3] if len(path[first_idx]) >= 3 else -10
         twist_idx = 0
         len_successor = len(successor[phase])
         for _ in range(27):
@@ -145,12 +147,11 @@ cdef phase_search(int phase, puzzle_arr, int depth, int dis):
             if skip(phase, twist, l1_twist, l2_twist, l3_twist):
                 twist_idx = skip_axis[phase][twist_idx]
                 continue
-            #cnt += 1
             n_puzzle_arr = move_arr(puzzle_arr, phase, twist)
-            path.append(twist)
-            n_dis = distance(n_puzzle_arr, phase)
+            path[first_idx].append(twist)
+            n_dis = distance(n_puzzle_arr, phase, first_idx)
             if n_dis >= depth:
-                path.pop()
+                path[first_idx].pop()
                 if n_dis > depth:
                     twist_idx = skip_axis[phase][twist_idx]
                     if n_dis == 99:
@@ -158,63 +159,49 @@ cdef phase_search(int phase, puzzle_arr, int depth, int dis):
                 else:
                     twist_idx += 1
                 continue
-            if phase_search(phase, n_puzzle_arr, depth - 1, n_dis):
+            if phase_search(phase, n_puzzle_arr, depth - 1, n_dis, first_idx):
                 return True
-            path.pop()
+            path[first_idx].pop()
             twist_idx += 1
+        return False
+
+cdef phase_solver(int phase, int first_idx, int max_depth):
+    global path, puzzle
+    path[first_idx] = [successor[phase][first_idx]]
+    puzzle_p = Cube([i for i in puzzle.Cp], [i for i in puzzle.Co], [i for i in puzzle.Ep], [i for i in puzzle.Ce])
+    puzzle_p = puzzle_p.move(successor[phase][first_idx])
+    puzzle_arr = initialize_puzzle_arr(phase, puzzle_p)
+    cdef int dis = distance(puzzle_arr, phase, first_idx)
+    return phase_search(phase, puzzle_arr, max_depth, dis, first_idx)
 
 def solver(p):
-    global path, cnt, puzzle, parity_cnt, puzzle
+    global puzzle, path
     puzzle = p
-    strt_all = time()
     solution = []
-    #part_3_max_depth = 30
-    cdef int phase = 0
-    analytics = [[-1 for _ in range(7)] for _ in range(2)]
-    cdef int dis, depth, twist
-    while phase < 6:
-        strt = time()
-        #cnt = 0
-        #parity_cnt = 0
-        puzzle_arr = initialize_puzzle_arr(phase, puzzle)
-        dis = distance(puzzle_arr, phase)
-        depth = dis
-        #print('phase', phase, 'depth', end=' ',flush=True)
-        while depth < 30: #max_depth[phase]:
-            #print(depth, end=' ', flush=True)
-            path = []
-            if phase_search(phase, puzzle_arr, depth, dis):
-                for twist in path:
-                    puzzle = puzzle.move(twist)
-                solution.extend(path)
-                phase_time = time() - strt
-                '''
-                print('')
-                for i in path:
-                    print(move_candidate[i], end=' ')
-                print('')
-                
-                print(len(path))
-                print(phase_time, 'sec')
-                print('cnt', cnt)
-                print('parity', parity_cnt)
-                '''
-                analytics[0][phase] = depth
-                analytics[1][phase] = phase_time
-                phase += 1
+    cdef int min_depth
+    for phase in range(6):
+        first_idxes = range(len(successor[phase]))
+        flag = False
+        min_depth = distance(initialize_puzzle_arr(phase, puzzle), phase, 0)
+        if min_depth == 0:
+            continue
+        for max_depth in range(min_depth, 30):
+            '''
+            res = [[] for _ in range(len(successor[phase]))]
+            for first_idx in first_idxes:
+                res[first_idx] = phase_solver(phase, first_idx, max_depth)
+            '''
+            res = Parallel(n_jobs=-1, verbose=3)([delayed(phase_solver)(phase, first_idx, max_depth) for first_idx in first_idxes])
+            for i in range(len(successor[phase])):
+                if res[i]:
+                    print(phase, path[i])
+                    solution.extend(path[i])
+                    for twist in path[i]:
+                        puzzle = puzzle.move(twist)
+                    flag = True
+                    break
+            if flag:
                 break
-            depth += 1
-        else:
-            print('failed!')
-    all_time = time() - strt_all
-    analytics[0][6] = len(solution)
-    analytics[1][6] = all_time
-    with open('analytics_len.csv', mode='a') as f:
-        writer = csv.writer(f, lineterminator='\n')
-        writer.writerow(analytics[0])
-    with open('analytics_time.csv', mode='a') as f:
-        writer = csv.writer(f, lineterminator='\n')
-        writer.writerow(analytics[1])
     return solution
 
 move_ce_phase0 = np.zeros((735471, 27), dtype=np.int)
@@ -231,7 +218,7 @@ move_ep_phase5_fbrl = [[] for _ in range(24)]
 prunning = [None for _ in range(7)]
 prun_len = [1, 2, 3, 2, 2, 2]
 
-if __name__ == 'solver_c_10':
+if __name__ == 'solver_par_c_17':
     global move_ce_phase0, move_ce_phase1_fbud, move_ce_phase1_rl, move_ep_phase1, move_ce_phase23, move_ep_phase3, move_co_arr, move_ep_phase4, move_cp_arr, move_ep_phase5_ud, move_ep_phase5_fbrl, prunning, prun_len
     print('getting moving array')
     with open('move/ce_phase0.csv', mode='r') as f:
@@ -286,7 +273,6 @@ if __name__ == 'solver_c_10':
                 prunning[phase][lin] = [int(i) for i in f.readline().replace('\n', '').split(',')]
         #print('.',end='',flush=True)
     #print('')
-cdef int parity_cnt = 0
-cdef int cnt = 0
+
 puzzle = Cube()
-path = []
+path = [[] for _ in range(36)]

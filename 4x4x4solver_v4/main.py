@@ -1,5 +1,5 @@
-from solver_c_8 import solver
-from cube_class_c_2 import move_candidate, Cube
+from solver_par_c_17 import solver
+from cube_class_c_4 import move_candidate, Cube
 from time import time
 import urllib.request
 import csv
