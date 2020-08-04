@@ -204,13 +204,15 @@ def solver(p):
                 print('cnt', cnt)
                 print('parity', parity_cnt)
                 '''
+                print(phase, depth, phase_time)
                 analytics[0][phase] = depth
                 analytics[1][phase] = phase_time
                 phase += 1
                 break
             depth += 1
         else:
-            print('failed!')
+            print('phase', phase, 'failed!')
+            return [-1]
     all_time = time() - strt_all
     analytics[0][6] = len(solution)
     analytics[1][6] = all_time

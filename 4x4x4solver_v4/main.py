@@ -7,7 +7,7 @@ import os
 
 def main():
     global puzzle
-    for num in range(1000):
+    for num in range(100):
         
         response = urllib.request.urlopen('http://localhost:2014/scramble/.txt?e=444')
         scramble = response.read().decode('utf8', 'ignore').rstrip(os.linesep)
@@ -23,6 +23,8 @@ def main():
             puzzle = puzzle.move(mov)
         strt = time()
         solution = solver(puzzle)
+        if solution == [-1]:
+            continue
         print('solution:',end=' ')
         #print(solution)
         for i in solution:
