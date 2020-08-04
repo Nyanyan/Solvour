@@ -217,21 +217,21 @@ def solver(p):
         writer.writerow(analytics[1])
     return solution
 
-move_ce_phase0 = np.zeros((735471, 27), dtype=np.int)
-move_ce_phase1_fbud = [[] for _ in range(12870)]
-move_ce_phase1_rl = [[] for _ in range(70)]
-move_ep_phase1 = np.zeros((2704156, 27), dtype=np.int)
-move_ce_phase23 = [[] for _ in range(343000)]
-move_ep_phase3 = [[] for _ in range(40320)]
-move_co_arr = [[] for _ in range(2187)]
-move_ep_phase4 = [[] for _ in range(495)]
-move_cp_arr = [[] for _ in range(40320)]
-move_ep_phase5_ud = [[] for _ in range(40320)]
-move_ep_phase5_fbrl = [[] for _ in range(24)]
+cdef int[735471][27] move_ce_phase0 # = np.zeros((735471, 27), dtype=np.int)
+cdef int[12870][27] move_ce_phase1_fbud
+cdef int[70][27] move_ce_phase1_rl
+cdef int[2704156][27] move_ep_phase1 # = np.zeros((2704156, 27), dtype=np.int)
+cdef int[343000][27] move_ce_phase23
+cdef int[40320][27] move_ep_phase3
+cdef int[2187][27] move_co_arr
+cdef int[495][27] move_ep_phase4
+cdef int[40320][27] move_cp_arr
+cdef int[40320][27] move_ep_phase5_ud
+cdef int[24][27] move_ep_phase5_fbrl
 prunning = [None for _ in range(7)]
-prun_len = [1, 2, 3, 2, 2, 2]
+cdef int[6] prun_len = [1, 2, 3, 2, 2, 2]
 
-if __name__ == 'solver_c_10':
+if __name__ == 'solver_c_17':
     global move_ce_phase0, move_ce_phase1_fbud, move_ce_phase1_rl, move_ep_phase1, move_ce_phase23, move_ep_phase3, move_co_arr, move_ep_phase4, move_cp_arr, move_ep_phase5_ud, move_ep_phase5_fbrl, prunning, prun_len
     print('getting moving array')
     with open('move/ce_phase0.csv', mode='r') as f:
@@ -281,6 +281,7 @@ if __name__ == 'solver_c_10':
     print('getting prunning array')
     for phase in range(6):
         prunning[phase] = [[] for _ in range(prun_len[phase])]
+        #prunning.append([])
         with open('prun/prunning' + str(phase) + '.csv', mode='r') as f:
             for lin in range(prun_len[phase]):
                 prunning[phase][lin] = [int(i) for i in f.readline().replace('\n', '').split(',')]
