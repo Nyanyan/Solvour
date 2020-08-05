@@ -574,7 +574,7 @@ cdef phase_search(int phase, puzzle_arr, int depth, int dis):
         l3_twist = path[-3] if len(path) >= 3 else -10
         twist_idx = 0
         len_successor = len(successor[phase])
-        for _ in range(27):
+        for _ in range(28):
             if twist_idx >= len_successor:
                 return False
             twist = successor[phase][twist_idx]
@@ -732,7 +732,7 @@ if __name__ == 'solver_c_23':
                 prunning[phase][lin] = np.array([int(i) for i in f.readline().replace('\n', '').split(',')])
         #print('.',end='',flush=True)
     #print('')
-cdef int parity_cnt = 0
-cdef int cnt = 0
+#cdef int parity_cnt = 0
+#cdef int cnt = 0
 puzzle = Cube()
 path = []
