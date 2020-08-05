@@ -20,10 +20,12 @@ from cube_class_c_4 import Cube, face, axis, wide, move_cp, move_co, move_ep, mo
 from time import time
 import numpy as np
 from math import sqrt
+
 import csv
 cimport cython
 
 @cython.boundscheck(False)
+#@cython.wraparound(False)
 cdef initialize_puzzle_arr(int phase, puzzle):
     if phase == 0:
         return [puzzle.idx_ce_phase0()]
@@ -39,6 +41,7 @@ cdef initialize_puzzle_arr(int phase, puzzle):
         return [puzzle.idx_cp(), puzzle.idx_ep_phase5()]
 
 @cython.boundscheck(False)
+#@cython.wraparound(False)
 cdef move_arr(puzzle_arr, int phase, int twist):
     cdef int tmp = twist_to_idx[twist]
     if phase == 0:
@@ -55,6 +58,7 @@ cdef move_arr(puzzle_arr, int phase, int twist):
         return [move_cp_arr[puzzle_arr[0]][tmp], move_ep_phase5_ud[puzzle_arr[1] // 24][tmp] * 24 + move_ep_phase5_fbrl[puzzle_arr[1] % 24][tmp]]
 
 @cython.boundscheck(False)
+#@cython.wraparound(False)
 cdef nyanyan_function(lst, int phase):
     cdef int sm = sum(lst)
     cdef int mx = max(lst)
@@ -79,6 +83,7 @@ cdef nyanyan_function(lst, int phase):
     return int(mx * (1 - ratio) + euclid * ratio)
 
 @cython.boundscheck(False)
+#@cython.wraparound(False)
 cdef distance(puzzle_arr, int phase):
     #global parity_cnt
     if phase == 2:
@@ -115,6 +120,7 @@ cdef distance(puzzle_arr, int phase):
     return res
 
 @cython.boundscheck(False)
+#@cython.wraparound(False)
 cdef skip(int phase, int twist, int l1_twist, int l2_twist, int l3_twist):
     cdef int axis_twist = axis(twist)
     cdef int axis_l1_twist = axis(l1_twist)
@@ -130,6 +136,7 @@ cdef skip(int phase, int twist, int l1_twist, int l2_twist, int l3_twist):
     return False
 
 @cython.boundscheck(False)
+#@cython.wraparound(False)
 cdef phase_search(int phase, puzzle_arr, int depth, int dis):
     global path, cnt
     cdef int l1_twist, l2_twist, l3_twist, twist_idx, len_successor, n_dis, twist
@@ -235,10 +242,17 @@ cdef int[495][27] move_ep_phase4
 cdef int[40320][27] move_cp_arr
 cdef int[40320][27] move_ep_phase5_ud
 cdef int[24][27] move_ep_phase5_fbrl
-prunning = [None for _ in range(7)]
 cdef int[6] prun_len = [1, 2, 3, 2, 2, 2]
-
-if __name__ == 'solver_c_17':
+prun_len_all = [[735471], [900970, 2704156], [343000, 665280, 665280], [343000, 40320], [2187, 495], [40320, 967704]]
+prunning = np.array([[[] for _ in range(prun_len[i])] for i in range(6)])
+'''
+cdef int*** prunning = int**[7] # = [None for _ in range(7)]
+for i in range(6):
+    prunning[i] = int*[prun_len[i]]
+    for j in range(prun_len[i]):
+        prunning[i][j] = int[prun_len_all[j]]
+'''
+if __name__ == 'solver_c_18':
     global move_ce_phase0, move_ce_phase1_fbud, move_ce_phase1_rl, move_ep_phase1, move_ce_phase23, move_ep_phase3, move_co_arr, move_ep_phase4, move_cp_arr, move_ep_phase5_ud, move_ep_phase5_fbrl, prunning, prun_len
     print('getting moving array')
     with open('move/ce_phase0.csv', mode='r') as f:
@@ -287,11 +301,11 @@ if __name__ == 'solver_c_17':
     #print('.')
     print('getting prunning array')
     for phase in range(6):
-        prunning[phase] = [[] for _ in range(prun_len[phase])]
+        #int*[prun_len[phase]] prunning[phase] = [[] for _ in range(prun_len[phase])]
         #prunning.append([])
         with open('prun/prunning' + str(phase) + '.csv', mode='r') as f:
             for lin in range(prun_len[phase]):
-                prunning[phase][lin] = [int(i) for i in f.readline().replace('\n', '').split(',')]
+                prunning[phase][lin] = np.array([int(i) for i in f.readline().replace('\n', '').split(',')])
         #print('.',end='',flush=True)
     #print('')
 cdef int parity_cnt = 0
