@@ -503,7 +503,7 @@ cdef nyanyan_function(lst, int phase):
     '''
     #ratio = min(1, max(0, mx + sd - 8) / 5) # ratio is small when mx is small and sd is small
     #return int(mx * (1 - ratio) + (l + sd) * ratio)
-    cdef float ratio = min(1, (2 * max(0, mx - 5) + sd) / 5) # ratio is small when mx is small and sd is small
+    cdef float ratio = min(1, (3 * max(0, mx - 5) + sd) / 7) # ratio is small when mx is small and sd is small
     return int(mx * (1 - ratio) + euclid * ratio)
 
 #@cython.boundscheck(False)
@@ -676,7 +676,7 @@ for i in range(6):
     for j in range(prun_len[i]):
         prunning[i][j] = int[prun_len_all[j]]
 '''
-if __name__ == 'solver_c_22':
+if __name__ == 'solver_c_23':
     global move_ce_phase0, move_ce_phase1_fbud, move_ce_phase1_rl, move_ep_phase1, move_ce_phase23, move_ep_phase3, move_co_arr, move_ep_phase4, move_cp_arr, move_ep_phase5_ud, move_ep_phase5_fbrl, prunning, prun_len
     print('getting moving array')
     with open('move/ce_phase0.csv', mode='r') as f:
