@@ -51,6 +51,7 @@ L 23 22 R
     B
 '''
 cimport numpy as np
+cimport numpy as np
 cimport cython
 
 #                  0    1     2     3     4      5      6    7     8     9     10     11     12   13    14    15    16     17     18   19   20     21    22     23     24   25    26    27    28     29     30   31    32    33    34     35
@@ -83,20 +84,20 @@ fac = [1 for _ in range(25)]
 for i in range(1, 25):
     fac[i] = fac[i - 1] * i
 
-cpdef cmb(n, r):
+cdef cmb(n, r):
     return fac[n] // fac[r] // fac[n - r]
 
-cpdef face(int twist):
+cdef face(int twist):
     return twist // 3
 
-cpdef axis(int twist):
+cdef axis(int twist):
     return twist // 12
 
-cpdef wide(int twist):
+cdef wide(int twist):
     return (twist // 3) % 2
 
 
-cpdef move_cp(arr, mov):
+cdef move_cp(arr, mov):
     cdef int[6][4] surface = [[3, 1, 7, 5], [0, 2, 4, 6], [0, 1, 3, 2], [4, 5, 7, 6], [2, 3, 5, 4], [1, 0, 6, 7]]
     cdef int[3][4] shift = [[1, 2, 3, 0], [2, 3, 0, 1], [3, 0, 1, 2]]
     cdef int[8] res = [i for i in arr]
@@ -107,7 +108,7 @@ cpdef move_cp(arr, mov):
         res[surface[mov_type][shift[mov_amount][i]]] = arr[surface[mov_type][i]]
     return res
 
-cpdef move_co(arr, mov):
+cdef move_co(arr, mov):
     cdef int[6][4] surface = [[3, 1, 7, 5], [0, 2, 4, 6], [0, 1, 3, 2], [4, 5, 7, 6], [2, 3, 5, 4], [1, 0, 6, 7]]
     cdef int[4] pls = [2, 1, 2, 1]
     cdef int[3][4] shift = [[1, 2, 3, 0], [2, 3, 0, 1], [3, 0, 1, 2]]
@@ -122,7 +123,7 @@ cpdef move_co(arr, mov):
             res[surface[mov_type][shift[mov_amount][i]]] %= 3
     return res
 
-cpdef move_ep(arr, mov):
+cdef move_ep(arr, mov):
     surface = [
         [[3, 12, 19, 10], [2, 13, 18, 11]], # R
         [[3, 12, 19, 10], [2, 13, 18, 11], [4, 1, 20, 17]],  # Rw
@@ -147,7 +148,7 @@ cpdef move_ep(arr, mov):
             res[m_surface[shift[mov_amount][i]]] = arr[m_surface[i]]
     return res
 
-cpdef move_ce(arr, mov):
+cdef move_ce(arr, mov):
     surface = [
         [[8, 9, 10, 11]], # R
         [[8, 9, 10, 11], [2, 12, 22, 6], [1, 15, 21, 5]], # Rw
@@ -377,8 +378,8 @@ def ec_parity(ep, cp):
 
 def ec_0_parity(ep, cp):
     cdef int res1 = pp_ep_p(ep, 0)
-    cdef int res2 = pp_cp_p(cp, 0)
-    return not(res1 % 2 == res2 % 2 == 0)
+    #cdef int res2 = pp_cp_p(cp, 0)
+    return res1 % 2 != 0 #not(res1 % 2 == res2 % 2 == 0)
 
 def pp_ep_p(arr, strt):
     cdef int i
