@@ -360,36 +360,6 @@ class Cube:
     def idx_ep_phase5(self):
         return self.idx_ep_phase5_ud() * 24 + self.idx_ep_phase5_fbrl()
 
-    '''
-    cdef ce_parity(self):
-        cdef int[4][2] arr = [[8, 11], [9, 10], [16, 19], [17, 18]]
-        for m_arr in arr:
-            if self.Ce[m_arr[0]] != self.Ce[m_arr[1]]:
-                return 1
-        return 0
-    
-    cdef iscolumn(self):
-        cdef int[8][2] arr = [[4, 7], [5, 6], [8, 11], [9, 10], [12, 15], [13, 14], [16, 19], [17, 18]]
-        for m_arr in arr:
-            if self.Ce[m_arr[0]] != self.Ce[m_arr[1]]:
-                return False
-        return True
-    
-    cdef low_high_separated(self):
-        cdef int i
-        for i in range(24):
-            if self.Ep[i] % 2 != i % 2:
-                return False
-        return True
-    
-    cdef edge_paired_4(self):
-        cdef int i
-        for i in range(4, 8):
-            if self.Ep[i * 2] // 2 != self.Ep[i * 2 + 1] // 2:
-                return False
-        return True
-    '''
-
 cdef ec_parity(ep, cp):
     cdef int res1 = pp_ep_p(ep, 0)
     cdef int res2 = pp_cp_p(cp, 0)
@@ -551,7 +521,7 @@ cdef distance(puzzle_arr, int phase):
     cdef int[24] puzzle_ep
     cdef int[8] puzzle_cp
     cdef int[12] puzzle_ep_p
-    if res < 3:
+    if res == 0:
         puzzle_ep = [i for i in puzzle.Ep]
         puzzle_cp = [i for i in puzzle.Cp]
         for i in path:
@@ -561,17 +531,16 @@ cdef distance(puzzle_arr, int phase):
             if ep_switch_parity(puzzle_ep):
                 #parity_cnt += 1
                 return 99
-        elif res == 0:
-            if phase == 3: # find PLL Parity
-                puzzle_ep_p = [puzzle_ep[i] // 2 for i in range(0, 24, 2)]
-                if ec_parity(puzzle_ep_p, puzzle_cp):
-                    #parity_cnt += 1
-                    return 99
-            elif res == 0 and phase == 4: # adjust EO
-                puzzle_ep_p = [puzzle_ep[i] // 2 for i in range(0, 24, 2)]
-                if ec_0_parity(puzzle_ep_p, puzzle_cp):
-                    #parity_cnt += 1
-                    return 99
+        elif phase == 3: # find PLL Parity
+            puzzle_ep_p = [puzzle_ep[i] // 2 for i in range(0, 24, 2)]
+            if ec_parity(puzzle_ep_p, puzzle_cp):
+                #parity_cnt += 1
+                return 99
+        elif res == 0 and phase == 4: # adjust EO
+            puzzle_ep_p = [puzzle_ep[i] // 2 for i in range(0, 24, 2)]
+            if ec_0_parity(puzzle_ep_p, puzzle_cp):
+                #parity_cnt += 1
+                return 99
     return res
 
 #@cython.boundscheck(False)
