@@ -445,7 +445,7 @@ cdef idx_ep_phase2(ep):
         res2 += cnt * cmb(11 - i + 6, 5 - i + 6) * fac[5 - i + 6]
     return [res1, res2]
 
-cdef optimise(arr, strt):
+cdef optimise(arr, int strt):
     if strt == len(arr) - 1:
         return arr
     if face(arr[strt]) == face(arr[strt + 1]):
