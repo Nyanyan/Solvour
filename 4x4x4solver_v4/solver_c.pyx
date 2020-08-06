@@ -483,7 +483,7 @@ cdef move_arr(puzzle_arr, int phase, int twist):
 
 #@cython.boundscheck(False)
 #@cython.wraparound(False)
-cdef nyanyan_function(lst, int phase):
+cdef nyanyan_function(lst):
     cdef int sm = sum(lst)
     cdef int mx = max(lst)
     cdef float mean = sm / len(lst)
@@ -496,14 +496,8 @@ cdef nyanyan_function(lst, int phase):
     for i in lst:
         euclid += i ** 2
     euclid = sqrt(euclid)
-    #return int(l + sd)
-    '''
-    if phase == 5:
-        return int(mx + sd)
-    '''
-    #ratio = min(1, max(0, mx + sd - 8) / 5) # ratio is small when mx is small and sd is small
-    #return int(mx * (1 - ratio) + (l + sd) * ratio)
-    cdef float ratio = min(1, (3 * max(0, mx - 5) + sd) / 7) # ratio is small when mx is small and sd is small
+    cdef float ratio = pow(3, -pow(pow(2, -(mx - 7)) + sd - 1, 2)) # ratio is small when mx is near to constant and sd is small
+    #print(mx, sd, ratio)
     return int(mx * (1 - ratio) + euclid * ratio)
 
 #@cython.boundscheck(False)
@@ -517,7 +511,7 @@ cdef distance(puzzle_arr, int phase):
             lst[i + 1] = prunning[phase][i + 1][idxes[i]]
     else:
         lst = [prunning[phase][i][puzzle_arr[i]] for i in range(prun_len[phase])]
-    cdef int res = nyanyan_function(lst, phase)
+    cdef int res = nyanyan_function(lst)
     cdef int[24] puzzle_ep
     cdef int[8] puzzle_cp
     cdef int[12] puzzle_ep_p
@@ -676,7 +670,7 @@ for i in range(6):
     for j in range(prun_len[i]):
         prunning[i][j] = int[prun_len_all[j]]
 '''
-if __name__ == 'solver_c_23':
+if __name__ == 'solver_c_24':
     global move_ce_phase0, move_ce_phase1_fbud, move_ce_phase1_rl, move_ep_phase1, move_ce_phase23, move_ep_phase3, move_co_arr, move_ep_phase4, move_cp_arr, move_ep_phase5_ud, move_ep_phase5_fbrl, prunning, prun_len
     print('getting moving array')
     with open('move/ce_phase0.csv', mode='r') as f:
