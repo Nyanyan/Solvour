@@ -445,6 +445,30 @@ cdef idx_ep_phase2(ep):
         res2 += cnt * cmb(11 - i + 6, 5 - i + 6) * fac[5 - i + 6]
     return [res1, res2]
 
+cdef optimise(arr, strt):
+    if strt == len(arr) - 1:
+        return arr
+    if face(arr[strt]) == face(arr[strt + 1]):
+        new_axis = face(strt) * 3
+        new_power = (arr[strt] % 3 + arr[strt + 1] % 3 + 2) % 4 - 1
+        del arr[strt]
+        if new_power == -1:
+            del arr[-1]
+        else:
+            arr[strt] = new_axis + new_power
+        return optimise(arr, strt)
+    elif axis(arr[strt]) == axis(arr[strt + 1]):
+        arr_copy = [i for i in arr]
+        arr_copy[strt], arr_copy[strt + 1] = arr_copy[strt + 1], arr_copy[strt]
+        res_1 = optimise(arr, strt + 1)
+        res_2 = optimise(arr_copy, strt + 1)
+        if len(res_1) < len(res_2):
+            return res_1
+        else:
+            return res_2
+    return optimise(arr, strt + 1)
+
+
 
 
 '''****************************************************** SOLVER PART ******************************************************'''
@@ -492,11 +516,14 @@ cdef nyanyan_function(lst):
     for i in lst:
         sd += (mean - i) ** 2
     sd = sqrt(sd)
+    if sd == 0:
+        return mx
     cdef float euclid = 0
     for i in lst:
         euclid += i ** 2
     euclid = sqrt(euclid)
-    cdef float ratio = pow(2, -pow(pow(2, -(mx - 7)) + sd - 1, 2)) # ratio is small when mx is near to constant and sd is small
+    #cdef float ratio = max(1, min(0, (3 * (mx - 5) + sd) / 8))
+    cdef float ratio = pow(2, -pow((mx / sd - 1.5), 4) / 2) # ratio is small when mx is near to constant and sd is small
     #print(mx, sd, ratio)
     return int(mx * (1 - ratio) + euclid * ratio)
 
@@ -647,6 +674,7 @@ def solver(p):
     with open('analytics_time.csv', mode='a') as f:
         writer = csv.writer(f, lineterminator='\n')
         writer.writerow(analytics[1])
+    solution = optimise(solution, 0)
     return solution
 
 cdef int[735471][27] move_ce_phase0 # = np.zeros((735471, 27), dtype=np.int)
