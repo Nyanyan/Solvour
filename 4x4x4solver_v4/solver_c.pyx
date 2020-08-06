@@ -496,7 +496,7 @@ cdef nyanyan_function(lst):
     for i in lst:
         euclid += i ** 2
     euclid = sqrt(euclid)
-    cdef float ratio = pow(3, -pow(pow(2, -(mx - 7)) + sd - 1, 2)) # ratio is small when mx is near to constant and sd is small
+    cdef float ratio = pow(2, -pow(pow(2, -(mx - 7)) + sd - 1, 2)) # ratio is small when mx is near to constant and sd is small
     #print(mx, sd, ratio)
     return int(mx * (1 - ratio) + euclid * ratio)
 
