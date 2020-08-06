@@ -1986,8 +1986,6 @@ static int __pyx_v_11solver_c_23_move_cp_arr[0x9D80][27];
 static int __pyx_v_11solver_c_23_move_ep_phase5_ud[0x9D80][27];
 static int __pyx_v_11solver_c_23_move_ep_phase5_fbrl[24][27];
 static int __pyx_v_11solver_c_23_prun_len[6];
-static int __pyx_v_11solver_c_23_parity_cnt;
-static int __pyx_v_11solver_c_23_cnt;
 static PyObject *__pyx_f_11solver_c_23_cmb(PyObject *, PyObject *); /*proto*/
 static PyObject *__pyx_f_11solver_c_23_face(int); /*proto*/
 static PyObject *__pyx_f_11solver_c_23_axis(int); /*proto*/
@@ -10661,7 +10659,7 @@ static PyObject *__pyx_f_11solver_c_23_nyanyan_function(PyObject *__pyx_v_lst, C
   /* "solver_c.pyx":506
  *     #ratio = min(1, max(0, mx + sd - 8) / 5) # ratio is small when mx is small and sd is small
  *     #return int(mx * (1 - ratio) + (l + sd) * ratio)
- *     cdef float ratio = min(1, (3 * max(0, mx - 5) + sd) / 7) # ratio is small when mx is small and sd is small             # <<<<<<<<<<<<<<
+ *     cdef float ratio = min(1, (3 * max(0, mx - 5) + sd) / 8) # ratio is small when mx is small and sd is small             # <<<<<<<<<<<<<<
  *     return int(mx * (1 - ratio) + euclid * ratio)
  * 
  */
@@ -10672,7 +10670,7 @@ static PyObject *__pyx_f_11solver_c_23_nyanyan_function(PyObject *__pyx_v_lst, C
   } else {
     __pyx_t_11 = __pyx_t_10;
   }
-  __pyx_t_8 = (((3 * __pyx_t_11) + __pyx_v_sd) / 7.0);
+  __pyx_t_8 = (((3 * __pyx_t_11) + __pyx_v_sd) / 8.0);
   __pyx_t_11 = 1;
   if (((__pyx_t_8 < __pyx_t_11) != 0)) {
     __pyx_t_12 = __pyx_t_8;
@@ -10683,7 +10681,7 @@ static PyObject *__pyx_f_11solver_c_23_nyanyan_function(PyObject *__pyx_v_lst, C
 
   /* "solver_c.pyx":507
  *     #return int(mx * (1 - ratio) + (l + sd) * ratio)
- *     cdef float ratio = min(1, (3 * max(0, mx - 5) + sd) / 7) # ratio is small when mx is small and sd is small
+ *     cdef float ratio = min(1, (3 * max(0, mx - 5) + sd) / 8) # ratio is small when mx is small and sd is small
  *     return int(mx * (1 - ratio) + euclid * ratio)             # <<<<<<<<<<<<<<
  * 
  * #@cython.boundscheck(False)
@@ -11960,7 +11958,7 @@ static PyObject *__pyx_f_11solver_c_23_phase_search(int __pyx_v_phase, PyObject 
  *         l3_twist = path[-3] if len(path) >= 3 else -10
  *         twist_idx = 0             # <<<<<<<<<<<<<<
  *         len_successor = len(successor[phase])
- *         for _ in range(27):
+ *         for _ in range(28):
  */
     __pyx_v_twist_idx = 0;
 
@@ -11968,7 +11966,7 @@ static PyObject *__pyx_f_11solver_c_23_phase_search(int __pyx_v_phase, PyObject 
  *         l3_twist = path[-3] if len(path) >= 3 else -10
  *         twist_idx = 0
  *         len_successor = len(successor[phase])             # <<<<<<<<<<<<<<
- *         for _ in range(27):
+ *         for _ in range(28):
  *             if twist_idx >= len_successor:
  */
     __Pyx_GetModuleGlobalName(__pyx_t_5, __pyx_n_s_successor); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 576, __pyx_L1_error)
@@ -11983,16 +11981,16 @@ static PyObject *__pyx_f_11solver_c_23_phase_search(int __pyx_v_phase, PyObject 
     /* "solver_c.pyx":577
  *         twist_idx = 0
  *         len_successor = len(successor[phase])
- *         for _ in range(27):             # <<<<<<<<<<<<<<
+ *         for _ in range(28):             # <<<<<<<<<<<<<<
  *             if twist_idx >= len_successor:
  *                 return False
  */
-    for (__pyx_t_7 = 0; __pyx_t_7 < 27; __pyx_t_7+=1) {
+    for (__pyx_t_7 = 0; __pyx_t_7 < 28; __pyx_t_7+=1) {
       __pyx_v__ = __pyx_t_7;
 
       /* "solver_c.pyx":578
  *         len_successor = len(successor[phase])
- *         for _ in range(27):
+ *         for _ in range(28):
  *             if twist_idx >= len_successor:             # <<<<<<<<<<<<<<
  *                 return False
  *             twist = successor[phase][twist_idx]
@@ -12001,7 +11999,7 @@ static PyObject *__pyx_f_11solver_c_23_phase_search(int __pyx_v_phase, PyObject 
       if (__pyx_t_1) {
 
         /* "solver_c.pyx":579
- *         for _ in range(27):
+ *         for _ in range(28):
  *             if twist_idx >= len_successor:
  *                 return False             # <<<<<<<<<<<<<<
  *             twist = successor[phase][twist_idx]
@@ -12014,7 +12012,7 @@ static PyObject *__pyx_f_11solver_c_23_phase_search(int __pyx_v_phase, PyObject 
 
         /* "solver_c.pyx":578
  *         len_successor = len(successor[phase])
- *         for _ in range(27):
+ *         for _ in range(28):
  *             if twist_idx >= len_successor:             # <<<<<<<<<<<<<<
  *                 return False
  *             twist = successor[phase][twist_idx]
@@ -22050,27 +22048,9 @@ if (!__Pyx_RefNanny) {
  */
   }
 
-  /* "solver_c.pyx":735
- *         #print('.',end='',flush=True)
- *     #print('')
- * cdef int parity_cnt = 0             # <<<<<<<<<<<<<<
- * cdef int cnt = 0
- * puzzle = Cube()
- */
-  __pyx_v_11solver_c_23_parity_cnt = 0;
-
-  /* "solver_c.pyx":736
- *     #print('')
- * cdef int parity_cnt = 0
- * cdef int cnt = 0             # <<<<<<<<<<<<<<
- * puzzle = Cube()
- * path = []
- */
-  __pyx_v_11solver_c_23_cnt = 0;
-
   /* "solver_c.pyx":737
- * cdef int parity_cnt = 0
- * cdef int cnt = 0
+ * #cdef int parity_cnt = 0
+ * #cdef int cnt = 0
  * puzzle = Cube()             # <<<<<<<<<<<<<<
  * path = []
  */
@@ -22083,7 +22063,7 @@ if (!__Pyx_RefNanny) {
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
   /* "solver_c.pyx":738
- * cdef int cnt = 0
+ * #cdef int cnt = 0
  * puzzle = Cube()
  * path = []             # <<<<<<<<<<<<<<
  */
