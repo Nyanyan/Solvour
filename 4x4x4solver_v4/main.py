@@ -15,10 +15,11 @@ def main():
         inpt = [i for i in scramble.split()]
         #inpt = [i for i in input("scramble: ").split()]
         print(num)
-        if inpt == [-1]:
-            exit()
         strt = time()
         solution = solver(inpt)
+        if solution == -1:
+            print('failed')
+            continue
         print(solution)
         print(len(solution.split()), 'moves')
         print(time() - strt, 'sec')

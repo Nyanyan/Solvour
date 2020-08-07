@@ -683,7 +683,7 @@ def solver(scramble):
             depth += 1
         else:
             print('phase', phase, 'failed!')
-            return [-1]
+            return -1
     all_time = time() - strt_all
     analytics[0][6] = len(solution)
     analytics[1][6] = all_time
