@@ -1,5 +1,5 @@
 '''
-Solver:
+Abstract:
 * "X" twist includes X, X2, X', while "X2" means only X2
 --- Reduction phase ---
 phase 0: gather RL centers on RL faces
@@ -12,12 +12,44 @@ phase 3: complete center, edge pairing and clear edge parity (= PLL Parity), whi
          use R2, Rw2, L2, U, Uw2, D, F2, Fw2, B2
 --- 3x3x3 phase ---
 phase 4: gather UD stickers on UD faces and clear EO
-         use R, L, U, D, F, B, not use F2, B2
+         use R, L, U, D, F, B, not use R2, L2, F2, B2
 phase 5: solve it!
          use R2, L2, U, D, F2, B2
 '''
 
 '''
+Numbering
+        ---------
+        |       |
+        |   U   |
+        | WHITE |
+---------------------------------
+|       |       |       |       |
+|   L   |   F   |   R   |   B   |
+| ORANGE| GREEN |  RED  |  BLUE |
+---------------------------------
+        |       |
+        |   D   |
+        | YELLOW|
+        ---------
+
+              ---------------
+              |  0  0  1  1 |
+              |  7  0  1  2 |
+              |  6  3  2  3 |
+              |  2  5  4  3 |
+---------------------------------------------------------
+|  0  7  6  2 |  2  5  4  3 |  3  3  2  1 |  1  1  0  0 |
+| 15 16 17  8 |  8  4  5 11 | 11  8  9 12 | 12 12 13 15 |
+| 14 19 18  9 |  9  7  6 10 | 10 11 10 13 | 13 15 14 14 |
+|  6 22 23  4 |  4 16 17  5 |  5 18 19  7 |  7 20 21  6 |
+---------------------------------------------------------
+              |  4 16 17  5 |
+              | 23 20 21 18 |
+              | 22 23 22 19 |
+              |  6 21 20  7 |
+              ---------------
+
 Corner
    B
   0 1 
