@@ -658,8 +658,6 @@ def state_to_cube(state):
             return -1
     if len(set(res.Cp)) != 8 or sum(res.Co) % 3:
         return -1
-    print(res.Cp)
-    print(res.Co)
     edges = [[0, 3], [3, 0], [0, 2], [2, 0], [0, 1], [1, 0], [0, 4], [4, 0], [4, 1], [1, 4], [2, 1], [1, 2], [2, 3], [3, 2], [4, 3], [3, 4], [5, 1], [1, 5], [5, 2], [2, 5], [5, 3], [3, 5], [5, 4], [4, 5]]
     for idx, arr in enumerate([[33, 29], [30, 34], [39, 66], [65, 43], [46, 50], [49, 45], [40, 82], [81, 36], [87, 52], [56, 91], [72, 59], [55, 68], [71, 27], [23, 75], [88, 20], [24, 84], [1, 61], [62, 2], [7, 77], [78, 11], [14, 18], [17, 13], [8, 93], [94, 4]]):
         colors = [state[i] for i in arr]
@@ -668,12 +666,16 @@ def state_to_cube(state):
                 res.Ep[idx] = i
                 break
         else:
-            print('a', res.Ep)
             return -1
     if len(set(res.Ep)) != 24:
-        print('b', res.Ep)
         return -1
-    print(res.Ep)
+    centers = [37, 38, 42, 41, 53, 54, 58, 57, 69, 70, 74, 73, 26, 25, 21, 22, 85, 86, 90, 89, 5, 6, 10, 9]
+    res.Ce = [state[i] for i in centers]
+    if len(set(res.Ce)) != 6:
+        return -1
+    for i in range(6):
+        if res.Ce.count(i) != 4:
+            return -1
     return res
 
 def solver(state):
