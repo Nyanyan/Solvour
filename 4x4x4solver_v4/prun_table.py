@@ -1,3 +1,8 @@
+'''
+4x4x4 Solver Prunning Table Part Written by Nyanyan
+Copyright 2020 Nyanyan
+'''
+
 from cube_class import Cube, face, axis, wide, move_cp, move_co, move_ep, move_ce, move_candidate, twist_to_idx, successor, idx_ep_phase1, ep_switch_parity, idx_ep_phase2
 from collections import deque
 import csv

@@ -1,3 +1,8 @@
+'''
+4x4x4 Solver Cython Setup Part Written by Nyanyan
+Copyright 2020 Nyanyan
+'''
+
 from distutils.core import setup, Extension
 from Cython.Build import cythonize
 from numpy import get_include # cimport numpy を使うため

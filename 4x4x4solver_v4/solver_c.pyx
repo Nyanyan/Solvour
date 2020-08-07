@@ -1,4 +1,9 @@
 '''
+4x4x4 Solver Solver Part Written by Nyanyan
+Copyright 2020 Nyanyan
+'''
+
+'''
 Abstract:
 * "X" twist includes X, X2, X', while "X2" means only X2
 --- Reduction phase ---

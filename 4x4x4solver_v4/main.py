@@ -1,3 +1,8 @@
+'''
+4x4x4 Solver Main Part Written by Nyanyan
+Copyright 2020 Nyanyan
+'''
+
 from solver_c_31 import solver
 #from cube_class_c_4 import move_candidate
 from time import time
