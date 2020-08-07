@@ -30,9 +30,9 @@ with open('move/co.csv', mode='r') as f:
         move_co_arr[idx] = [int(i) for i in f.readline().replace('\n', '').split(',')]
 '''
 move_ep_eo_phase4 = [[] for _ in range(1013760)]
-with open('move/ep_phase4.csv', mode='r') as f:
-    for idx in range(495):
-        move_ep_phase4[idx] = [int(i) for i in f.readline().replace('\n', '').split(',')]
+with open('move/ep_eo_phase4.csv', mode='r') as f:
+    for idx in range(1013760):
+        move_ep_eo_phase4[idx] = [int(i) for i in f.readline().replace('\n', '').split(',')]
 '''
 move_cp_arr = [[] for _ in range(40320)]
 with open('move/cp.csv', mode='r') as f:
@@ -271,7 +271,7 @@ with open('prun/prunning4.csv', mode='w') as f:
 solved = Cube()
 print('phase 4 2/2')
 prunning = [99 for _ in range(1013760)]
-solved_idx = solved.idx_ep_phase4()
+solved_idx = solved.idx_ep_eo_phase4()
 prunning[solved_idx] = 0
 que = deque([[solved_idx, 0, -10, -10, -10]])
 cnt = 0

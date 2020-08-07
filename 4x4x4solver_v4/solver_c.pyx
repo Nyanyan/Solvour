@@ -501,7 +501,7 @@ cdef initialize_puzzle_arr(int phase, puzzle):
     elif phase == 3:
         return [puzzle.idx_ce_phase23(), puzzle.idx_ep_phase3()]
     elif phase == 4:
-        return [puzzle.idx_co(), puzzle.idx_ep_phase4()]
+        return [puzzle.idx_co(), puzzle.idx_ep_eo_phase4()]
     elif phase == 5:
         return [puzzle.idx_cp(), puzzle.idx_ep_phase5()]
 
@@ -518,7 +518,7 @@ cdef move_arr(puzzle_arr, int phase, int twist):
     elif phase == 3:
         return [move_ce_phase23[puzzle_arr[0]][tmp], move_ep_phase3[puzzle_arr[1]][tmp]]
     elif phase == 4:
-        return [move_co_arr[puzzle_arr[0]][tmp], move_ep_phase4[puzzle_arr[1]][tmp]]
+        return [move_co_arr[puzzle_arr[0]][tmp], move_ep_eo_phase4[puzzle_arr[1]][tmp]]
     elif phase == 5:
         return [move_cp_arr[puzzle_arr[0]][tmp], move_ep_phase5_ud[puzzle_arr[1] // 24][tmp] * 24 + move_ep_phase5_fbrl[puzzle_arr[1] % 24][tmp]]
 
@@ -701,7 +701,7 @@ cdef int[70][27] move_ce_phase1_rl
 cdef int[343000][27] move_ce_phase23
 cdef int[40320][27] move_ep_phase3
 cdef int[2187][27] move_co_arr
-cdef int[495][27] move_ep_phase4
+cdef int[1013760][27] move_ep_eo_phase4
 cdef int[40320][27] move_cp_arr
 cdef int[40320][27] move_ep_phase5_ud
 cdef int[24][27] move_ep_phase5_fbrl
@@ -716,7 +716,7 @@ for i in range(6):
         prunning[i][j] = int[prun_len_all[j]]
 '''
 if __name__ == 'solver_c_26':
-    global move_ce_phase0, move_ce_phase1_fbud, move_ce_phase1_rl, move_ep_phase1, move_ce_phase23, move_ep_phase3, move_co_arr, move_ep_phase4, move_cp_arr, move_ep_phase5_ud, move_ep_phase5_fbrl, prunning, prun_len
+    global move_ce_phase0, move_ce_phase1_fbud, move_ce_phase1_rl, move_ce_phase23, move_ep_phase3, move_co_arr, move_ep_eo_phase4, move_cp_arr, move_ep_phase5_ud, move_ep_phase5_fbrl, prunning, prun_len
     print('getting moving array')
     with open('move/ce_phase0.csv', mode='r') as f:
         for idx in range(735471):
@@ -748,9 +748,9 @@ if __name__ == 'solver_c_26':
         for idx in range(2187):
             move_co_arr[idx] = [int(i) for i in f.readline().replace('\n', '').split(',')]
     #print('.',end='',flush=True)
-    with open('move/ep_phase4.csv', mode='r') as f:
-        for idx in range(495):
-            move_ep_phase4[idx] = [int(i) for i in f.readline().replace('\n', '').split(',')]
+    with open('move/ep_eo_phase4.csv', mode='r') as f:
+        for idx in range(1013760):
+            move_ep_eo_phase4[idx] = [int(i) for i in f.readline().replace('\n', '').split(',')]
     #print('.',end='',flush=True)
     with open('move/cp.csv', mode='r') as f:
         for idx in range(40320):
