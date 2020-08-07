@@ -693,9 +693,9 @@ def solver(scramble):
     with open('analytics_time.csv', mode='a') as f:
         writer = csv.writer(f, lineterminator='\n')
         writer.writerow(analytics[1])
-    print(solution)
+    #print(solution)
     solution = optimise(solution, 0)
-    print(solution)
+    #print(solution)
     solution_str = ''
     for i in solution:
         solution_str += move_candidate[i] + ' '
