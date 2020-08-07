@@ -644,12 +644,45 @@ cdef phase_search(int phase, puzzle_arr, int depth, int dis):
 
 def state_to_cube(state):
     res = Cube()
-    cdef int[8][3] corners = [[0, 4, 3], [0, 3, 2], [0, 2, 1], [0, 1, 4], [5, 4, 1], [5, 1, 2], [5, 3, 4], [5, 2, 3]]
-    for i in 
+    corners = [[0, 4, 3], [0, 3, 2], [0, 1, 4], [0, 2, 1], [5, 4, 1], [5, 1, 2], [5, 3, 4], [5, 2, 3]]
+    set_corners = [set(i) for i in corners]
+    for idx, arr in enumerate([[32, 80, 28], [35, 31, 67], [44, 48, 83], [47, 64, 51], [0, 95, 60], [3, 63, 76], [12, 16, 92], [15, 79, 19]]):
+        colors = [state[i] for i in arr]
+        set_colors = set(colors)
+        for i in range(8):
+            if set_colors == set_corners[i]:
+                res.Cp[idx] = i
+                res.Co[idx] = colors.index(corners[i][0])
+                break
+        else:
+            return -1
+    if len(set(res.Cp)) != 8 or sum(res.Co) % 3:
+        return -1
+    print(res.Cp)
+    print(res.Co)
+    edges = [[0, 3], [0, 2], [0, 1], [0, 4], [1, 4], [2, 1], [2, 3], [3, 4], [1, 5], [2, 5], [5, 3], [5, 4]]
+    set_edges = [set(i) for i in edges]
+    for idx, arr in enumerate([[33, 29], [30, 34], [39, 66], [65, 43], [46, 50], [49, 45], [40, 82], [81, 36], [52, 87], [56, 91], [72, 59], [68, 55], [27, 71], [23, 75], [88, 20], [84, 24], [1, 61], [62, 2], [7, 77], [78, 11], [14, 18], [17, 13], [8, 93], [94, 4]]):
+        colors = [state[i] for i in arr]
+        set_colors = set(colors)
+        for i in range(12):
+            if set_colors == set_edges[i]:
+                res.Ep[idx] = i * 2 + int(colors != edges[i])
+                break
+        else:
+            print('a', res.Ep)
+            return -1
+    if len(set(res.Ep)) != 24:
+        print('b', res.Ep)
+        return -1
+    print(res.Ep)
+    return res
 
 def solver(state):
     global path, cnt, puzzle, parity_cnt, puzzle
     puzzle = state_to_cube(state)
+    if puzzle == -1:
+        return -1
     '''
     for i in scramble:
         puzzle = puzzle.move(move_candidate.index(i))
@@ -728,7 +761,7 @@ cdef int[24][27] move_ep_phase5_fbrl
 cdef int[6] prun_len = [1, 1, 3, 2, 2, 2]
 prunning = [[[] for _ in range(prun_len[i])] for i in range(6)]
 
-if __name__ == 'solver_c_2':
+if __name__ == 'solver_c_3':
     global move_ce_phase0, move_ce_phase1_fbud, move_ce_phase1_rl, move_ce_phase23, move_ep_phase3, move_co_arr, move_ep_eo_phase4, move_cp_arr, move_ep_phase5_ud, move_ep_phase5_fbrl, prunning, prun_len
     print('getting moving array')
     with open('move/ce_phase0.csv', mode='r') as f:
