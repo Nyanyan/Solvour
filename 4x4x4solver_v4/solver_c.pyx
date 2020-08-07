@@ -433,21 +433,6 @@ cdef pp_cp_p(arr, strt):
                     return 1 + pp_cp_p(arr, i + 1)
     return 0
 
-'''
-cdef idx_ep_phase1(ep):
-    cdef int res = 0
-    cdef int[24] arr = [i % 2 for i in ep]
-    cdef int remain_1 = 12
-    cdef int i
-    for i in range(24):
-        if arr[i] == 1:
-            res += cmb(23 - i, remain_1)
-            remain_1 -= 1
-            if remain_1 == 0 or i + remain_1 == 23:
-                break
-    return res
-'''
-
 cdef ep_switch_parity(ep): # "last 2 edge"
     return ep_switch_parity_p([i for i in ep], 0, 0) % 2
 
@@ -738,10 +723,9 @@ def solver(scramble):
         solution_str += move_candidate[i] + ' '
     return solution_str
 
-cdef int[735471][27] move_ce_phase0 # = np.zeros((735471, 27), dtype=np.int)
+cdef int[735471][27] move_ce_phase0
 cdef int[12870][27] move_ce_phase1_fbud
 cdef int[70][27] move_ce_phase1_rl
-#cdef int[2704156][27] move_ep_phase1 # = np.zeros((2704156, 27), dtype=np.int)
 cdef int[343000][27] move_ce_phase23
 cdef int[40320][27] move_ep_phase3
 cdef int[2187][27] move_co_arr
@@ -750,15 +734,8 @@ cdef int[40320][27] move_cp_arr
 cdef int[40320][27] move_ep_phase5_ud
 cdef int[24][27] move_ep_phase5_fbrl
 cdef int[6] prun_len = [1, 1, 3, 2, 2, 2]
-#prun_len_all = [[735471], [900970, 2704156], [343000, 665280, 665280], [343000, 40320], [2187, 495], [40320, 967704]]
-prunning = [[[] for _ in range(prun_len[i])] for i in range(6)] #np.array([[[] for _ in range(prun_len[i])] for i in range(6)])
-'''
-cdef int*** prunning = int**[7] # = [None for _ in range(7)]
-for i in range(6):
-    prunning[i] = int*[prun_len[i]]
-    for j in range(prun_len[i]):
-        prunning[i][j] = int[prun_len_all[j]]
-'''
+prunning = [[[] for _ in range(prun_len[i])] for i in range(6)]
+
 if __name__ == 'solver_c_31':
     global move_ce_phase0, move_ce_phase1_fbud, move_ce_phase1_rl, move_ce_phase23, move_ep_phase3, move_co_arr, move_ep_eo_phase4, move_cp_arr, move_ep_phase5_ud, move_ep_phase5_fbrl, prunning, prun_len
     print('getting moving array')
@@ -774,12 +751,6 @@ if __name__ == 'solver_c_31':
         for idx in range(70):
             move_ce_phase1_rl[idx] = [int(i) for i in f.readline().replace('\n', '').split(',')]
     #print('.',end='',flush=True)
-    '''
-    with open('move/ep_phase1.csv', mode='r') as f:
-        for idx in range(2704156):
-            move_ep_phase1[idx] = [int(i) for i in f.readline().replace('\n', '').split(',')]
-    #print('.',end='',flush=True)
-    '''
     with open('move/ce_phase23.csv', mode='r') as f:
         for idx in range(343000):
             move_ce_phase23[idx] = [int(i) for i in f.readline().replace('\n', '').split(',')]
@@ -817,7 +788,6 @@ if __name__ == 'solver_c_31':
                 prunning[phase][lin] = np.array([int(i) for i in f.readline().replace('\n', '').split(',')])
         #print('.',end='',flush=True)
     #print('')
-#cdef int parity_cnt = 0
-#cdef int cnt = 0
+
 puzzle = Cube()
 path = []
