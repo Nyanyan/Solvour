@@ -4,7 +4,7 @@ import csv
 
 move_arr = [0, 1, 2, 3, 4, 5, 6, 7, 8, 12, 13, 14, 15, 16, 17, 18, 19, 20, 24, 25, 26, 27, 28, 29, 30, 31, 32]
 
-
+'''
 solved = Cube()
 ce_move_phase0 = [[-1 for _ in range(len(move_arr))] for _ in range(735471)]
 que = deque([solved])
@@ -206,32 +206,32 @@ with open('move/co.csv', mode='w') as f:
     writer = csv.writer(f, lineterminator='\n')
     for arr in co_move:
         writer.writerow(arr)
+'''
 
 
-
-ep_move_phase4 = [[-1 for _ in range(len(move_arr))] for _ in range(495)]
+ep_eo_move_phase4 = [[-1 for _ in range(len(move_arr))] for _ in range(1013760)]
 solved = Cube()
 que = deque([solved])
 cnt = 0
-print('EP move index phase4')
+print('EP EO move index phase4')
 while que:
     cnt += 1
     if cnt % 10000 == 0:
         print(cnt, len(que))
     puzzle = que.popleft()
-    idx = puzzle.idx_ep_phase4()
+    idx = puzzle.idx_ep_eo_phase4()
     for twist in successor[4]:
         n_puzzle = puzzle.move(twist)
-        n_idx = n_puzzle.idx_ep_phase4()
-        if ep_move_phase4[idx][twist_to_idx[twist]] == -1:
-            ep_move_phase4[idx][twist_to_idx[twist]] = n_idx
+        n_idx = n_puzzle.idx_ep_eo_phase4()
+        if ep_eo_move_phase4[idx][twist_to_idx[twist]] == -1:
+            ep_eo_move_phase4[idx][twist_to_idx[twist]] = n_idx
             que.append(n_puzzle)
-with open('move/ep_phase4.csv', mode='w') as f:
+with open('move/ep_eo_phase4.csv', mode='w') as f:
     writer = csv.writer(f, lineterminator='\n')
-    for arr in ep_move_phase4:
+    for arr in ep_eo_move_phase4:
         writer.writerow(arr)
 
-
+'''
 ep_move_phase5_ud = [[-1 for _ in range(len(move_arr))] for _ in range(40320)]
 solved = Cube()
 que = deque([solved])
@@ -276,3 +276,4 @@ with open('move/ep_phase5_fbrl.csv', mode='w') as f:
     writer = csv.writer(f, lineterminator='\n')
     for arr in ep_move_phase5_fbrl:
         writer.writerow(arr)
+'''

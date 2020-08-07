@@ -1,4 +1,4 @@
-from solver_c_24 import solver
+from solver_c_26 import solver
 from cube_class_c_4 import move_candidate, Cube
 from time import time
 import urllib.request
@@ -11,6 +11,7 @@ def main():
         
         response = urllib.request.urlopen('http://localhost:2014/scramble/.txt?e=444')
         scramble = response.read().decode('utf8', 'ignore').rstrip(os.linesep)
+        print(scramble)
         inpt = [i for i in scramble.split()]
         
         #inpt = [i for i in input("scramble: ").split()]
@@ -23,6 +24,7 @@ def main():
             puzzle = puzzle.move(mov)
         strt = time()
         solution = solver(puzzle)
+        print(solution)
         if solution == [-1]:
             continue
         print('solution:',end=' ')

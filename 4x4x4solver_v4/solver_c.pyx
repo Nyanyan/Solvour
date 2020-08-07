@@ -12,7 +12,7 @@ phase 3: complete center, edge pairing and clear edge parity (= PLL Parity), whi
          use R2, Rw2, L2, U, Uw2, D, F2, Fw2, B2
 --- 3x3x3 phase ---
 phase 4: gather UD stickers on UD faces and clear EO
-         use R2, L2, U, D, F, B, not use F2, B2
+         use R, L, U, D, F, B, not use F2, B2
 phase 5: solve it!
          use R2, L2, U, D, F2, B2
 '''
@@ -90,7 +90,7 @@ successor = [
     [0, 1, 2, 3, 4, 5, 6, 7, 8,            12, 13, 14,     16,     18, 19, 20,             24, 25, 26,     28,     30, 31, 32            ], # phase 1
     [   1,       4,       7,               12, 13, 14,     16,     18, 19, 20,             24, 25, 26,     28,     30, 31, 32            ], # phase 2
     [   1,       4,       7,               12, 13, 14,             18, 19, 20,                 25,         28,         31,               ], # phase 3
-    [                                      12, 13, 14,             18, 19, 20,             24,     26,             30,     32            ], # phase 4
+    [0, 1, 2,          6, 7, 8,            12, 13, 14,             18, 19, 20,             24, 25, 26,             30, 31, 32            ], # phase 4
     [   1,                7,               12, 13, 14,             18, 19, 20,                 25,                     31                ]  # phase 5
     ]
 
@@ -314,7 +314,7 @@ class Cube:
             res += cnt * fac[7 - i]
         return res
     
-    def idx_ep_phase4(self):
+    def idx_ep_eo_phase4(self):
         cdef int[12] ep = [self.Ep[i] // 8 for i in range(0, 24, 2)]
         cdef int res = 0
         cdef int remain = 4
@@ -325,6 +325,10 @@ class Cube:
                 remain -= 1
                 if remain == 0:
                     break
+        cdef int[12] eo = [self.Ep[i] % 2 for i in range(0, 24, 2)]
+        for i in range(11):
+            res *= 2
+            res += eo[i]
         return res
 
     def idx_ep_phase5_ud(self):
@@ -392,6 +396,7 @@ cdef pp_cp_p(arr, strt):
                     return 1 + pp_cp_p(arr, i + 1)
     return 0
 
+'''
 cdef idx_ep_phase1(ep):
     cdef int res = 0
     cdef int[24] arr = [i % 2 for i in ep]
@@ -404,6 +409,7 @@ cdef idx_ep_phase1(ep):
             if remain_1 == 0 or i + remain_1 == 23:
                 break
     return res
+'''
 
 cdef ep_switch_parity(ep): # "last 2 edge"
     return ep_switch_parity_p([i for i in ep], 0, 0) % 2
@@ -417,6 +423,17 @@ cdef ep_switch_parity_p(arr, res, strt):
                 if arr[j] == i:
                     arr[i], arr[j] = arr[j], arr[i]
                     return ep_switch_parity_p(arr, res + 1, i + 1)
+    return res
+
+cdef ep_not_separate(ep):
+    ep_even = {ep[i] // 2 for i in range(0, 24, 2)}
+    if len(ep_even) < 12:
+        return True
+    return False
+
+cdef eo_flip(ep):
+    ep_even = [ep[i] % 2 for i in range(0, 24, 2)]
+    res = sum(ep_even)
     return res
 
 cdef idx_ep_phase2(ep):
@@ -449,13 +466,13 @@ cdef optimise(arr, int strt):
     if strt == len(arr) - 1:
         return arr
     if face(arr[strt]) == face(arr[strt + 1]):
-        new_axis = face(strt) * 3
+        new_axis = strt // 3
         new_power = (arr[strt] % 3 + arr[strt + 1] % 3 + 2) % 4 - 1
         del arr[strt]
         if new_power == -1:
-            del arr[-1]
+            del arr[strt]
         else:
-            arr[strt] = new_axis + new_power
+            arr[strt] = new_axis * 3 + new_power
         return optimise(arr, strt)
     elif axis(arr[strt]) == axis(arr[strt + 1]):
         arr_copy = [i for i in arr]
@@ -478,7 +495,7 @@ cdef initialize_puzzle_arr(int phase, puzzle):
     if phase == 0:
         return [puzzle.idx_ce_phase0()]
     elif phase == 1:
-        return [puzzle.idx_ce_phase1_fbud() * 70 + puzzle.idx_ce_phase1_rl(), idx_ep_phase1(puzzle.Ep)]
+        return [puzzle.idx_ce_phase1_fbud() * 70 + puzzle.idx_ce_phase1_rl()]
     elif phase == 2:
         return [puzzle.idx_ce_phase23(), puzzle.Ep]
     elif phase == 3:
@@ -495,7 +512,7 @@ cdef move_arr(puzzle_arr, int phase, int twist):
     if phase == 0:
         return [move_ce_phase0[puzzle_arr[0]][tmp]]
     elif phase == 1:
-        return [move_ce_phase1_fbud[puzzle_arr[0] // 70][tmp] * 70 + move_ce_phase1_rl[puzzle_arr[0] % 70][tmp], move_ep_phase1[puzzle_arr[1]][tmp]]
+        return [move_ce_phase1_fbud[puzzle_arr[0] // 70][tmp] * 70 + move_ce_phase1_rl[puzzle_arr[0] % 70][tmp]]
     elif phase == 2:
         return [move_ce_phase23[puzzle_arr[0]][tmp], move_ep(puzzle_arr[1], twist)]
     elif phase == 3:
@@ -549,7 +566,7 @@ cdef distance(puzzle_arr, int phase):
             puzzle_ep = move_ep(puzzle_ep, i)
             puzzle_cp = move_cp(puzzle_cp, i)
         if phase == 1: # find OLL Parity (2 edge remaining)
-            if ep_switch_parity(puzzle_ep):
+            if ep_switch_parity(puzzle_ep) or ep_not_separate(puzzle_ep) or eoflip(puzzle_ep) % 2:
                 #parity_cnt += 1
                 return 99
         elif phase == 3: # find PLL Parity
@@ -680,7 +697,7 @@ def solver(p):
 cdef int[735471][27] move_ce_phase0 # = np.zeros((735471, 27), dtype=np.int)
 cdef int[12870][27] move_ce_phase1_fbud
 cdef int[70][27] move_ce_phase1_rl
-cdef int[2704156][27] move_ep_phase1 # = np.zeros((2704156, 27), dtype=np.int)
+#cdef int[2704156][27] move_ep_phase1 # = np.zeros((2704156, 27), dtype=np.int)
 cdef int[343000][27] move_ce_phase23
 cdef int[40320][27] move_ep_phase3
 cdef int[2187][27] move_co_arr
@@ -688,7 +705,7 @@ cdef int[495][27] move_ep_phase4
 cdef int[40320][27] move_cp_arr
 cdef int[40320][27] move_ep_phase5_ud
 cdef int[24][27] move_ep_phase5_fbrl
-cdef int[6] prun_len = [1, 2, 3, 2, 2, 2]
+cdef int[6] prun_len = [1, 1, 3, 2, 2, 2]
 #prun_len_all = [[735471], [900970, 2704156], [343000, 665280, 665280], [343000, 40320], [2187, 495], [40320, 967704]]
 prunning = [[[] for _ in range(prun_len[i])] for i in range(6)] #np.array([[[] for _ in range(prun_len[i])] for i in range(6)])
 '''
@@ -698,7 +715,7 @@ for i in range(6):
     for j in range(prun_len[i]):
         prunning[i][j] = int[prun_len_all[j]]
 '''
-if __name__ == 'solver_c_24':
+if __name__ == 'solver_c_26':
     global move_ce_phase0, move_ce_phase1_fbud, move_ce_phase1_rl, move_ep_phase1, move_ce_phase23, move_ep_phase3, move_co_arr, move_ep_phase4, move_cp_arr, move_ep_phase5_ud, move_ep_phase5_fbrl, prunning, prun_len
     print('getting moving array')
     with open('move/ce_phase0.csv', mode='r') as f:
@@ -713,10 +730,12 @@ if __name__ == 'solver_c_24':
         for idx in range(70):
             move_ce_phase1_rl[idx] = [int(i) for i in f.readline().replace('\n', '').split(',')]
     #print('.',end='',flush=True)
+    '''
     with open('move/ep_phase1.csv', mode='r') as f:
         for idx in range(2704156):
             move_ep_phase1[idx] = [int(i) for i in f.readline().replace('\n', '').split(',')]
     #print('.',end='',flush=True)
+    '''
     with open('move/ce_phase23.csv', mode='r') as f:
         for idx in range(343000):
             move_ce_phase23[idx] = [int(i) for i in f.readline().replace('\n', '').split(',')]
