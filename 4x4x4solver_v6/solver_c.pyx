@@ -23,7 +23,7 @@ phase 5: solve it!
 '''
 
 '''
-Numbering
+Parts Numbering
         ---------
         |       |
         |   U   |
@@ -54,57 +54,40 @@ Numbering
               | 22 23 22 19 |
               |  6 21 20  7 |
               ---------------
+'''
 
-Corner
-   B
-  0 1 
-L 2 3 R
-   F
+'''
+Color Numbering
+        ---------
+        |       |
+        |   U   |
+        |   0   |
+---------------------------------
+|       |       |       |       |
+|   L   |   F   |   R   |   B   |
+|   1   |   2   |   3   |   4   |
+---------------------------------
+        |       |
+        |   D   |
+        |   5   |
+        ---------
 
-   F
-  4 5
-L 6 7 R
-   B
-
-
-Edge
-top layer
-    B
-   0 1
-  7   2
-L 6   3 R
-   5 4
-    F
-
-Middle layer
-8   11   12   15
-9 F 10 R 13 B 14
-
-Bottom layer
-     F
-   16 17
-  23   18
-L 22   19 R
-   21 20
-     B
-
-
-Center
-top layer
-   B
-  0 1 
-L 2 3 R
-   F
-
-Middle layer
-4   5   8    9  12   13  16   17
-7 F 6  11 R 10  15 B 14  19 L 18
-
-Bottom layer
-    F
-  20 21
-L 23 22 R
-    B
+              ---------------
+              | 32 33 34 35 |
+              | 36 37 38 39 |
+              | 40 41 42 43 |
+              | 44 45 46 47 |
+---------------------------------------------------------
+| 80 81 82 83 | 48 49 50 51 | 64 65 66 67 | 31 30 29 28 |
+| 84 85 86 87 | 52 53 54 55 | 68 69 70 71 | 27 26 25 24 |
+| 88 89 90 91 | 56 57 58 59 | 72 73 74 75 | 23 22 21 20 |
+| 92 93 94 95 | 60 61 62 63 | 76 77 78 79 | 19 18 17 16 |
+---------------------------------------------------------
+              |  0  1  2  3 |
+              |  4  5  6  7 |
+              |  8  9 10 11 |
+              | 12 13 14 15 |
+              ---------------
 '''
 
 #from cube_class_c_6 import Cube, face, axis, wide, move_cp, move_co, move_ep, move_ce, move_candidate, twist_to_idx, successor, ep_switch_parity, idx_ep_phase1, idx_ep_phase2, ec_parity, ec_0_parity, skip_axis, reverse_move
@@ -659,16 +642,23 @@ cdef phase_search(int phase, puzzle_arr, int depth, int dis):
             path.pop()
             twist_idx += 1
 
-def solver(scramble):
+def state_to_cube(state):
+    res = Cube()
+    cdef int[8][3] corners = [[0, 4, 3], [0, 3, 2], [0, 2, 1], [0, 1, 4], [5, 4, 1], [5, 1, 2], [5, 3, 4], [5, 2, 3]]
+    for i in 
+
+def solver(state):
     global path, cnt, puzzle, parity_cnt, puzzle
-    puzzle = Cube()
+    puzzle = state_to_cube(state)
+    '''
     for i in scramble:
         puzzle = puzzle.move(move_candidate.index(i))
-    strt_all = time()
+    '''
+    #strt_all = time()
     solution = []
     #part_3_max_depth = 30
     cdef int phase = 0
-    analytics = [[-1 for _ in range(7)] for _ in range(2)]
+    #analytics = [[-1 for _ in range(7)] for _ in range(2)]
     cdef int dis, depth, twist
     while phase < 6:
         strt = time()
@@ -685,7 +675,7 @@ def solver(scramble):
                 for twist in path:
                     puzzle = puzzle.move(twist)
                 solution.extend(path)
-                phase_time = time() - strt
+                #phase_time = time() - strt
                 '''
                 print('')
                 for i in path:
@@ -697,16 +687,17 @@ def solver(scramble):
                 print('cnt', cnt)
                 print('parity', parity_cnt)
                 '''
-                print(phase, depth, phase_time)
-                analytics[0][phase] = depth
-                analytics[1][phase] = phase_time
+                #print(phase, depth, phase_time)
+                #analytics[0][phase] = depth
+                #analytics[1][phase] = phase_time
                 phase += 1
                 break
             depth += 1
         else:
             print('phase', phase, 'failed!')
             return -1
-    all_time = time() - strt_all
+    #all_time = time() - strt_all
+    '''
     analytics[0][6] = len(solution)
     analytics[1][6] = all_time
     with open('analytics_len.csv', mode='a') as f:
@@ -715,6 +706,7 @@ def solver(scramble):
     with open('analytics_time.csv', mode='a') as f:
         writer = csv.writer(f, lineterminator='\n')
         writer.writerow(analytics[1])
+    '''
     #print(solution)
     solution = optimise(solution, 0)
     #print(solution)
@@ -736,7 +728,7 @@ cdef int[24][27] move_ep_phase5_fbrl
 cdef int[6] prun_len = [1, 1, 3, 2, 2, 2]
 prunning = [[[] for _ in range(prun_len[i])] for i in range(6)]
 
-if __name__ == 'solver_c_1':
+if __name__ == 'solver_c_2':
     global move_ce_phase0, move_ce_phase1_fbud, move_ce_phase1_rl, move_ce_phase23, move_ep_phase3, move_co_arr, move_ep_eo_phase4, move_cp_arr, move_ep_phase5_ud, move_ep_phase5_fbrl, prunning, prun_len
     print('getting moving array')
     with open('move/ce_phase0.csv', mode='r') as f:
