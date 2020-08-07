@@ -2,7 +2,7 @@ from cube_class import Cube, face, axis, wide, move_cp, move_co, move_ep, move_c
 from collections import deque
 import csv
 
-'''
+
 move_ce_phase0 = [[] for _ in range(735471)]
 with open('move/ce_phase0.csv', mode='r') as f:
     for idx in range(735471):
@@ -15,7 +15,6 @@ move_ce_phase1_rl = [[] for _ in range(70)]
 with open('move/ce_phase1_rl.csv', mode='r') as f:
     for idx in range(70):
         move_ce_phase1_rl[idx] = [int(i) for i in f.readline().replace('\n', '').split(',')]
-
 move_ce_phase23 = [[] for _ in range(343000)]
 with open('move/ce_phase23.csv', mode='r') as f:
     for idx in range(343000):
@@ -28,12 +27,10 @@ move_co_arr = [[] for _ in range(2187)]
 with open('move/co.csv', mode='r') as f:
     for idx in range(2187):
         move_co_arr[idx] = [int(i) for i in f.readline().replace('\n', '').split(',')]
-'''
 move_ep_eo_phase4 = [[] for _ in range(1013760)]
 with open('move/ep_eo_phase4.csv', mode='r') as f:
     for idx in range(1013760):
         move_ep_eo_phase4[idx] = [int(i) for i in f.readline().replace('\n', '').split(',')]
-'''
 move_cp_arr = [[] for _ in range(40320)]
 with open('move/cp.csv', mode='r') as f:
     for idx in range(40320):
@@ -46,9 +43,8 @@ move_ep_phase5_fbrl = [[] for _ in range(24)]
 with open('move/ep_phase5_fbrl.csv', mode='r') as f:
     for idx in range(24):
         move_ep_phase5_fbrl[idx] = [int(i) for i in f.readline().replace('\n', '').split(',')]
-'''
 
-'''
+
 # phase 0
 solved = Cube()
 print('phase 0 1/1')
@@ -265,7 +261,7 @@ while que:
 with open('prun/prunning4.csv', mode='w') as f:
     writer = csv.writer(f, lineterminator='\n')
     writer.writerow(prunning)
-'''
+
 
 # phase4 ep
 solved = Cube()
@@ -291,7 +287,7 @@ with open('prun/prunning4.csv', mode='a') as f:
     writer = csv.writer(f, lineterminator='\n')
     writer.writerow(prunning)
 
-'''
+
 # phase5 cp
 solved = Cube()
 print('phase 5 1/2')
@@ -340,7 +336,7 @@ while que:
 with open('prun/prunning5.csv', mode='a') as f:
     writer = csv.writer(f, lineterminator='\n')
     writer.writerow(prunning)
-'''
+
 
 
 
