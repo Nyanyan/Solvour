@@ -468,7 +468,7 @@ cdef idx_ep_phase2(ep):
     return [res1, res2]
 
 cdef optimise(arr, int strt):
-    if strt == len(arr) - 1:
+    if strt >= len(arr) - 1:
         return arr
     if face(arr[strt]) == face(arr[strt + 1]):
         new_axis = arr[strt] // 3
@@ -722,7 +722,7 @@ cdef int[24][27] move_ep_phase5_fbrl
 cdef int[6] prun_len = [1, 1, 3, 2, 2, 2]
 prunning = [[[] for _ in range(prun_len[i])] for i in range(6)]
 
-if __name__ == 'solver_c_5':
+if __name__ == 'solver_c_6':
     global move_ce_phase0, move_ce_phase1_fbud, move_ce_phase1_rl, move_ce_phase23, move_ep_phase3, move_co_arr, move_ep_eo_phase4, move_cp_arr, move_ep_phase5_ud, move_ep_phase5_fbrl, prunning, prun_len
     print('getting moving array')
     with open('move/ce_phase0.csv', mode='r') as f:
