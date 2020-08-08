@@ -607,6 +607,8 @@ cdef skip(int phase, int twist, int l1_twist, int l2_twist, int l3_twist):
 cdef phase_search(int phase, puzzle_arr, int depth, int dis):
     global path, cnt
     cdef int l1_twist, l2_twist, l3_twist, twist_idx, len_successor, n_dis, twist
+    if time() - strt > timeout:
+        return False
     if depth == 0:
         return dis == 0
     else:
@@ -676,20 +678,22 @@ def state_to_cube(state):
             return -1
     return res
 
-def solver(state):
-    global path, cnt, puzzle, parity_cnt, puzzle
+def solver(state, tmout):
+    global path, cnt, puzzle, parity_cnt, puzzle, strt, timeout
     puzzle = state_to_cube(state)
     if puzzle == -1:
         return 'Error'
     solution = []
     cdef int phase = 0
     cdef int dis, depth, twist
+    timeout = tmout
+    all_strt = time()
+    strt = time()
     while phase < 6:
-        strt = time()
         puzzle_arr = initialize_puzzle_arr(phase, puzzle)
         dis = distance(puzzle_arr, phase)
         depth = dis
-        while depth < 40:
+        while depth < 60:
             path = []
             if phase_search(phase, puzzle_arr, depth, dis):
                 for twist in path:
@@ -699,13 +703,27 @@ def solver(state):
                 break
             depth += 1
         else:
-            print('phase', phase, 'failed!')
-            return 'Error'
+            print('phase', phase, 'failed')
+            if time() - all_strt > timeout * 6 + 2:
+                print('timeout')
+                return "Error"
+            n_state = [i for i in state]
+            replace = [3, 4, 0, 2, 5, 1]
+            for i in range(96):
+                n_state[i] = replace[n_state[i]]
+            puzzle = state_to_cube(n_state)
+            phase = 0
+            path = []
+            solution = []
+            strt = time()
     solution = optimise(solution, 0)
     solution_str = ''
     for i in solution:
         solution_str += move_candidate[i] + ' '
     return solution_str
+
+strt = -1
+timeout = -1
 
 cdef int[735471][27] move_ce_phase0
 cdef int[12870][27] move_ce_phase1_fbud
@@ -720,7 +738,7 @@ cdef int[24][27] move_ep_phase5_fbrl
 cdef int[6] prun_len = [1, 1, 3, 2, 2, 2]
 prunning = [[[] for _ in range(prun_len[i])] for i in range(6)]
 
-if __name__ == 'solver_c_6':
+if __name__ == 'solver_c_9':
     global move_ce_phase0, move_ce_phase1_fbud, move_ce_phase1_rl, move_ce_phase23, move_ep_phase3, move_co_arr, move_ep_eo_phase4, move_cp_arr, move_ep_phase5_ud, move_ep_phase5_fbrl, prunning, prun_len
     print('getting moving array')
     with open('move/ce_phase0.csv', mode='r') as f:
