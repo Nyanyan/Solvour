@@ -671,8 +671,6 @@ def state_to_cube(state):
         return -1
     centers = [37, 38, 42, 41, 53, 54, 58, 57, 69, 70, 74, 73, 26, 25, 21, 22, 85, 86, 90, 89, 5, 6, 10, 9]
     res.Ce = [state[i] for i in centers]
-    if len(set(res.Ce)) != 6:
-        return -1
     for i in range(6):
         if res.Ce.count(i) != 4:
             return -1
