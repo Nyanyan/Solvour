@@ -113,7 +113,7 @@ fill_box(state)
 #state = detect()
 print(state)
 strt = time()
-solution = solver(state, 5)
+solution = solver(state, 7)
 if solution == 'Error':
     print('failed')
 else:
