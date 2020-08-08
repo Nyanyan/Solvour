@@ -66,7 +66,7 @@ def detect():
             for x in range(4):
                 y_coord = strt[face][0] + y
                 x_coord = strt[face][1] + x
-                entry[y_coord][x_coord]['bg'] = colors[state[face * 16 + y * 4 + x]]
+                entry[y_coord][x_coord]['bg'] = colors[tmp_arr[y * 4 + x]]
     return state
 
 
