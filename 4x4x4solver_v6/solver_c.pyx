@@ -682,67 +682,28 @@ def solver(state):
     global path, cnt, puzzle, parity_cnt, puzzle
     puzzle = state_to_cube(state)
     if puzzle == -1:
-        return -1
-    '''
-    for i in scramble:
-        puzzle = puzzle.move(move_candidate.index(i))
-    '''
-    #strt_all = time()
+        return 'Error'
     solution = []
-    #part_3_max_depth = 30
     cdef int phase = 0
-    #analytics = [[-1 for _ in range(7)] for _ in range(2)]
     cdef int dis, depth, twist
     while phase < 6:
         strt = time()
-        #cnt = 0
-        #parity_cnt = 0
         puzzle_arr = initialize_puzzle_arr(phase, puzzle)
         dis = distance(puzzle_arr, phase)
         depth = dis
-        #print('phase', phase, 'depth', end=' ',flush=True)
-        while depth < 40: #max_depth[phase]:
-            #print(depth, end=' ', flush=True)
+        while depth < 40:
             path = []
             if phase_search(phase, puzzle_arr, depth, dis):
                 for twist in path:
                     puzzle = puzzle.move(twist)
                 solution.extend(path)
-                #phase_time = time() - strt
-                '''
-                print('')
-                for i in path:
-                    print(move_candidate[i], end=' ')
-                print('')
-                
-                print(len(path))
-                print(phase_time, 'sec')
-                print('cnt', cnt)
-                print('parity', parity_cnt)
-                '''
-                #print(phase, depth, phase_time)
-                #analytics[0][phase] = depth
-                #analytics[1][phase] = phase_time
                 phase += 1
                 break
             depth += 1
         else:
             print('phase', phase, 'failed!')
-            return -1
-    #all_time = time() - strt_all
-    '''
-    analytics[0][6] = len(solution)
-    analytics[1][6] = all_time
-    with open('analytics_len.csv', mode='a') as f:
-        writer = csv.writer(f, lineterminator='\n')
-        writer.writerow(analytics[0])
-    with open('analytics_time.csv', mode='a') as f:
-        writer = csv.writer(f, lineterminator='\n')
-        writer.writerow(analytics[1])
-    '''
-    #print(solution)
+            return 'Error'
     solution = optimise(solution, 0)
-    #print(solution)
     solution_str = ''
     for i in solution:
         solution_str += move_candidate[i] + ' '
@@ -761,7 +722,7 @@ cdef int[24][27] move_ep_phase5_fbrl
 cdef int[6] prun_len = [1, 1, 3, 2, 2, 2]
 prunning = [[[] for _ in range(prun_len[i])] for i in range(6)]
 
-if __name__ == 'solver_c_3':
+if __name__ == 'solver_c_5':
     global move_ce_phase0, move_ce_phase1_fbud, move_ce_phase1_rl, move_ce_phase23, move_ep_phase3, move_co_arr, move_ep_eo_phase4, move_cp_arr, move_ep_phase5_ud, move_ep_phase5_fbrl, prunning, prun_len
     print('getting moving array')
     with open('move/ce_phase0.csv', mode='r') as f:
