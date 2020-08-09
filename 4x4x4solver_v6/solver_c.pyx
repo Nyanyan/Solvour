@@ -678,7 +678,7 @@ def state_to_cube(state):
             return -1
     return res
 
-def solver(state, tmout):
+def solver(state, timeouts, all_timeout):
     global path, puzzle, parity_cnt, puzzle, strt, timeout
     puzzle = state_to_cube(state)
     if puzzle == -1:
@@ -686,10 +686,10 @@ def solver(state, tmout):
     solution = []
     cdef int phase = 0
     cdef int dis, depth, twist
-    timeout = tmout
     all_strt = time()
-    strt = time()
     while phase < 6:
+        strt = time()
+        timeout = timeouts[phase]
         puzzle_arr = initialize_puzzle_arr(phase, puzzle)
         dis = distance(puzzle_arr, phase)
         depth = dis
@@ -704,13 +704,14 @@ def solver(state, tmout):
             depth += 1
         else:
             print('phase', phase, 'failed')
-            if time() - all_strt > timeout * 6 + 2:
+            if time() - all_strt > all_timeout:
                 print('timeout')
                 return "Error"
             n_state = [i for i in state]
             replace = [3, 4, 0, 2, 5, 1]
             for i in range(96):
-                n_state[i] = replace[n_state[i]]
+                n_state[i] = replace[state[i]]
+            state = [i for i in n_state]
             puzzle = state_to_cube(n_state)
             phase = 0
             path = []
@@ -738,7 +739,7 @@ cdef int[24][27] move_ep_phase5_fbrl
 cdef int[6] prun_len = [1, 1, 3, 2, 2, 2]
 prunning = [[[] for _ in range(prun_len[i])] for i in range(6)]
 
-if __name__ == 'solver_c_11':
+if __name__ == 'solver_c_14':
     global move_ce_phase0, move_ce_phase1_fbud, move_ce_phase1_rl, move_ce_phase23, move_ep_phase3, move_co_arr, move_ep_eo_phase4, move_cp_arr, move_ep_phase5_ud, move_ep_phase5_fbrl, prunning, prun_len
     print('getting moving array')
     with open('move/ce_phase0.csv', mode='r') as f:

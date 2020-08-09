@@ -3,7 +3,7 @@
 Copyright 2020 Nyanyan
 '''
 
-from solver_c_11 import solver
+from solver_c_14 import solver
 from time import time
 import tkinter
 import cv2
@@ -59,6 +59,7 @@ def detect():
     return state
 
 def fill_box(state):
+    global entry
     strt = [[8, 4], [4, 12], [0, 4], [4, 4], [4, 8], [4, 0]]
     colors = ['white', 'green', 'red', 'blue', 'magenta', 'yellow']
     for face in range(6):
@@ -89,7 +90,7 @@ for i in range(12):
             entry[i][j] = tkinter.Entry(master=root, width=2, bg='gray')
             entry[i][j].place(x = j * grid + offset, y = i * grid + offset)
 
-
+'''
 # scramble: L2 B L2 F' R2 F' D2 B D2 L D2 B2 D2 F2 D F R U L' Fw2 R U2 Rw2 F L2 F2 Rw2 B' R B' Rw2 Uw' R' U' Rw2 F' R' Fw' Uw' Fw' Rw2 B2 Rw U'
 state = [
         0, 2, 2, 5, 2, 2, 3, 3, 4, 5, 1, 0, 1, 1, 5, 0, # D
@@ -108,12 +109,12 @@ state = [ # DP state
         4, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 
         4, 4, 4, 2, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4
         ]
-'''
-fill_box(state)
+
 #state = detect()
+fill_box(state)
 print(state)
 strt = time()
-solution = solver(state, 7)
+solution = solver(state, [0.5, 5, 1, 1, 1, 3], 30)
 if solution == 'Error':
     print('failed')
 else:
