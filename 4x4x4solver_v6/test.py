@@ -54,14 +54,15 @@ def scramble_to_state(scramble):
 
 state = [-1 for _ in range(96)]
 
-for _ in range(100):
+for num in range(100):
     response = urllib.request.urlopen('http://localhost:2014/scramble/.txt?e=444')
     scramble = response.read().decode('utf8', 'ignore').rstrip(os.linesep)
+    print(num)
     print(scramble)
     state = scramble_to_state([move_candidate.index(i) for i in scramble.split()])
     print(state)
     strt = time()
-    solution = solver(state, [0.5, 5, 2, 2, 2, 3], 30)
+    solution = solver(state, [0.5, 5, 3, 3, 3, 5], 30)
     if solution == 'Error':
         print('failed')
     else:
