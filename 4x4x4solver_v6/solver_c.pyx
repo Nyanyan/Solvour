@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 '''
 4x4x4 Solver Solver Part Written by Nyanyan
 Copyright 2020 Nyanyan
@@ -65,7 +66,7 @@ Color Numbering
 ---------------------------------
 |       |       |       |       |
 |   L   |   F   |   R   |   B   |
-|   1   |   2   |   3   |   4   |
+|   4   |   1   |   2   |   3   |
 ---------------------------------
         |       |
         |   D   |
@@ -89,8 +90,7 @@ Color Numbering
               | 12 13 14 15 |
               ---------------
 '''
-
-#from cube_class_c_6 import Cube, face, axis, wide, move_cp, move_co, move_ep, move_ce, move_candidate, twist_to_idx, successor, ep_switch_parity, idx_ep_phase1, idx_ep_phase2, ec_parity, ec_0_parity, skip_axis, reverse_move
+import cython
 from time import time
 import numpy as np
 cimport numpy as np

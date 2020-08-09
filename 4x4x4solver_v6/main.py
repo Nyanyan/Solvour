@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 '''
 4x4x4 Solver Main Part Written by Nyanyan
 Copyright 2020 Nyanyan
