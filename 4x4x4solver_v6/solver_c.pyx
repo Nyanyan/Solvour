@@ -627,14 +627,15 @@ cdef phase_search(int phase, puzzle_arr, int depth, int dis):
             n_puzzle_arr = move_arr(puzzle_arr, phase, twist)
             path.append(twist)
             n_dis = distance(n_puzzle_arr, phase)
-            if n_dis >= depth or n_dis > dis + 1:
+            if n_dis > depth or n_dis > dis + 1:
                 path.pop()
-                if n_dis > depth or n_dis > dis + 1:
-                    twist_idx = skip_axis[phase][twist_idx]
-                    if n_dis == 99:
-                        return False
-                else:
-                    twist_idx += 1
+                twist_idx = skip_axis[phase][twist_idx]
+                if n_dis == 99:
+                    return False
+                continue
+            elif n_dis == depth:
+                path.pop()
+                twist_idx += 1
                 continue
             if phase_search(phase, n_puzzle_arr, depth - 1, n_dis):
                 return True
