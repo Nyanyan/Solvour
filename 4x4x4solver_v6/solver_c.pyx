@@ -572,17 +572,14 @@ cdef distance(puzzle_arr, int phase):
             puzzle_cp = move_cp(puzzle_cp, i)
         if phase == 1: # find OLL Parity (2 edge remaining)
             if ep_switch_parity(puzzle_ep) or ep_not_separate(puzzle_ep) or eo_flip(puzzle_ep) % 2:
-                #parity_cnt += 1
                 return 99
         elif phase == 3: # find PLL Parity
             puzzle_ep_p = [puzzle_ep[i] // 2 for i in range(0, 24, 2)]
             if ec_parity(puzzle_ep_p, puzzle_cp):
-                #parity_cnt += 1
                 return 99
         elif res == 0 and phase == 4: # adjust EO
             puzzle_ep_p = [puzzle_ep[i] // 2 for i in range(0, 24, 2)]
             if ec_0_parity(puzzle_ep_p, puzzle_cp):
-                #parity_cnt += 1
                 return 99
     return res
 
@@ -630,9 +627,9 @@ cdef phase_search(int phase, puzzle_arr, int depth, int dis):
             n_puzzle_arr = move_arr(puzzle_arr, phase, twist)
             path.append(twist)
             n_dis = distance(n_puzzle_arr, phase)
-            if n_dis >= depth:
+            if n_dis >= depth or n_dis > dis + 1:
                 path.pop()
-                if n_dis > depth:
+                if n_dis > depth or n_dis > dis + 1:
                     twist_idx = skip_axis[phase][twist_idx]
                     if n_dis == 99:
                         return False
@@ -739,7 +736,7 @@ cdef int[24][27] move_ep_phase5_fbrl
 cdef int[6] prun_len = [1, 1, 3, 2, 2, 2]
 prunning = [[[] for _ in range(prun_len[i])] for i in range(6)]
 
-if __name__ == 'solver_c_14':
+if __name__ == 'solver_c_16':
     global move_ce_phase0, move_ce_phase1_fbud, move_ce_phase1_rl, move_ce_phase23, move_ep_phase3, move_co_arr, move_ep_eo_phase4, move_cp_arr, move_ep_phase5_ud, move_ep_phase5_fbrl, prunning, prun_len
     print('getting moving array')
     with open('move/ce_phase0.csv', mode='r') as f:

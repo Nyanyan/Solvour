@@ -4,27 +4,12 @@
 Copyright 2020 Nyanyan
 '''
 
-from solver_c_14 import solver
+from solver_c_16 import solver
 from cube_class import Cube, move_candidate
 from time import time
 import urllib.request
 import csv
 import os
-
-
-def fill_box(state):
-    global entry
-    strt = [[8, 4], [4, 12], [0, 4], [4, 4], [4, 8], [4, 0]]
-    colors = ['white', 'green', 'red', 'blue', 'magenta', 'yellow']
-    for face in range(6):
-        tmp_arr = [i for i in state[face * 16:(face + 1) * 16]]
-        if face == 1:
-            tmp_arr = list(reversed(tmp_arr))
-        for y in range(4):
-            for x in range(4):
-                y_coord = strt[face][0] + y
-                x_coord = strt[face][1] + x
-                entry[y_coord][x_coord]['bg'] = colors[tmp_arr[y * 4 + x]]
 
 def scramble_to_state(scramble):
     cube = Cube()
