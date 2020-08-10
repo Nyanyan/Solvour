@@ -577,7 +577,7 @@ cdef distance(puzzle_arr, int phase):
             puzzle_ep_p = [puzzle_ep[i] // 2 for i in range(0, 24, 2)]
             if ec_parity(puzzle_ep_p, puzzle_cp):
                 return 99
-        elif res == 0 and phase == 4: # adjust EO
+        elif phase == 4: # adjust EO
             puzzle_ep_p = [puzzle_ep[i] // 2 for i in range(0, 24, 2)]
             if ec_0_parity(puzzle_ep_p, puzzle_cp):
                 return 99
