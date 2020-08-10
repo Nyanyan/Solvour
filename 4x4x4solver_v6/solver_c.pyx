@@ -10,7 +10,7 @@ Abstract:
 --- Reduction phase ---
 phase 0: gather RL centers on RL faces
          use R, Rw, L, U, Uw, D, F, Fw, B
-phase 1: gather FB centers on FB faces, separate low & high edges, make RL centers one of the 12 admissible state, avoid last two edges, clear OLL Parity
+phase 1: gather FB centers on FB faces, separate low & high edges, make RL centers one of the 12 admissible state, clear OLL Parity
          use R, Rw, L, U, Uw2, D, F, Fw2, B
 phase 2: make center columns and pair up 4 edges on the middle layer
          use R2, Rw2, L2, U, Uw2, D, F, Fw2, B
