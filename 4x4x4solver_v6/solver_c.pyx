@@ -641,6 +641,7 @@ cdef phase_search(int phase, puzzle_arr, int depth, int dis):
                 return True
             path.pop()
             twist_idx += 1
+        return False
 
 def state_to_cube(state):
     res = Cube()
