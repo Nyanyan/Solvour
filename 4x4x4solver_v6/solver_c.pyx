@@ -737,11 +737,11 @@ prunning = [[[] for _ in range(prun_len[i])] for i in range(6)]
 
 cdef float[10000] nyanyan_array = [0 for _ in range(10000)]
 
-if __name__ == 'solver_c_22':
+if __name__ == 'solver_c_23':
     global move_ce_phase0, move_ce_phase1_fbud, move_ce_phase1_rl, move_ce_phase23, move_ep_phase3, move_co_arr, move_ep_eo_phase4, move_cp_arr, move_ep_phase5_ud, move_ep_phase5_fbrl, prunning, prun_len, nyanyan_array
     print('calculating nyanyan array')
     for i in range(10000):
-        nyanyan_array[i] = pow(2, -pow((2 * i / 100 - 1.9), 2))
+        nyanyan_array[i] = pow(2, -pow((2 * i / 100 - 3), 2))
     print('getting moving array')
     with open('move/ce_phase0.csv', mode='r') as f:
         for idx in range(735471):
