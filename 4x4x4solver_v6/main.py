@@ -4,7 +4,7 @@
 Copyright 2020 Nyanyan
 '''
 
-from solver_c_16 import solver
+from solver_c_20 import solver
 from time import time
 import tkinter
 import cv2
