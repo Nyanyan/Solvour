@@ -47,7 +47,7 @@ for num in range(100):
     state = scramble_to_state([move_candidate.index(i) for i in scramble.split()])
     print(state)
     strt = time()
-    solution = solver(state, [0.5, 5, 3, 3, 3, 5], 30)
+    solution = solver(state, [0.5, 5, 3, 3, 3, 5], 15)
     if solution == 'Error':
         print('failed')
     else:
