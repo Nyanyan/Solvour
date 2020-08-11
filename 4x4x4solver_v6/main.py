@@ -4,7 +4,7 @@
 Copyright 2020 Nyanyan
 '''
 
-from solver_c_14 import solver
+from solver_c_16 import solver
 from time import time
 import tkinter
 import cv2
@@ -91,7 +91,7 @@ for i in range(12):
             entry[i][j] = tkinter.Entry(master=root, width=2, bg='gray')
             entry[i][j].place(x = j * grid + offset, y = i * grid + offset)
 
-'''
+
 # scramble: L2 B L2 F' R2 F' D2 B D2 L D2 B2 D2 F2 D F R U L' Fw2 R U2 Rw2 F L2 F2 Rw2 B' R B' Rw2 Uw' R' U' Rw2 F' R' Fw' Uw' Fw' Rw2 B2 Rw U'
 state = [
         0, 2, 2, 5, 2, 2, 3, 3, 4, 5, 1, 0, 1, 1, 5, 0, # D
@@ -101,7 +101,7 @@ state = [
         0, 4, 4, 5, 5, 1, 2, 3, 1, 4, 3, 3, 3, 4, 3, 3, # R
         5, 0, 3, 4, 1, 3, 3, 4, 3, 2, 5, 0, 2, 1, 5, 4  # L
         ]
-'''
+
 '''
 state = [ # DP state
         5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 
@@ -112,6 +112,7 @@ state = [ # DP state
         4, 4, 4, 2, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4
         ]
 '''
+'''
 state = [ # OP state
         5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 
         3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 
@@ -120,6 +121,7 @@ state = [ # OP state
         2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 
         4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4
         ]
+'''
 #state = detect()
 fill_box(state)
 print(state)
