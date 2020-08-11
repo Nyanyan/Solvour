@@ -545,7 +545,7 @@ cdef nyanyan_function(lst):
         euclid += i ** 2
     euclid = sqrt(euclid)
     #cdef float ratio = max(1, min(0, (3 * (mx - 5) + sd) / 8))
-    cdef float ratio = pow(2, -pow((mx / sd - 0.6), 6)) # ratio is small when mx is near to sd
+    cdef float ratio = pow(2, -pow((mx / sd - 2), 2)) # ratio is small when mx is near to sd
     #print(mx, sd, ratio)
     return int(mx * (1 - ratio) + euclid * ratio)
 
@@ -570,7 +570,7 @@ cdef distance(puzzle_arr, int phase):
         for i in path:
             puzzle_ep = move_ep(puzzle_ep, i)
             puzzle_cp = move_cp(puzzle_cp, i)
-        if phase == 1: # find OLL Parity (2 edge remaining)
+        if phase == 1: # find OLL Parity
             if ep_switch_parity(puzzle_ep) or ep_not_separate(puzzle_ep) or eo_flip(puzzle_ep) % 2:
                 return 99
         elif phase == 3: # find PLL Parity
@@ -629,10 +629,12 @@ cdef phase_search(int phase, puzzle_arr, int depth, int dis):
                 if n_dis == 99:
                     return False
                 continue
+            '''
             elif n_dis == depth:
                 path.pop()
                 twist_idx += 1
                 continue
+            '''
             if phase_search(phase, n_puzzle_arr, depth - 1, n_dis):
                 return True
             path.pop()
