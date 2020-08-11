@@ -2,8 +2,8 @@ def phase_search(phase, indexes, depth, h_i): # phase: フェーズ, indexes: �
     global path
     if depth == 0: # 残り手数0の場合には解にたどり着いたかを返す
         return h_i == 0
-    twist = successor[phase].next() # twistは回す手
-    while twist < len(successor[phase]): # successorは回転の候補
+    twist = successor[phase][0] # twistは回す手
+    while twist <= successor[phase][-1] : # successorは回転の候補
         if skip(twist, path): # 前の手で回したのと同じ面を回すなどはしない
             twist = skip_axis[phase][twist] # 同じ面を回さなくなるまでtwistを進める
             continue
@@ -16,7 +16,7 @@ def phase_search(phase, indexes, depth, h_i): # phase: フェーズ, indexes: �
             return True # 解が見つかった
         path.pop() # ここまで回してきた手順から今回した手順を取り除く
         twist = next_twist(twist, phase) # 次の手
-    return False
+    return False # 解が見つからなかった
 
 def solver(puzzle): # puzzle: パズルのすべての状態を表したクラスのオブジェクトなど
     global path
@@ -25,10 +25,10 @@ def solver(puzzle): # puzzle: パズルのすべての状態を表したクラ�
         indexes = initialize_indexes(puzzle, phase) # パズルの状態をインデックスに変換
         h_i = h(indexes, phase)
         for depth in range(60): # depthを回す。なお60は適当
-            path = []
-            if phase_search(phase, indexes, depth, h_i):
+            path = [] # pathを空にする
+            if phase_search(phase, indexes, depth, h_i): # IDA*探索を行う
                 for twist in path: # フェーズが終わった状態までパズルをシミュレート
                     puzzle = puzzle.move(twist)
                 solution.extend(path) # solutionに今のフェーズの解を付け加える
-                break
-    return solution
+                break # 解が見つかったのでbreakして次のフェーズへ
+    return solution # 解を返す
