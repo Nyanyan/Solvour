@@ -4,7 +4,7 @@
 Copyright 2020 Nyanyan
 '''
 
-from solver_c_18 import solver
+from solver_c_20 import solver
 from cube_class import Cube, move_candidate
 from time import time
 import urllib.request

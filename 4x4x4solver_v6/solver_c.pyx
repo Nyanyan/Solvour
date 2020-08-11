@@ -545,7 +545,7 @@ cdef nyanyan_function(lst):
         euclid += i ** 2
     euclid = sqrt(euclid)
     #cdef float ratio = max(1, min(0, (3 * (mx - 5) + sd) / 8))
-    cdef float ratio = pow(2, -pow((mx / sd - 2), 2)) # ratio is small when mx is near to sd
+    cdef float ratio = pow(2, -pow((mx / sd - 1.5), 4) / 2) # ratio is small when mx is near to sd
     #print(mx, sd, ratio)
     return int(mx * (1 - ratio) + euclid * ratio)
 
@@ -629,12 +629,10 @@ cdef phase_search(int phase, puzzle_arr, int depth, int dis):
                 if n_dis == 99:
                     return False
                 continue
-            '''
             elif n_dis == depth:
                 path.pop()
                 twist_idx += 1
                 continue
-            '''
             if phase_search(phase, n_puzzle_arr, depth - 1, n_dis):
                 return True
             path.pop()
@@ -737,7 +735,7 @@ cdef int[24][27] move_ep_phase5_fbrl
 cdef int[6] prun_len = [1, 1, 3, 2, 2, 2]
 prunning = [[[] for _ in range(prun_len[i])] for i in range(6)]
 
-if __name__ == 'solver_c_18':
+if __name__ == 'solver_c_20':
     global move_ce_phase0, move_ce_phase1_fbud, move_ce_phase1_rl, move_ce_phase23, move_ep_phase3, move_co_arr, move_ep_eo_phase4, move_cp_arr, move_ep_phase5_ud, move_ep_phase5_fbrl, prunning, prun_len
     print('getting moving array')
     with open('move/ce_phase0.csv', mode='r') as f:

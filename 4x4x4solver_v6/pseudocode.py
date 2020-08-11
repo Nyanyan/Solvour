@@ -21,7 +21,7 @@ def phase_search(phase, indexes, depth, h_i): # phase: フェーズ, indexes: �
 def solver(puzzle): # puzzle: パズルのすべての状態を表したクラスのオブジェクトなど
     global path
     solution = [] # 解
-    for phase in range(6): # フェーズを回す
+    for phase in range(6): # フェーズをforで回す
         indexes = initialize_indexes(puzzle, phase) # パズルの状態をインデックスに変換
         h_i = h(indexes, phase)
         for depth in range(60): # depthを回す。なお60は適当
