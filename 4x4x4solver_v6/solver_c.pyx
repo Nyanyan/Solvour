@@ -545,7 +545,7 @@ cdef nyanyan_function(lst):
         euclid += i ** 2
     euclid = sqrt(euclid)
     #cdef float ratio = max(1, min(0, (3 * (mx - 5) + sd) / 8))
-    cdef float ratio = nyanyan_array[int(100 * mx / sd)] # ratio is small when mx is near to sd
+    cdef float ratio = nyanyan_array[int(100 * mx / 2 / sd)] # ratio is small when mx is near to sd
     #print(mx, sd, ratio)
     return int(mx * (1 - ratio) + euclid * ratio)
 
@@ -737,7 +737,7 @@ prunning = [[[] for _ in range(prun_len[i])] for i in range(6)]
 
 cdef float[10000] nyanyan_array = [0 for _ in range(10000)]
 
-if __name__ == 'solver_c_21':
+if __name__ == 'solver_c_22':
     global move_ce_phase0, move_ce_phase1_fbud, move_ce_phase1_rl, move_ce_phase23, move_ep_phase3, move_co_arr, move_ep_eo_phase4, move_cp_arr, move_ep_phase5_ud, move_ep_phase5_fbrl, prunning, prun_len, nyanyan_array
     print('calculating nyanyan array')
     for i in range(10000):
