@@ -102,10 +102,6 @@ void setup() {
 }
 
 void loop() {
-  move_motor(1, 90, 100);
-  delay(1000);
-  
-  /*
   if (Serial.available()) {
     buf[idx] = Serial.read();
     if (buf[idx] == '\n') {
@@ -122,5 +118,4 @@ void loop() {
       idx++;
     }
   }
-  */
 }
