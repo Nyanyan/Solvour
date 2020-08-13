@@ -2478,8 +2478,8 @@ static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, P
 static void __pyx_pf_5numpy_7ndarray_2__releasebuffer__(PyArrayObject *__pyx_v_self, Py_buffer *__pyx_v_info); /* proto */
 static __Pyx_CachedCFunction __pyx_umethod_PyList_Type_index = {0, &__pyx_n_s_index, 0, 0, 0};
 static __Pyx_CachedCFunction __pyx_umethod_PyList_Type_pop = {0, &__pyx_n_s_pop, 0, 0, 0};
-static PyObject *__pyx_float_1_6;
-static PyObject *__pyx_float_1_9;
+static PyObject *__pyx_float_1_4;
+static PyObject *__pyx_float_1_7;
 static PyObject *__pyx_int_0;
 static PyObject *__pyx_int_1;
 static PyObject *__pyx_int_2;
@@ -19547,7 +19547,7 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
   __pyx_codeobj__45 = (PyObject*)__Pyx_PyCode_New(3, 0, 14, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__44, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_solver_c_pyx, __pyx_n_s_solver, 676, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__45)) __PYX_ERR(0, 676, __pyx_L1_error)
 
   /* "solver_c.pyx":746
- *         nyanyan_array[i] = pow(2, -pow((1.6 * i / 100 - 1.9), 2))
+ *         nyanyan_array[i] = pow(2, -pow((1.4 * i / 100 - 1.7), 2))
  *     print('getting moving array')
  *     with open('move/ce_phase0.csv', mode='r') as f:             # <<<<<<<<<<<<<<
  *         for idx in range(735471):
@@ -19569,7 +19569,7 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
   __Pyx_GIVEREF(__pyx_tuple__48);
 
   /* "solver_c.pyx":746
- *         nyanyan_array[i] = pow(2, -pow((1.6 * i / 100 - 1.9), 2))
+ *         nyanyan_array[i] = pow(2, -pow((1.4 * i / 100 - 1.7), 2))
  *     print('getting moving array')
  *     with open('move/ce_phase0.csv', mode='r') as f:             # <<<<<<<<<<<<<<
  *         for idx in range(735471):
@@ -19688,8 +19688,8 @@ static CYTHON_SMALL_CODE int __Pyx_InitGlobals(void) {
   __pyx_umethod_PyList_Type_index.type = (PyObject*)&PyList_Type;
   __pyx_umethod_PyList_Type_pop.type = (PyObject*)&PyList_Type;
   if (__Pyx_InitStrings(__pyx_string_tab) < 0) __PYX_ERR(0, 1, __pyx_L1_error);
-  __pyx_float_1_6 = PyFloat_FromDouble(1.6); if (unlikely(!__pyx_float_1_6)) __PYX_ERR(0, 1, __pyx_L1_error)
-  __pyx_float_1_9 = PyFloat_FromDouble(1.9); if (unlikely(!__pyx_float_1_9)) __PYX_ERR(0, 1, __pyx_L1_error)
+  __pyx_float_1_4 = PyFloat_FromDouble(1.4); if (unlikely(!__pyx_float_1_4)) __PYX_ERR(0, 1, __pyx_L1_error)
+  __pyx_float_1_7 = PyFloat_FromDouble(1.7); if (unlikely(!__pyx_float_1_7)) __PYX_ERR(0, 1, __pyx_L1_error)
   __pyx_int_0 = PyInt_FromLong(0); if (unlikely(!__pyx_int_0)) __PYX_ERR(0, 1, __pyx_L1_error)
   __pyx_int_1 = PyInt_FromLong(1); if (unlikely(!__pyx_int_1)) __PYX_ERR(0, 1, __pyx_L1_error)
   __pyx_int_2 = PyInt_FromLong(2); if (unlikely(!__pyx_int_2)) __PYX_ERR(0, 1, __pyx_L1_error)
@@ -21744,7 +21744,7 @@ if (!__Pyx_RefNanny) {
  *     global move_ce_phase0, move_ce_phase1_fbud, move_ce_phase1_rl, move_ce_phase23, move_ep_phase3, move_co_arr, move_ep_eo_phase4, move_cp_arr, move_ep_phase5_ud, move_ep_phase5_fbrl, prunning, prun_len, nyanyan_array
  *     print('calculating nyanyan array')             # <<<<<<<<<<<<<<
  *     for i in range(10000):
- *         nyanyan_array[i] = pow(2, -pow((1.6 * i / 100 - 1.9), 2))
+ *         nyanyan_array[i] = pow(2, -pow((1.4 * i / 100 - 1.7), 2))
  */
     if (__Pyx_PrintOne(0, __pyx_kp_s_calculating_nyanyan_array) < 0) __PYX_ERR(0, 742, __pyx_L1_error)
 
@@ -21752,7 +21752,7 @@ if (!__Pyx_RefNanny) {
  *     global move_ce_phase0, move_ce_phase1_fbud, move_ce_phase1_rl, move_ce_phase23, move_ep_phase3, move_co_arr, move_ep_eo_phase4, move_cp_arr, move_ep_phase5_ud, move_ep_phase5_fbrl, prunning, prun_len, nyanyan_array
  *     print('calculating nyanyan array')
  *     for i in range(10000):             # <<<<<<<<<<<<<<
- *         nyanyan_array[i] = pow(2, -pow((1.6 * i / 100 - 1.9), 2))
+ *         nyanyan_array[i] = pow(2, -pow((1.4 * i / 100 - 1.7), 2))
  *     print('getting moving array')
  */
     for (__pyx_t_11 = 0; __pyx_t_11 < 0x2710; __pyx_t_11+=1) {
@@ -21764,19 +21764,19 @@ if (!__Pyx_RefNanny) {
       /* "solver_c.pyx":744
  *     print('calculating nyanyan array')
  *     for i in range(10000):
- *         nyanyan_array[i] = pow(2, -pow((1.6 * i / 100 - 1.9), 2))             # <<<<<<<<<<<<<<
+ *         nyanyan_array[i] = pow(2, -pow((1.4 * i / 100 - 1.7), 2))             # <<<<<<<<<<<<<<
  *     print('getting moving array')
  *     with open('move/ce_phase0.csv', mode='r') as f:
  */
       __Pyx_GetModuleGlobalName(__pyx_t_1, __pyx_n_s_i); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 744, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_1);
-      __pyx_t_2 = PyNumber_Multiply(__pyx_float_1_6, __pyx_t_1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 744, __pyx_L1_error)
+      __pyx_t_2 = PyNumber_Multiply(__pyx_float_1_4, __pyx_t_1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 744, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_2);
       __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
       __pyx_t_1 = __Pyx_PyNumber_Divide(__pyx_t_2, __pyx_int_100); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 744, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_1);
       __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-      __pyx_t_2 = __Pyx_PyFloat_SubtractObjC(__pyx_t_1, __pyx_float_1_9, 1.9, 0, 0); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 744, __pyx_L1_error)
+      __pyx_t_2 = __Pyx_PyFloat_SubtractObjC(__pyx_t_1, __pyx_float_1_7, 1.7, 0, 0); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 744, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_2);
       __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
       __pyx_t_1 = __Pyx_PyNumber_Power2(__pyx_t_2, __pyx_int_2); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 744, __pyx_L1_error)
@@ -21799,7 +21799,7 @@ if (!__Pyx_RefNanny) {
 
     /* "solver_c.pyx":745
  *     for i in range(10000):
- *         nyanyan_array[i] = pow(2, -pow((1.6 * i / 100 - 1.9), 2))
+ *         nyanyan_array[i] = pow(2, -pow((1.4 * i / 100 - 1.7), 2))
  *     print('getting moving array')             # <<<<<<<<<<<<<<
  *     with open('move/ce_phase0.csv', mode='r') as f:
  *         for idx in range(735471):
@@ -21807,7 +21807,7 @@ if (!__Pyx_RefNanny) {
     if (__Pyx_PrintOne(0, __pyx_kp_s_getting_moving_array) < 0) __PYX_ERR(0, 745, __pyx_L1_error)
 
     /* "solver_c.pyx":746
- *         nyanyan_array[i] = pow(2, -pow((1.6 * i / 100 - 1.9), 2))
+ *         nyanyan_array[i] = pow(2, -pow((1.4 * i / 100 - 1.7), 2))
  *     print('getting moving array')
  *     with open('move/ce_phase0.csv', mode='r') as f:             # <<<<<<<<<<<<<<
  *         for idx in range(735471):
@@ -21969,7 +21969,7 @@ if (!__Pyx_RefNanny) {
             }
 
             /* "solver_c.pyx":746
- *         nyanyan_array[i] = pow(2, -pow((1.6 * i / 100 - 1.9), 2))
+ *         nyanyan_array[i] = pow(2, -pow((1.4 * i / 100 - 1.7), 2))
  *     print('getting moving array')
  *     with open('move/ce_phase0.csv', mode='r') as f:             # <<<<<<<<<<<<<<
  *         for idx in range(735471):
