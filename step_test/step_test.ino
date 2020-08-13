@@ -6,14 +6,14 @@ pinMode(11, OUTPUT);
 }
 
 void loop() {
-  digitalWrite(9, HIGH);
+  //digitalWrite(9, HIGH);
   digitalWrite(11, HIGH);
   bool hl = true;
   while(1){
     hl = !hl;
-    digitalWrite(10, hl);
+    //digitalWrite(10, hl);
     digitalWrite(12, hl);
-    delay(1);
+    delayMicroseconds(500);
   }
 
 }
