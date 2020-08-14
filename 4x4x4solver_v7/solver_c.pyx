@@ -653,7 +653,7 @@ cdef phase_search(int phase, puzzle_arr, int depth, int dis):
             twist_idx += 1
         return False
 
-def state_to_cube(state):
+cdef state_to_cube(state):
     res = Cube()
     corners = [[0, 4, 3], [0, 3, 2], [0, 1, 4], [0, 2, 1], [5, 4, 1], [5, 1, 2], [5, 3, 4], [5, 2, 3]]
     set_corners = [set(i) for i in corners]
