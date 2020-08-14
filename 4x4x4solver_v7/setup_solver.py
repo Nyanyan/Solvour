@@ -8,5 +8,5 @@ from distutils.core import setup, Extension
 from Cython.Build import cythonize
 from numpy import get_include
 
-ext = Extension("solver_c_23", sources=["solver_c.pyx"], include_dirs=['.', get_include()])
-setup(name="solver_c_23", ext_modules=cythonize([ext]))
+ext = Extension("solver_c_0", sources=["solver_c.pyx"], include_dirs=['.', get_include()])
+setup(name="solver_c_0", ext_modules=cythonize([ext]))
