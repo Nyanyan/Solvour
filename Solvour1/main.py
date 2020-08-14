@@ -5,7 +5,7 @@ Copyright 2020 Nyanyan
 '''
 
 from solver_c_1 import solver, face, axis, wide
-from time import time
+from time import time, sleep
 import tkinter
 import cv2
 import serial
@@ -87,7 +87,7 @@ def robotize(solution):
                 res.append([3, 1])
                 res.append([0, 3])
                 res.append([2, 3])
-                
+
 
 # Send commands to move actuators
 def move_actuator(num, arg1, arg2, arg3=None):
@@ -101,16 +101,21 @@ def move_actuator(num, arg1, arg2, arg3=None):
     ser_motor[num].flush()
 
 # Move robot
-def start_p(slp1, slp2, rpm, ratio):
-    global ans
+def start_p():
+    global solution
     print('start!')
-    if bluetoothmode:
-        client_socket.send('start\n')
-        sleep(0.4)
     strt_solv = time()
     i = 0
-    while i < len(ans):
-        
+    while i < len(solution):
+        args = solution[i]
+        ser_num = args[0] // 2
+        arg1 = args[0] % 2
+        if len(args) == 2: # command for arm
+            move_actuator(ser_num, arg1, args[1])
+        else:
+            move_actuator(ser_num, arg1, args[1], args[2])
+        sleep(1)
+        '''
         if GPIO.input(21) == GPIO.LOW:
             if bluetoothmode:
                 client_socket.send('emergency\n')
@@ -139,12 +144,11 @@ def start_p(slp1, slp2, rpm, ratio):
         slptim = 2 * 60 / rpm * (max_turn * 90 - offset) / 360 * ratio
         sleep(slptim)
         i += 1 + int(flag)
+        '''
     solv_time = str(int((time() - strt_solv) * 1000) / 1000).ljust(5, '0')
-    if bluetoothmode:
-        client_socket.send(solv_time + '\n')
-    solvingtimevar.set(solv_time + 's')
+    #solvingtimevar.set(solv_time + 's')
     print('solving time:', solv_time, 's')
-    ans = []
+    solution = []
 
 '''
 ser_motor = [None, None]
@@ -203,7 +207,8 @@ state = [ # OP state
 fill_box(state)
 print(state)
 strt = time()
-solution = solver(state, [0.5, 5, 2, 2, 2, 3], 30)
+#solution = solver(state, [0.5, 5, 2, 2, 2, 3], 30)
+solution = [[0, 1000], [2, 1000], [1, 1000], [3, 1000], [0, 3000], [2, 1000], [1, 4000], [3, 4000], [0, 90, 300]]
 if solution == 'Error':
     print('failed')
 else:
@@ -211,5 +216,6 @@ else:
     print(len(solution), 'moves')
     print(time() - strt, 'sec')
     print('')
+    start_p()
 
 root.mainloop()
