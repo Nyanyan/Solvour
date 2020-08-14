@@ -4,7 +4,8 @@
 Copyright 2020 Nyanyan
 '''
 
-from solver_c_1 import solver, face, axis, wide
+#from solver_c_1 import solver_c_1
+from cube_class import face
 from time import time, sleep
 import tkinter
 import cv2
@@ -74,8 +75,11 @@ def fill_box(state):
                 x_coord = strt[face][1] + x
                 entry[y_coord][x_coord]['bg'] = colors[tmp_arr[y * 4 + x]]
 
-def robot_optimise(solution):
-
+def grab_arm():
+    for i in range(2):
+        for j in range(2):
+            move_actuator(j, i, 1000)
+            sleep(1)
 
 def robotize(solution, rpm):
     res = []
@@ -194,6 +198,7 @@ def robotize(solution, rpm):
             res.append([1, 4000])
             res.append([3, 4000])
             res.append([2, amount, rpm])
+    return res
 
 # Send commands to move actuators
 def move_actuator(num, arg1, arg2, arg3=None):
@@ -254,7 +259,7 @@ def start_p():
     solv_time = str(int((time() - strt_solv) * 1000) / 1000).ljust(5, '0')
     #solvingtimevar.set(solv_time + 's')
     print('solving time:', solv_time, 's')
-    solution = []
+    robot_solution = []
 
 '''
 ser_motor = [None, None]
@@ -315,14 +320,17 @@ print(state)
 strt = time()
 #solution = solver(state, [0.5, 5, 2, 2, 2, 3], 30)
 solution = [0]
-robot_solution = robotize(solution, 300)
 if solution == 'Error':
     print('failed')
-else:
-    print(solution)
-    print(len(solution), 'moves')
-    print(time() - strt, 'sec')
-    print('')
-    start_p()
+    exit()
+robot_solution = robotize(solution, 300)
+print(robot_solution)
+print(solution)
+print(len(solution), 'moves')
+print(time() - strt, 'sec')
+print('')
+grab_arm()
+sleep(5)
+start_p()
 
 root.mainloop()
