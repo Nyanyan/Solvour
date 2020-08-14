@@ -4,7 +4,7 @@
 Copyright 2020 Nyanyan
 '''
 
-from solver_c_1 import solver
+from solver_c_1 import solver, face, axis, wide
 from time import time
 import tkinter
 import cv2
@@ -77,7 +77,17 @@ def fill_box(state):
 def robotize(solution):
     res = []
     for twist in solution:
-        if 
+        res.append([0, 0])
+        res.append([1, 0])
+        res.append([2, 0])
+        res.append([3, 0])
+        if axis(twist) == 0:
+            if wide(twist):
+                res.append([1, 1])
+                res.append([3, 1])
+                res.append([0, 3])
+                res.append([2, 3])
+                
 
 # Send commands to move actuators
 def move_actuator(num, arg1, arg2, arg3=None):

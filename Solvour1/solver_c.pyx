@@ -133,13 +133,13 @@ for i in range(1, 25):
 cdef cmb(n, r):
     return fac[n] // fac[r] // fac[n - r]
 
-cdef face(int twist):
+cpdef face(int twist):
     return twist // 3
 
-cdef axis(int twist):
+cpdef axis(int twist):
     return twist // 12
 
-cdef wide(int twist):
+cpdef wide(int twist):
     return (twist // 3) % 2
 
 
