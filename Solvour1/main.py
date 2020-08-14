@@ -79,7 +79,7 @@ def grab_arm():
     for i in range(2):
         for j in range(2):
             move_actuator(j, i, 1000)
-            sleep(1)
+        sleep(1)
 
 def robotize(solution, rpm):
     res = []
