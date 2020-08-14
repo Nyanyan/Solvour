@@ -80,6 +80,10 @@ def robot_optimise(solution):
 def robotize(solution, rpm):
     res = []
     for twist in solution:
+        res.append([0, 1000])
+        res.append([2, 1000])
+        res.append([1, 1000])
+        res.append([3, 1000])
         face_twist = face(twist)
         amount = (twist % 3 + 1) * 90
         if face_twist == 0:
