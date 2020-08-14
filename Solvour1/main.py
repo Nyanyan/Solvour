@@ -74,19 +74,58 @@ def fill_box(state):
                 x_coord = strt[face][1] + x
                 entry[y_coord][x_coord]['bg'] = colors[tmp_arr[y * 4 + x]]
 
-def robotize(solution):
+def robot_optimise(solution):
+
+
+def robotize(solution, rpm):
     res = []
     for twist in solution:
-        res.append([0, 0])
-        res.append([1, 0])
-        res.append([2, 0])
-        res.append([3, 0])
-        if axis(twist) == 0:
-            if wide(twist):
-                res.append([1, 1])
-                res.append([3, 1])
-                res.append([0, 3])
-                res.append([2, 3])
+        face_twist = face(twist)
+        amount = (twist % 3 + 1) * 90
+        if face_twist == 0:
+            res.append([1, 3000])
+            res.append([3, 1000])
+            res.append([0, 4000])
+            res.append([2, 4000])
+            res.append([1, amount, rpm])
+        elif face_twist == 1:
+            res.append([1, 2000])
+            res.append([3, 2000])
+            res.append([0, 4000])
+            res.append([2, 4000])
+            res.append([1, amount, rpm])
+        elif face_twist == 2:
+            res.append([1, 1000])
+            res.append([3, 3000])
+            res.append([0, 4000])
+            res.append([2, 4000])
+            res.append([3, amount, rpm])
+        elif face_twist == 4:
+            res.append([0, 4000])
+            res.append([2, 4000])
+            res.append([1, 270, rpm])
+            res.append([3, 90, rpm])
+            res.append([0, 1000])
+            res.append([1, 1000])
+            res.append([2, 1000])
+            res.append([3, 1000])
+
+            res.append([0, 3000])
+            res.append([2, 1000])
+            res.append([1, 4000])
+            res.append([3, 4000])
+            res.append([0, amount, rpm])
+
+            res.append([0, 1000])
+            res.append([1, 1000])
+            res.append([2, 1000])
+            res.append([3, 1000])
+            res.append([0, 4000])
+            res.append([2, 4000])
+            res.append([1, 90, rpm])
+            res.append([3, 270, rpm])
+
+
 
 
 # Send commands to move actuators
@@ -102,12 +141,12 @@ def move_actuator(num, arg1, arg2, arg3=None):
 
 # Move robot
 def start_p():
-    global solution
+    global robot_solution
     print('start!')
     strt_solv = time()
     i = 0
-    while i < len(solution):
-        args = solution[i]
+    while i < len(robot_solution):
+        args = robot_solution[i]
         ser_num = args[0] // 2
         arg1 = args[0] % 2
         if len(args) == 2: # command for arm
@@ -208,7 +247,8 @@ fill_box(state)
 print(state)
 strt = time()
 #solution = solver(state, [0.5, 5, 2, 2, 2, 3], 30)
-solution = [[0, 1000], [2, 1000], [1, 1000], [3, 1000], [0, 3000], [2, 1000], [1, 4000], [3, 4000], [0, 90, 300]]
+solution = [0]
+robot_solution = robotize(solution, 300)
 if solution == 'Error':
     print('failed')
 else:
