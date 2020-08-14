@@ -6,21 +6,21 @@ Copyright 2020 Nyanyan
 
 '''
 Abstract:
-* "X" twist includes X, X2, X', while "X2" means only X2
+* "X" twist includes X, X', and "X2" means only X2
 --- Reduction phase ---
-phase 0: gather RL centers on RL faces
-         use R, Rw, L, U, Uw, D, F, Fw, B
+phase 0: gather RL centers on RL faces, then RL centers must have columns or rows
+         use R, R2, Rw, Rw2, L, L2, U, U2, Uw, Uw2, D, D2, F, F2, Fw, Fw2, B, B2
 phase 1: gather FB centers on FB faces, separate low & high edges, make RL centers one of the 12 admissible state, clear OLL Parity
-         use R, Rw, L, U, Uw2, D, F, Fw2, B
+         use R, R2, Rw, L, L2, U, U2, D, D2, F, F2, B, B2
 phase 2: make center columns and pair up 4 edges on the middle layer
-         use R2, Rw2, L2, U, Uw2, D, F, Fw2, B
+         use R2, Rw2, L2, U, U2, Uw2, D, D2, F, F2, Fw2, B, B2
 phase 3: complete centers, edges pairing and clear PLL Parity, which means complete reduction
-         use R2, Rw2, L2, U, Uw2, D, F2, Fw2, B2
+         use R2, Rw2, L2, U, U2, D, D2, F2, Fw2, B2
 --- 3x3x3 phase ---
 phase 4: gather UD stickers on UD faces and clear EO
-         use R, L, U, D, F, B, not use R2, L2, F2, B2
+         use R, L, U, U2, D, D2, F, B
 phase 5: solve it!
-         use R2, L2, U, D, F2, B2
+         use R2, L2, U, U2, D, D2, F2, B2
 '''
 
 '''
