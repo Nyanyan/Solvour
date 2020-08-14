@@ -4,7 +4,7 @@
 Copyright 2020 Nyanyan
 '''
 
-#from solver_c_1 import solver_c_1
+#from solver_c_1 import solver
 from cube_class import face
 from time import time, sleep
 import tkinter
@@ -319,7 +319,7 @@ fill_box(state)
 print(state)
 strt = time()
 #solution = solver(state, [0.5, 5, 2, 2, 2, 3], 30)
-solution = [0]
+solution = [0, 12]
 if solution == 'Error':
     print('failed')
     exit()
