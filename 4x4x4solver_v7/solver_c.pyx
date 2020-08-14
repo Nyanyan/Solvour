@@ -8,10 +8,10 @@ Copyright 2020 Nyanyan
 Abstract:
 * "X" twist includes X, X', and "X2" means only X2
 --- Reduction phase ---
-phase 0: gather RL centers on RL faces, then RL centers must have columns or rows
+phase 0: gather RL centers on RL faces
          use R, R2, Rw, Rw2, L, L2, U, U2, Uw, Uw2, D, D2, F, F2, Fw, Fw2, B, B2
 phase 1: gather FB centers on FB faces, separate low & high edges, make RL centers one of the 12 admissible state, clear OLL Parity
-         use R, R2, Rw, L, L2, U, U2, D, D2, F, F2, B, B2
+         use R, R2, Rw, Rw2, L, L2, U, U2, Uw2, D, D2, F, F2, Fw2, B, B2
 phase 2: make center columns and pair up 4 edges on the middle layer
          use R2, Rw2, L2, U, U2, Uw2, D, D2, F, F2, Fw2, B, B2
 phase 3: complete centers, edges pairing and clear PLL Parity, which means complete reduction
@@ -106,8 +106,7 @@ twist_to_idx = [0, 1, 2, 3, 4, 5, 6, 7, 8, -1, -1, -1, 9, 10, 11, 12, 13, 14, 15
 
 successor = [
     [0, 1, 2, 3, 4, 5, 6, 7, 8,            12, 13, 14, 15, 16, 17, 18, 19, 20,             24, 25, 26, 27, 28, 29, 30, 31, 32            ], # phase 0
-    [0, 1, 2, 3,    5, 6, 7, 8,            12, 13, 14,             18, 19, 20,             24, 25, 26,             30, 31, 32            ], # phase 1
-    #[0, 1, 2, 3, 4, 5, 6, 7, 8,            12, 13, 14,     16,     18, 19, 20,             24, 25, 26,     28,     30, 31, 32            ], # phase 1
+    [0, 1, 2, 3, 4, 5, 6, 7, 8,            12, 13, 14,     16,     18, 19, 20,             24, 25, 26,     28,     30, 31, 32            ], # phase 1
     [   1,       4,       7,               12, 13, 14,     16,     18, 19, 20,             24, 25, 26,     28,     30, 31, 32            ], # phase 2
     [   1,       4,       7,               12, 13, 14,             18, 19, 20,                 25,         28,         31,               ], # phase 3
     [0,    2,          6,    8,            12, 13, 14,             18, 19, 20,             24,     26,             30,     32            ], # phase 4
@@ -116,8 +115,7 @@ successor = [
 
 skip_axis = [
     [3, 3, 3, 6, 6, 6, 9, 9, 9, 12, 12, 12, 15, 15, 15, 18, 18, 18, 21, 21, 21, 24, 24, 24, 27, 27, 27], # phase0
-    [3, 3, 3, 5, 5, 8, 8, 8, 11, 11, 11, 14, 14, 14, 17, 17, 17, 20, 20, 20], # phase1
-    #[3, 3, 3, 6, 6, 6, 9, 9, 9, 12, 12, 12, 13, 16, 16, 16, 19, 19, 19, 20, 23, 23, 23], # phase1
+    [3, 3, 3, 6, 6, 6, 9, 9, 9, 12, 12, 12, 13, 16, 16, 16, 19, 19, 19, 20, 23, 23, 23], # phase1
     [1, 2, 3, 6, 6, 6, 7, 10, 10, 10, 13, 13, 13, 14, 17, 17, 17], # phase2
     [1, 2, 3, 6, 6, 6, 9, 9, 9, 10, 11, 12], # phase3
     [2, 2, 4, 4, 7, 7, 7, 10, 10, 10, 12, 12, 14, 14], # phase4
@@ -581,10 +579,12 @@ cdef distance(puzzle_arr, int phase):
             puzzle_ep = move_ep(puzzle_ep, i)
             puzzle_cp = move_cp(puzzle_cp, i)
             puzzle_ce = move_ce(puzzle_ce, i)
+        '''
         if phase == 0:
             if ce_not_admissible(puzzle_ce):
                 return 99
-        elif phase == 1: # find OLL Parity
+        '''
+        if phase == 1: # find OLL Parity
             if ep_switch_parity(puzzle_ep) or ep_not_separate(puzzle_ep) or eo_flip(puzzle_ep) % 2:
                 return 99
         elif phase == 3: # find PLL Parity
