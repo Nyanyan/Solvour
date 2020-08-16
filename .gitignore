@@ -9,8 +9,8 @@ legacy/4x4x4solver_v4/build
 legacy/4x4x4solver_v4/cube_class_c.c
 legacy/4x4x4solver_v5/move
 legacy/4x4x4solver_v5/prun
-4x4x4solver_v6/move
-4x4x4solver_v6/prun
+legacy/4x4x4solver_v6/move
+legacy/4x4x4solver_v6/prun
 4x4x4solver_v7/move
 4x4x4solver_v7/prun
 Solvour1/prun
