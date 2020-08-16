@@ -5,8 +5,7 @@ const long turn_steps = 400;
 const int step_dir[2] = {11, 9};
 const int step_pul[2] = {12, 10};
 const int sensor[2] = {14, 15};
-const int deg[2][4] = {{50, 60, 70, 80}, {50, 60, 70, 80}}
-const int offset = 3;
+const int deg[2][4] = {{50, 60, 70, 80}, {50, 60, 70, 80}};
 
 char buf[30];
 int idx = 0;
@@ -71,11 +70,9 @@ void setup() {
   }
   servo0.attach(7);
   servo1.attach(8);
-  servo0.write(release_deg[0] + 5);
-  servo1.write(release_deg[1] + 5);
+  servo0.write(deg[0][3]);
+  servo1.write(deg[1][3]);
   delay(70);
-  servo0.write(release_deg[0]);
-  servo1.write(release_deg[1]);
   digitalWrite(13, HIGH);
 }
 
