@@ -5,7 +5,7 @@ Copyright 2020 Nyanyan
 '''
 
 #from solver_c_1 import solver
-from cube_class import face
+from cube_class import face, wide, axis
 from time import time, sleep
 import tkinter
 import cv2
@@ -84,6 +84,42 @@ def grab_arm():
 def robotize(solution, rpm):
     res = []
     for twist in solution:
+        amount = (twist % 3 + 1) * 90
+        wide_flag = wide(twist)
+        axis_arr = [1, 3, 0, 2, 0, 2]
+        move_arm = axis_arr[twist // 6]
+        if axis(twist) == 1: # U or D
+            res.append([0, 4000])
+            res.append([2, 4000])
+            res.append([1, -90, rpm])
+            res.append([3, 90, rpm])
+            res.append([0, 1000])
+            res.append([1, 1000])
+            res.append([2, 1000])
+            res.append([3, 1000])
+        grab_arms = [move_arm % 2, move_arm % 2 + 2]
+        if wide_flag:
+            for i in grab_arms:
+                res.append([i, 2000])
+        else:
+            res.append([move_arm, 3000])
+        release_arms = [(move_arm + 1) % 2, (move_arm + 1) % 2 + 2]
+        for i in release_arms:
+            res.append([i, 4000])
+        res.append([move_arm, amount, rpm])
+        res.append([move_arm, 1000])
+        if wide_flag:
+            res.append([(move_arm + 2) % 4, 1000])
+        for i in release_arms:
+            res.append([i, 1000])
+        if axis(twist) == 1: # U or D
+            res.append([0, 4000])
+            res.append([2, 4000])
+            res.append([1, 90, rpm])
+            res.append([3, -90, rpm])
+            res.append([0, 1000])
+            res.append([2, 1000])
+        '''
         res.append([0, 1000])
         res.append([2, 1000])
         res.append([1, 1000])
@@ -198,6 +234,7 @@ def robotize(solution, rpm):
             res.append([1, 4000])
             res.append([3, 4000])
             res.append([2, amount, rpm])
+        '''
     return res
 
 # Send commands to move actuators
@@ -224,10 +261,10 @@ def start_p():
         arg1 = args[0] % 2
         if len(args) == 2: # command for arm
             move_actuator(ser_num, arg1, args[1])
-            sleep(1)
+            sleep(0.5)
         else:
             move_actuator(ser_num, arg1, args[1] + 5, args[2])
-            sleep(1)
+            sleep(0.5)
             move_actuator(ser_num, arg1, -5, args[2])
         '''
         if GPIO.input(21) == GPIO.LOW:
@@ -264,7 +301,7 @@ def start_p():
     #solvingtimevar.set(solv_time + 's')
     print('solving time:', solv_time, 's')
     robot_solution = []
-
+'''
 ser_motor = [None, None]
 ser_motor[0] = serial.Serial('/dev/ttyUSB0', 9600, timeout=0.01, write_timeout=0)
 ser_motor[1] = serial.Serial('/dev/ttyUSB1', 9600, timeout=0.01, write_timeout=0)
@@ -275,8 +312,8 @@ for i in range(2):
     for j in range(2):
         move_actuator(j, i, 90, 200)
         print(j, i)
-    sleep(0.3)
-
+    sleep(0.2)
+'''
 state = [-1 for _ in range(96)]
 
 root = tkinter.Tk()
@@ -337,14 +374,16 @@ robot_solution = [
                 [0, 1000], [2, 1000], [1, 1000], [3, 1000], [0, 3000], [1, 4000], [3, 4000], [0, 90, 200], 
                 [0, 1000], [1, 1000], [3, 1000], [1, 2000], [3, 2000], [0, 4000], [2, 4000], [3, 90, 200], 
                 [1, 1000], [3, 1000], [0, 1000], [2, 1000]
-                ] #robotize(solution, 300)
+                ] 
+robot_solution = robotize(solution, 300)
 print(robot_solution)
 print(solution)
 print(len(solution), 'moves')
 print(time() - strt, 'sec')
 print('')
-grab_arm()
+sleep(3)
+#grab_arm()
 sleep(5)
-start_p()
+#start_p()
 
 root.mainloop()
