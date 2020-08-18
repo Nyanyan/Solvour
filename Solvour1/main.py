@@ -119,122 +119,6 @@ def robotize(solution, rpm):
             res.append([3, -90, rpm])
             res.append([0, 1000])
             res.append([2, 1000])
-        '''
-        res.append([0, 1000])
-        res.append([2, 1000])
-        res.append([1, 1000])
-        res.append([3, 1000])
-        face_twist = face(twist)
-        amount = (twist % 3 + 1) * 90
-        if face_twist == 0:
-            res.append([1, 3000])
-            res.append([3, 1000])
-            res.append([0, 4000])
-            res.append([2, 4000])
-            res.append([1, amount, rpm])
-        elif face_twist == 1:
-            res.append([1, 2000])
-            res.append([3, 2000])
-            res.append([0, 4000])
-            res.append([2, 4000])
-            res.append([1, amount, rpm])
-        elif face_twist == 2:
-            res.append([1, 1000])
-            res.append([3, 3000])
-            res.append([0, 4000])
-            res.append([2, 4000])
-            res.append([3, amount, rpm])
-        elif face_twist == 4:
-            res.append([0, 4000])
-            res.append([2, 4000])
-            res.append([1, -90, rpm])
-            res.append([3, 90, rpm])
-            res.append([0, 1000])
-            res.append([1, 1000])
-            res.append([2, 1000])
-            res.append([3, 1000])
-
-            res.append([0, 3000])
-            res.append([2, 1000])
-            res.append([1, 4000])
-            res.append([3, 4000])
-            res.append([0, amount, rpm])
-
-            res.append([0, 1000])
-            res.append([1, 1000])
-            res.append([2, 1000])
-            res.append([3, 1000])
-            res.append([0, 4000])
-            res.append([2, 4000])
-            res.append([1, 90, rpm])
-            res.append([3, 270, rpm])
-        elif face_twist == 5:
-            res.append([0, 4000])
-            res.append([2, 4000])
-            res.append([1, -90, rpm])
-            res.append([3, 90, rpm])
-            res.append([0, 1000])
-            res.append([1, 1000])
-            res.append([2, 1000])
-            res.append([3, 1000])
-
-            res.append([0, 2000])
-            res.append([2, 2000])
-            res.append([1, 4000])
-            res.append([3, 4000])
-            res.append([0, amount, rpm])
-
-            res.append([0, 1000])
-            res.append([1, 1000])
-            res.append([2, 1000])
-            res.append([3, 1000])
-            res.append([0, 4000])
-            res.append([2, 4000])
-            res.append([1, 90, rpm])
-            res.append([3, 270, rpm])
-        elif face_twist == 6:
-            res.append([0, 4000])
-            res.append([2, 4000])
-            res.append([1, -90, rpm])
-            res.append([3, 90, rpm])
-            res.append([0, 1000])
-            res.append([1, 1000])
-            res.append([2, 1000])
-            res.append([3, 1000])
-
-            res.append([0, 1000])
-            res.append([2, 3000])
-            res.append([1, 4000])
-            res.append([3, 4000])
-            res.append([2, amount, rpm])
-
-            res.append([0, 1000])
-            res.append([1, 1000])
-            res.append([2, 1000])
-            res.append([3, 1000])
-            res.append([0, 4000])
-            res.append([2, 4000])
-            res.append([1, 90, rpm])
-            res.append([3, -90, rpm])
-        elif face_twist == 8:
-            res.append([0, 3000])
-            res.append([2, 1000])
-            res.append([1, 4000])
-            res.append([3, 4000])
-            res.append([0, amount, rpm])
-        elif face_twist == 9:
-            res.append([0, 2000])
-            res.append([2, 2000])
-            res.append([1, 4000])
-            res.append([3, 4000])
-            res.append([0, amount, rpm])
-        elif face_twist == 8:
-            res.append([0, 1000])
-            res.append([2, 3000])
-            res.append([1, 4000])
-            res.append([3, 4000])
-            res.append([2, amount, rpm])
-        '''
     return res
 
 # Send commands to move actuators
@@ -258,14 +142,26 @@ def start_p():
         args = robot_solution[i]
         print(args)
         ser_num = args[0] // 2
-        arg1 = args[0] % 2
-        if len(args) == 2: # command for arm
-            move_actuator(ser_num, arg1, args[1])
+        i += 1
+        l = len(args)
+        flag = False
+        args_ad = robot_solution[i]
+        if len(args_ad) == l and args_ad[0] % 2 == args[0] % 2:
+            flag = True
+            i += 1
+        if l == 2: # command for arm
+            move_actuator(ser_num, args[0] % 2, args[1])
+            if flag:
+                move_actuator((ser_num + 1) % 2, args_ad[0] % 2, args_ad[1])
             sleep(0.5)
         else:
-            move_actuator(ser_num, arg1, args[1] + 5, args[2])
+            move_actuator(ser_num, args[0] % 2, args[1] + 5 * args[1] // abs(args[1]), args[2])
+            if flag:
+                move_actuator((ser_num + 1) % 2, args_ad[0] % 2, args_ad[1] + 5 * args_ad[1] // abs(args_ad[1]), args_ad[2])
             sleep(0.5)
-            move_actuator(ser_num, arg1, -5, args[2])
+            move_actuator(ser_num, args[0] % 2, -5 * args[1] // abs(args[1]), args[2])
+            if flag:
+                move_actuator((ser_num + 1) % 2, args_ad[0] % 2, -5 * args_ad[1] // abs(args_ad[1]), args_ad[2])
         '''
         if GPIO.input(21) == GPIO.LOW:
             if bluetoothmode:
@@ -296,12 +192,11 @@ def start_p():
         sleep(slptim)
         i += 1 + int(flag)
         '''
-        i += 1
     solv_time = str(int((time() - strt_solv) * 1000) / 1000).ljust(5, '0')
     #solvingtimevar.set(solv_time + 's')
     print('solving time:', solv_time, 's')
     robot_solution = []
-'''
+
 ser_motor = [None, None]
 ser_motor[0] = serial.Serial('/dev/ttyUSB0', 9600, timeout=0.01, write_timeout=0)
 ser_motor[1] = serial.Serial('/dev/ttyUSB1', 9600, timeout=0.01, write_timeout=0)
@@ -313,7 +208,7 @@ for i in range(2):
         move_actuator(j, i, 90, 200)
         print(j, i)
     sleep(0.2)
-'''
+
 state = [-1 for _ in range(96)]
 
 root = tkinter.Tk()
@@ -366,24 +261,19 @@ fill_box(state)
 print(state)
 strt = time()
 #solution = solver(state, [0.5, 5, 2, 2, 2, 3], 30)
-solution = [0, 8]
+solution = [0, 12, 2, 14]
 if solution == 'Error':
     print('failed')
     exit()
-robot_solution = [
-                [0, 1000], [2, 1000], [1, 1000], [3, 1000], [0, 3000], [1, 4000], [3, 4000], [0, 90, 200], 
-                [0, 1000], [1, 1000], [3, 1000], [1, 2000], [3, 2000], [0, 4000], [2, 4000], [3, 90, 200], 
-                [1, 1000], [3, 1000], [0, 1000], [2, 1000]
-                ] 
-robot_solution = robotize(solution, 300)
+robot_solution = robotize(solution, 200)
 print(robot_solution)
 print(solution)
 print(len(solution), 'moves')
 print(time() - strt, 'sec')
 print('')
 sleep(3)
-#grab_arm()
+grab_arm()
 sleep(5)
-#start_p()
+start_p()
 
 root.mainloop()
