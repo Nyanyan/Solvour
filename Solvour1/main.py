@@ -66,9 +66,9 @@ def detect():
             #color_hgh = [[90, 255, 255], [140, 255, 255], [180, 255, 200], [20, 255, 255], [40, 255, 255], [179, 50, 255]]
             color_idx = [1, 3, 2, 4, 5, 0]
             circlecolor = [(0, 255, 0), (255, 0, 0), (0, 0, 255), (0, 170, 255), (0, 255, 255), (255, 255, 255)]
-            d = 25
-            size_x = 400
-            size_y = 300
+            d = 10
+            size_x = 200
+            size_y = 150
             center = [size_x // 2, size_y // 2]
             delta = [-3, -1, 1, 3]
             loopflag = [1 for _ in range(16)]
@@ -84,7 +84,7 @@ def detect():
                         y_coord = center[1] + d * delta[y]
                         x_coord = center[0] + d * delta[x]
                         idx = face * 16 + y * 4 + x
-                        cv2.circle(frame, (x_coord, y_coord), 5, (0, 0, 0), thickness=3, lineType=cv2.LINE_8, shift=0)
+                        cv2.circle(frame, (x_coord, y_coord), 2, (0, 0, 0), thickness=3, lineType=cv2.LINE_8, shift=0)
                         val = hsv[y_coord, x_coord]
                         for color in range(6):
                             flag = True
@@ -92,8 +92,8 @@ def detect():
                                 if not ((color_low[color][k] < color_hgh[color][k] and color_low[color][k] <= val[k] <= color_hgh[color][k]) or (color_low[color][k] > color_hgh[color][k] and (color_low[color][k] <= val[k] or val[k] <= color_hgh[color][k]))):
                                     break
                             else:
-                                cv2.circle(frame, (x_coord, y_coord), 15, circlecolor[color], thickness=3, lineType=cv2.LINE_8, shift=0)
-                                cv2.circle(frame, (x_coord, y_coord), 20, (0, 0, 0), thickness=2, lineType=cv2.LINE_8, shift=0)
+                                cv2.circle(frame, (x_coord, y_coord), 5, circlecolor[color], thickness=2, lineType=cv2.LINE_8, shift=0)
+                                cv2.circle(frame, (x_coord, y_coord), 10, (0, 0, 0), thickness=1, lineType=cv2.LINE_8, shift=0)
                                 if cv2.waitKey() == 32:
                                     state[idx] = color_idx[color]
                                     loopflag[y * 4 + x] = 0
