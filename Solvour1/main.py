@@ -45,11 +45,11 @@ def inspection_p():
             4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4
             ]
     '''
-    state = detect()
+    #state = detect()
     fill_box(state)
     #solution = solver(state, [0.5, 5, 2, 2, 2, 3], 30)
     solution = [0, 12, 2, 14]
-    robotize(solution)
+    robotize(solution, 300)
     solutionvar.set(str(len(solution)) + 'moves')
 
 # Get colors of stickers
@@ -144,7 +144,7 @@ def release_arm():
 def calibration():
     for i in range(2):
         for j in range(2):
-            move_actuator(j, i, 90, 300)
+            move_actuator(j, i, 90, 200)
         sleep(0.2)
 
 def robotize(solution, rpm=300):
