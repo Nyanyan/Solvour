@@ -58,6 +58,15 @@ def detect():
     capture = cv2.VideoCapture(0)
     for face in range(6):
         for mode in range(2):
+            if mode == 0:
+                tmp = 1
+            else:
+                tmp = 0
+            move_actuator(0, tmp, 1000)
+            move_actuator(1, tmp, 1000)
+            sleep(1)
+            move_actuator(0, (tmp + 1) % 2, 4000)
+            move_actuator(1, (tmp + 1) % 2, 4000)
             #color: g, b, r, o, y, w
             # for normal sticker
             color_low = [[50, 50, 50],   [90, 50, 50],   [160, 140, 50], [160, 50, 50],  [20, 20, 50],   [0, 0, 50]]
@@ -77,6 +86,7 @@ def detect():
                 ret, frame = capture.read()
                 frame = cv2.resize(frame, (size_x, size_y))
                 hsv = cv2.cvtColor(frame,cv2.COLOR_BGR2HSV)
+                colors = [-1 for _ in range(16)]
                 for y in range(4):
                     for x in range(4):
                         if not y * 4 + x in mode_flag[mode]:
@@ -87,21 +97,21 @@ def detect():
                         cv2.circle(frame, (x_coord, y_coord), 2, (0, 0, 0), thickness=3, lineType=cv2.LINE_8, shift=0)
                         val = hsv[y_coord, x_coord]
                         for color in range(6):
-                            flag = True
                             for k in range(3):
                                 if not ((color_low[color][k] < color_hgh[color][k] and color_low[color][k] <= val[k] <= color_hgh[color][k]) or (color_low[color][k] > color_hgh[color][k] and (color_low[color][k] <= val[k] or val[k] <= color_hgh[color][k]))):
                                     break
                             else:
                                 cv2.circle(frame, (x_coord, y_coord), 5, circlecolor[color], thickness=2, lineType=cv2.LINE_8, shift=0)
                                 cv2.circle(frame, (x_coord, y_coord), 10, (0, 0, 0), thickness=1, lineType=cv2.LINE_8, shift=0)
-                                if cv2.waitKey() == 32:
-                                    state[idx] = color_idx[color]
-                                    loopflag[y * 4 + x] = 0
-                                    break
+                                colors[y * 4 + x] = color_idx[color]
                 cv2.imshow('frame', frame)
+                if cv2.waitKey(10) & 0xFF == ord('q'):
+                    for i in mode_flag[mode]:
+                        idx = face * 16 + i
+                        state[idx] = colors[i]
+                    break
             print(face, mode, 'done')
-            while cv2.waitKey() != ord('n'):
-                continue
+            cv2.destroyAllWindows()
         print(face, 'done')
     capture.release()
     return state
@@ -230,14 +240,14 @@ def start_p():
     print('solving time:', solv_time, 's')
     robot_solution = []
 
-'''
+
 ser_motor = [None, None]
 ser_motor[0] = serial.Serial('/dev/ttyUSB0', 9600, timeout=0.01, write_timeout=0)
 ser_motor[1] = serial.Serial('/dev/ttyUSB1', 9600, timeout=0.01, write_timeout=0)
 
 sleep(5)
 
-'''
+
 state = [-1 for _ in range(96)]
 robot_solution = []
 
@@ -281,25 +291,3 @@ root.mainloop()
 
 for i in range(2):
     ser_motor[i].close()
-
-
-
-
-#state = detect()
-fill_box(state)
-print(state)
-#solution = solver(state, [0.5, 5, 2, 2, 2, 3], 30)
-solution = [0, 12, 2, 14]
-print(robot_solution)
-print(solution)
-print(len(solution), 'moves')
-print(time() - strt, 'sec')
-print('')
-'''
-sleep(3)
-grab_arm()
-sleep(5)
-start_p()
-'''
-
-root.mainloop()
