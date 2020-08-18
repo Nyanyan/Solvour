@@ -8,7 +8,7 @@ Solvour is a 4x4x4 rubik’s cube solving robot. This robot is developed to brea
 
 Solvourは4x4x4ルービックキューブを解くロボットです。4x4x4ルービックキューブをロボットが解く時間において世界記録を更新することを目指して製作されたロボットです。
 
-
+![Solvour1](https://github.com/Nyanyan/Solvour/blob/master/img/Solvour.jpg)
 
 ## Files and Directories / ファイルとディレクトリ
 
