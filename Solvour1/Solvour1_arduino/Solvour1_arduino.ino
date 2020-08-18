@@ -1,11 +1,12 @@
 #include <Servo.h>
 
-const int magnet_threshold = 50;
+const int magnet_threshold = 300;
 const long turn_steps = 400;
 const int step_dir[2] = {11, 9};
 const int step_pul[2] = {12, 10};
 const int sensor[2] = {14, 15};
-const int deg[2][4] = {{50, 60, 70, 80}, {50, 60, 70, 80}};
+//const int deg[2][4] = {{80, 105, 120, 160}, {75, 95, 110, 150}}; //2, 3
+const int deg[2][4] = {{80, 105, 120, 160}, {80, 105, 120, 160}}; //0, 1
 
 char buf[30];
 int idx = 0;
@@ -29,6 +30,7 @@ void move_motor(long num, long deg, long spd) {
   for (int i = 0; i < accel; i++) {
     motor_hl = !motor_hl;
     digitalWrite(step_pul[num], motor_hl);
+    //Serial.println(analogRead(sensor[0]));
     if (analogRead(sensor[num1]) > magnet_threshold)
       digitalWrite(step_pul[num1], motor_hl);
     delayMicroseconds(max_time - slope * i);
@@ -36,6 +38,7 @@ void move_motor(long num, long deg, long spd) {
   for (int i = 0; i < steps * 2 - accel * 2; i++) {
     motor_hl = !motor_hl;
     digitalWrite(step_pul[num], motor_hl);
+    //Serial.println(analogRead(sensor[0]));
     if (analogRead(sensor[num1]) > magnet_threshold)
       digitalWrite(step_pul[num1], motor_hl);
     delayMicroseconds(avg_time);
@@ -43,6 +46,7 @@ void move_motor(long num, long deg, long spd) {
   for (int i = 0; i < accel; i++) {
     motor_hl = !motor_hl;
     digitalWrite(step_pul[num], motor_hl);
+    //Serial.println(analogRead(sensor[0]));
     if (analogRead(sensor[num1]) > magnet_threshold)
       digitalWrite(step_pul[num1], motor_hl);
     delayMicroseconds(max_time - slope * accel + accel * (i + 1));
@@ -71,6 +75,7 @@ void setup() {
 }
 
 void loop() {
+  //Serial.println(analogRead(sensor[0]));
   if (Serial.available()) {
     buf[idx] = Serial.read();
     if (buf[idx] == '\n') {

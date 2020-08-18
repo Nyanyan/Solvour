@@ -79,7 +79,7 @@ def grab_arm():
     for i in range(2):
         for j in range(2):
             move_actuator(j, i, 1000)
-        sleep(1)
+            sleep(1)
 
 def robotize(solution, rpm):
     res = []
@@ -111,7 +111,7 @@ def robotize(solution, rpm):
         elif face_twist == 4:
             res.append([0, 4000])
             res.append([2, 4000])
-            res.append([1, 270, rpm])
+            res.append([1, -90, rpm])
             res.append([3, 90, rpm])
             res.append([0, 1000])
             res.append([1, 1000])
@@ -135,7 +135,7 @@ def robotize(solution, rpm):
         elif face_twist == 5:
             res.append([0, 4000])
             res.append([2, 4000])
-            res.append([1, 270, rpm])
+            res.append([1, -90, rpm])
             res.append([3, 90, rpm])
             res.append([0, 1000])
             res.append([1, 1000])
@@ -159,7 +159,7 @@ def robotize(solution, rpm):
         elif face_twist == 6:
             res.append([0, 4000])
             res.append([2, 4000])
-            res.append([1, 270, rpm])
+            res.append([1, -90, rpm])
             res.append([3, 90, rpm])
             res.append([0, 1000])
             res.append([1, 1000])
@@ -179,7 +179,7 @@ def robotize(solution, rpm):
             res.append([0, 4000])
             res.append([2, 4000])
             res.append([1, 90, rpm])
-            res.append([3, 270, rpm])
+            res.append([3, -90, rpm])
         elif face_twist == 8:
             res.append([0, 3000])
             res.append([2, 1000])
@@ -219,6 +219,7 @@ def start_p():
     i = 0
     while i < len(robot_solution):
         args = robot_solution[i]
+        print(args)
         ser_num = args[0] // 2
         arg1 = args[0] % 2
         if len(args) == 2: # command for arm
@@ -256,16 +257,23 @@ def start_p():
         sleep(slptim)
         i += 1 + int(flag)
         '''
+        i += 1
     solv_time = str(int((time() - strt_solv) * 1000) / 1000).ljust(5, '0')
     #solvingtimevar.set(solv_time + 's')
     print('solving time:', solv_time, 's')
     robot_solution = []
 
-'''
 ser_motor = [None, None]
 ser_motor[0] = serial.Serial('/dev/ttyUSB0', 9600, timeout=0.01, write_timeout=0)
 ser_motor[1] = serial.Serial('/dev/ttyUSB1', 9600, timeout=0.01, write_timeout=0)
-'''
+
+sleep(5)
+
+for i in range(2):
+    for j in range(2):
+        move_actuator(j, i, 90, 200)
+        print(j, i)
+        sleep(1)
 
 state = [-1 for _ in range(96)]
 
@@ -319,11 +327,11 @@ fill_box(state)
 print(state)
 strt = time()
 #solution = solver(state, [0.5, 5, 2, 2, 2, 3], 30)
-solution = [0, 12]
+solution = [0, 8]
 if solution == 'Error':
     print('failed')
     exit()
-robot_solution = robotize(solution, 300)
+robot_solution = [[0, 1000], [2, 1000], [1, 1000], [3, 1000], [0, 3000], [1, 4000], [3, 4000], [0, 90, 200], [0, 1000], [1, 1000], [3, 1000]] #robotize(solution, 300)
 print(robot_solution)
 print(solution)
 print(len(solution), 'moves')
