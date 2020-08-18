@@ -13,11 +13,44 @@ import serial
 
 
 def inspection_p():
-    state = detect()
+    global solutionvar
+    
+    # scramble: L2 B L2 F' R2 F' D2 B D2 L D2 B2 D2 F2 D F R U L' Fw2 R U2 Rw2 F L2 F2 Rw2 B' R B' Rw2 Uw' R' U' Rw2 F' R' Fw' Uw' Fw' Rw2 B2 Rw U'
+    state = [
+            0, 2, 2, 5, 2, 2, 3, 3, 4, 5, 1, 0, 1, 1, 5, 0, # D
+            0, 2, 4, 2, 2, 1, 0, 5, 5, 2, 5, 5, 1, 0, 2, 4, # B
+            2, 1, 3, 3, 1, 4, 0, 0, 0, 5, 4, 5, 1, 0, 0, 4, # U
+            5, 2, 2, 1, 3, 0, 4, 1, 4, 1, 0, 4, 3, 5, 1, 2, # F
+            0, 4, 4, 5, 5, 1, 2, 3, 1, 4, 3, 3, 3, 4, 3, 3, # R
+            5, 0, 3, 4, 1, 3, 3, 4, 3, 2, 5, 0, 2, 1, 5, 4  # L
+            ]
+
+    '''
+    state = [ # DP state
+            5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 
+            3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 
+            0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
+            4, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 
+            4, 4, 4, 2, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4
+            ]
+    '''
+    '''
+    state = [ # OP state
+            5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 
+            3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 
+            1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
+            2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 
+            4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4
+            ]
+    '''
+    #state = detect()
     fill_box(state)
     #solution = solver(state, [0.5, 5, 2, 2, 2, 3], 30)
     solution = [0, 12, 2, 14]
     robotize(solution)
+    solutionvar.set(str(len(solution)) + 'moves')
 
 # Get colors of stickers
 def detect():
@@ -86,12 +119,18 @@ def grab_arm():
             move_actuator(j, i, 1000)
             sleep(1)
 
-def grab_arm():
+def release_arm():
     for i in range(2):
         for j in range(2):
             move_actuator(j, i, 4000)
 
-def robotize(rpm=300):
+def calibration():
+    for i in range(2):
+        for j in range(2):
+            move_actuator(j, i, 90, 300)
+        sleep(0.2)
+
+def robotize(solution, rpm=300):
     global robot_solution
     for twist in solution:
         amount = (twist % 3 + 1) * 90
@@ -191,38 +230,34 @@ ser_motor[1] = serial.Serial('/dev/ttyUSB1', 9600, timeout=0.01, write_timeout=0
 
 sleep(5)
 
-for i in range(2):
-    for j in range(2):
-        move_actuator(j, i, 90, 300)
-        print(j, i)
-    sleep(0.2)
 '''
 state = [-1 for _ in range(96)]
 robot_solution = []
 
 root = tkinter.Tk()
 root.title("Solvour")
-root.geometry("300x200")
+root.geometry("320x240")
 
 grid = 10
-offset = 10
+offset_x = 50
+offset_y = 20
 entry = [[None for _ in range(16)] for _ in range(12)]
 for i in range(12):
     for j in range(16):
         if 3 < i < 8 or 3 < j < 8:
             entry[i][j] = tkinter.Entry(master=root, bg='gray')
-            entry[i][j].place(x = j * grid + offset, y = i * grid + offset, height=10, width=10)
+            entry[i][j].place(x = j * grid + offset_x, y = i * grid + offset_y, height=10, width=10)
 
 inspection = tkinter.Button(root, text="inspection", command=inspection_p)
 inspection.place(x=0, y=0)
 
-solutionvar = tkinter.StringVar(master=root, value='')
+solutionvar = tkinter.StringVar(master=root, value='aa')
 solution = tkinter.Label(textvariable=solutionvar)
-solution.place(x=120, y=0)
+solution.place(x=210, y=50)
 
 solvingtimevar = tkinter.StringVar(master=root, value='')
 solvingtime = tkinter.Label(textvariable=solvingtimevar)
-solvingtime.place(x=120, y=20)
+solvingtime.place(x=210, y=70)
 
 grab = tkinter.Button(root, text="grab", command=grab_arm)
 grab.place(x=0, y=150)
@@ -231,10 +266,10 @@ release = tkinter.Button(root, text="release", command=release_arm)
 release.place(x=150, y=150)
 
 calib = tkinter.Button(root, text='calibration', command=calibration)
-calib.place(x=100, y=0)
+calib.place(x=150, y=0)
 
-start = tkinter.Button(root, text="slow", command=start_p)
-start.place(x=100, y=50)
+start = tkinter.Button(root, text="start", command=start_p)
+start.place(x=150, y=110)
 root.mainloop()
 
 for i in range(2):
@@ -243,36 +278,6 @@ for i in range(2):
 
 
 
-# scramble: L2 B L2 F' R2 F' D2 B D2 L D2 B2 D2 F2 D F R U L' Fw2 R U2 Rw2 F L2 F2 Rw2 B' R B' Rw2 Uw' R' U' Rw2 F' R' Fw' Uw' Fw' Rw2 B2 Rw U'
-state = [
-        0, 2, 2, 5, 2, 2, 3, 3, 4, 5, 1, 0, 1, 1, 5, 0, # D
-        0, 2, 4, 2, 2, 1, 0, 5, 5, 2, 5, 5, 1, 0, 2, 4, # B
-        2, 1, 3, 3, 1, 4, 0, 0, 0, 5, 4, 5, 1, 0, 0, 4, # U
-        5, 2, 2, 1, 3, 0, 4, 1, 4, 1, 0, 4, 3, 5, 1, 2, # F
-        0, 4, 4, 5, 5, 1, 2, 3, 1, 4, 3, 3, 3, 4, 3, 3, # R
-        5, 0, 3, 4, 1, 3, 3, 4, 3, 2, 5, 0, 2, 1, 5, 4  # L
-        ]
-
-'''
-state = [ # DP state
-        5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 
-        3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 
-        0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-        4, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 
-        4, 4, 4, 2, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4
-        ]
-'''
-'''
-state = [ # OP state
-        5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 
-        3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 
-        1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-        2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 
-        4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4
-        ]
-'''
 #state = detect()
 fill_box(state)
 print(state)
