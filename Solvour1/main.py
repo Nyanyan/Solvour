@@ -12,10 +12,15 @@ import cv2
 import serial
 
 
-# パズルの状態の取得
+def inspection_p():
+    state = detect()
+    fill_box(state)
+    #solution = solver(state, [0.5, 5, 2, 2, 2, 3], 30)
+    solution = [0, 12, 2, 14]
+    robotize(solution)
+
 # Get colors of stickers
 def detect():
-    global entry
     state = [-1 for _ in range(96)]
     capture = cv2.VideoCapture(2)
     for face in range(6):
@@ -35,7 +40,7 @@ def detect():
         loopflag = [1 for _ in range(16)]
         while sum(loopflag):
             ret, frame = capture.read()
-            frame = cv2.resize(frame, (size_x, size_y))
+            frame = cv2.robot_solutionize(frame, (size_x, size_y))
             hsv = cv2.cvtColor(frame,cv2.COLOR_BGR2HSV)
             for y in range(4):
                 for x in range(4):
@@ -81,45 +86,49 @@ def grab_arm():
             move_actuator(j, i, 1000)
             sleep(1)
 
-def robotize(solution, rpm):
-    res = []
+def grab_arm():
+    for i in range(2):
+        for j in range(2):
+            move_actuator(j, i, 4000)
+
+def robotize(rpm=300):
+    global robot_solution
     for twist in solution:
         amount = (twist % 3 + 1) * 90
         wide_flag = wide(twist)
         axis_arr = [1, 3, 0, 2, 0, 2]
         move_arm = axis_arr[twist // 6]
         if axis(twist) == 1: # U or D
-            res.append([0, 4000])
-            res.append([2, 4000])
-            res.append([1, -90, rpm])
-            res.append([3, 90, rpm])
-            res.append([0, 1000])
-            res.append([1, 1000])
-            res.append([2, 1000])
-            res.append([3, 1000])
+            robot_solution.append([0, 4000])
+            robot_solution.append([2, 4000])
+            robot_solution.append([1, -90, rpm])
+            robot_solution.append([3, 90, rpm])
+            robot_solution.append([0, 1000])
+            robot_solution.append([1, 1000])
+            robot_solution.append([2, 1000])
+            robot_solution.append([3, 1000])
         grab_arms = [move_arm % 2, move_arm % 2 + 2]
         if wide_flag:
             for i in grab_arms:
-                res.append([i, 2000])
+                robot_solution.append([i, 2000])
         else:
-            res.append([move_arm, 3000])
+            robot_solution.append([move_arm, 3000])
         release_arms = [(move_arm + 1) % 2, (move_arm + 1) % 2 + 2]
         for i in release_arms:
-            res.append([i, 4000])
-        res.append([move_arm, amount, rpm])
-        res.append([move_arm, 1000])
+            robot_solution.append([i, 4000])
+        robot_solution.append([move_arm, amount, rpm])
+        robot_solution.append([move_arm, 1000])
         if wide_flag:
-            res.append([(move_arm + 2) % 4, 1000])
+            robot_solution.append([(move_arm + 2) % 4, 1000])
         for i in release_arms:
-            res.append([i, 1000])
+            robot_solution.append([i, 1000])
         if axis(twist) == 1: # U or D
-            res.append([0, 4000])
-            res.append([2, 4000])
-            res.append([1, 90, rpm])
-            res.append([3, -90, rpm])
-            res.append([0, 1000])
-            res.append([2, 1000])
-    return res
+            robot_solution.append([0, 4000])
+            robot_solution.append([2, 4000])
+            robot_solution.append([1, 90, rpm])
+            robot_solution.append([3, -90, rpm])
+            robot_solution.append([0, 1000])
+            robot_solution.append([2, 1000])
 
 # Send commands to move actuators
 def move_actuator(num, arg1, arg2, arg3=None):
@@ -139,6 +148,14 @@ def start_p():
     strt_solv = time()
     i = 0
     while i < len(robot_solution):
+        '''
+        if GPIO.input(21) == GPIO.LOW:
+            if bluetoothmode:
+                client_socket.send('emergency\n')
+            solvingtimevar.set('emergency stop')
+            print('emergency stop 1')
+            return
+        '''
         args = robot_solution[i]
         print(args)
         ser_num = args[0] // 2
@@ -162,41 +179,12 @@ def start_p():
             move_actuator(ser_num, args[0] % 2, -5 * args[1] // abs(args[1]), args[2])
             if flag:
                 move_actuator((ser_num + 1) % 2, args_ad[0] % 2, -5 * args_ad[1] // abs(args_ad[1]), args_ad[2])
-        '''
-        if GPIO.input(21) == GPIO.LOW:
-            if bluetoothmode:
-                client_socket.send('emergency\n')
-            solvingtimevar.set('emergency stop')
-            print('emergency stop 1')
-            return
-        
-        if i != 0:
-            grab = ans[i][0] % 2
-            for j in range(2):
-                move_actuator(j, grab, 1000)
-            sleep(slp1)
-            for j in range(2):
-                move_actuator(j, (grab + 1) % 2, 2000)
-            sleep(slp2)
-        ser_num = ans[i][0] // 2
-        offset = 0
-        before = ser_motor[ans[i][0] // 2].in_waiting
-        move_actuator(ser_num, ans[i][0] % 2, ans[i][1] * 90 + offset, rpm)
-        max_turn = abs(ans[i][1])
-        flag = i < len(ans) - 1 and ans[i + 1][0] % 2 == ans[i][0] % 2
-        if flag:
-            before2 = ser_motor[ans[i + 1][0] // 2].in_waiting
-            move_actuator(ans[i + 1][0] // 2, ans[i + 1][0] % 2, ans[i + 1][1] * 90 + offset, rpm)
-            max_turn = max(max_turn, abs(ans[i + 1][1]))
-        slptim = 2 * 60 / rpm * (max_turn * 90 - offset) / 360 * ratio
-        sleep(slptim)
-        i += 1 + int(flag)
-        '''
     solv_time = str(int((time() - strt_solv) * 1000) / 1000).ljust(5, '0')
     #solvingtimevar.set(solv_time + 's')
     print('solving time:', solv_time, 's')
     robot_solution = []
 
+'''
 ser_motor = [None, None]
 ser_motor[0] = serial.Serial('/dev/ttyUSB0', 9600, timeout=0.01, write_timeout=0)
 ser_motor[1] = serial.Serial('/dev/ttyUSB1', 9600, timeout=0.01, write_timeout=0)
@@ -205,25 +193,54 @@ sleep(5)
 
 for i in range(2):
     for j in range(2):
-        move_actuator(j, i, 90, 200)
+        move_actuator(j, i, 90, 300)
         print(j, i)
     sleep(0.2)
-
+'''
 state = [-1 for _ in range(96)]
+robot_solution = []
 
 root = tkinter.Tk()
 root.title("Solvour")
-root.geometry("500x300")
+root.geometry("300x200")
 
-grid = 20
-offset = 50
-
+grid = 10
+offset = 10
 entry = [[None for _ in range(16)] for _ in range(12)]
 for i in range(12):
     for j in range(16):
         if 3 < i < 8 or 3 < j < 8:
-            entry[i][j] = tkinter.Entry(master=root, width=2, bg='gray')
-            entry[i][j].place(x = j * grid + offset, y = i * grid + offset)
+            entry[i][j] = tkinter.Entry(master=root, bg='gray')
+            entry[i][j].place(x = j * grid + offset, y = i * grid + offset, height=10, width=10)
+
+inspection = tkinter.Button(root, text="inspection", command=inspection_p)
+inspection.place(x=0, y=0)
+
+solutionvar = tkinter.StringVar(master=root, value='')
+solution = tkinter.Label(textvariable=solutionvar)
+solution.place(x=120, y=0)
+
+solvingtimevar = tkinter.StringVar(master=root, value='')
+solvingtime = tkinter.Label(textvariable=solvingtimevar)
+solvingtime.place(x=120, y=20)
+
+grab = tkinter.Button(root, text="grab", command=grab_arm)
+grab.place(x=0, y=150)
+
+release = tkinter.Button(root, text="release", command=release_arm)
+release.place(x=150, y=150)
+
+calib = tkinter.Button(root, text='calibration', command=calibration)
+calib.place(x=100, y=0)
+
+start = tkinter.Button(root, text="slow", command=start_p)
+start.place(x=100, y=50)
+root.mainloop()
+
+for i in range(2):
+    ser_motor[i].close()
+
+
 
 
 # scramble: L2 B L2 F' R2 F' D2 B D2 L D2 B2 D2 F2 D F R U L' Fw2 R U2 Rw2 F L2 F2 Rw2 B' R B' Rw2 Uw' R' U' Rw2 F' R' Fw' Uw' Fw' Rw2 B2 Rw U'
@@ -259,21 +276,18 @@ state = [ # OP state
 #state = detect()
 fill_box(state)
 print(state)
-strt = time()
 #solution = solver(state, [0.5, 5, 2, 2, 2, 3], 30)
 solution = [0, 12, 2, 14]
-if solution == 'Error':
-    print('failed')
-    exit()
-robot_solution = robotize(solution, 200)
 print(robot_solution)
 print(solution)
 print(len(solution), 'moves')
 print(time() - strt, 'sec')
 print('')
+'''
 sleep(3)
 grab_arm()
 sleep(5)
 start_p()
+'''
 
 root.mainloop()
