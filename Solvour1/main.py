@@ -45,11 +45,12 @@ def inspection_p():
             4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4
             ]
     '''
-    state = detect()
+    #state = detect()
     fill_box(state)
     #solution = solver(state, [0.5, 5, 2, 2, 2, 3], 30)
-    solution = [0, 12, 27, 14, 25, 28]
-    robotize(solution, 150)
+    # R U Fw U' F2
+    solution = [0, 12, 27, 14, 25]
+    robotize(solution, 175)
     solutionvar.set(str(len(solution)) + 'moves')
 
 # Get colors of stickers
@@ -141,6 +142,7 @@ def release_arm():
             move_actuator([i, 4000])
 
 def calibration():
+    release_arm()
     for i in range(2):
         for j in range(2):
             move_actuator([j * 2 + i, 90, 150])
@@ -185,6 +187,40 @@ def robotize(solution, rpm=300):
             robot_solution.append([0, 1000])
             robot_solution.append([2, 1000])
 
+def premove_1(arm):
+    premove = []
+    if arm == 0:
+        premove.append([1, 5, rpm])
+        premove.append([3, -5, rpm])
+    elif arm == 1:
+        premove.append([0, -5, rpm])
+        premove.append([2, 5, rpm])
+    elif arm == 2:
+        premove.append([1, -5, rpm])
+        premove.append([3, 5, rpm])
+    elif arm == 3:
+        premove.append([0, 5, rpm])
+        premove.append([2, -5, rpm])
+    for twist in premove:
+        move_actuator(twist)
+
+def premove_2(arm):
+    premove = []
+    if arm == 0:
+        premove.append([1, -5, rpm])
+        premove.append([3, 5, rpm])
+    elif arm == 1:
+        premove.append([0, 5, rpm])
+        premove.append([2, -5, rpm])
+    elif arm == 2:
+        premove.append([1, 5, rpm])
+        premove.append([3, -5, rpm])
+    elif arm == 3:
+        premove.append([0, -5, rpm])
+        premove.append([2, 5, rpm])
+    for twist in premove:
+        move_actuator(twist)
+
 def optimise():
     global robot_solution
     pass
@@ -217,43 +253,26 @@ def start_p():
             return
         '''
         args = robot_solution[i]
-        print(args)
+        #print(args)
         i += 1
         l = len(args)
         flag = False
+        if i < len(robot_solution):
+            args_ad = robot_solution[i]
         if l == 2: # command for arm
-            premove = []
             rpm = 50
             if args[1] == 1000:
-                if args[0] == 0:
-                    premove.append([1, 5, rpm])
-                    premove.append([3, -5, rpm])
-                elif args[0] == 1:
-                    premove.append([0, -5, rpm])
-                    premove.append([2, 5, rpm])
-                elif args[0] == 2:
-                    premove.append([1, -5, rpm])
-                    premove.append([3, 5, rpm])
-                elif args[0] == 3:
-                    premove.append([0, 5, rpm])
-                    premove.append([2, -5, rpm])
-                for twist in premove:
-                    move_actuator(twist)
-                sleep(0.1)
+                premove_1(args[0])
+            elif len(args_ad) == l and args_ad[0] % 2 == args[0] % 2:
+                i += 1
+                flag = True
             move_actuator(args)
-            '''
             if flag:
                 move_actuator(args_ad)
-            '''
             sleep(0.3)
             if args[1] == 1000:
-                for j in range(2):
-                    premove[j][1] = -premove[j][1]
-                for twist in premove:
-                    move_actuator(twist)
+                premove_2(args[0])
         else:
-            if i < len(robot_solution):
-                args_ad = robot_solution[i]
             if len(args_ad) == l and args_ad[0] % 2 == args[0] % 2:
                 flag = True
                 i += 1
@@ -262,7 +281,7 @@ def start_p():
             if flag:
                 args_ad[1] += 5 * args_ad[1] // abs(args_ad[1])
                 move_actuator(args_ad)
-            sleep(0.6)
+            sleep(0.3)
             args[1] = -5 * args[1] // abs(args[1])
             move_actuator(args)
             if flag:
