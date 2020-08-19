@@ -316,10 +316,14 @@ def start_p():
                 i += 1
             args[1] += 5 * args[1] // abs(args[1])
             move_actuator(args)
+            max_turn = args[1]
             if flag:
                 args_ad[1] += 5 * args_ad[1] // abs(args_ad[1])
+                max_turn = max(max_turn, args_ad[1])
                 move_actuator(args_ad)
-            sleep(0.4)
+            ratio = 1
+            slptim = 2 * 60 / rpm * max_turn / 360 * ratio
+            sleep(slptim)
             args[1] = -5 * args[1] // abs(args[1])
             move_actuator(args)
             if flag:
