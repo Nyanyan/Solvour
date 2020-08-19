@@ -49,27 +49,25 @@ def inspection_p():
     fill_box(state)
     #solution = solver(state, [0.5, 5, 2, 2, 2, 3], 30)
     solution = [0, 12, 2, 14]
-    robotize(solution, 300)
+    robotize(solution, 150)
     solutionvar.set(str(len(solution)) + 'moves')
 
 # Get colors of stickers
 def detect():
+    rpm = 200
+    commands = [[[1, 90, rpm], [3, -90, rpm]], [[1, 90, rpm], [3, -90, rpm]], [[1, 90, rpm], [3, -90, rpm]], [[0, 1000], [2, 1000], [1, 4000], [3, 4000][0, 90, rpm], [2, -90, rpm]], [[0, 1000], [2, 1000], [1, 4000], [3, 4000][0, 180, rpm], [2, -180, rpm]]]
     state = [-1 for _ in range(96)]
     capture = cv2.VideoCapture(0)
     for face in range(6):
         for mode in range(2):
-            if mode == 0:
-                tmp = 1
-            else:
-                tmp = 0
-            move_actuator(0, tmp, 1000)
-            move_actuator(1, tmp, 1000)
+            move_actuator([mode, 1000])
+            move_actuator([mode + 2, 1000])
             sleep(1)
-            move_actuator(0, (tmp + 1) % 2, 4000)
-            move_actuator(1, (tmp + 1) % 2, 4000)
+            move_actuator([(mode + 1) % 2, 4000])
+            move_actuator([(mode + 1) % 2 + 2, 4000])
             #color: g, b, r, o, y, w
             # for normal sticker
-            color_low = [[50, 50, 50],   [90, 50, 50],   [160, 140, 50], [160, 50, 50],  [20, 20, 50],   [0, 0, 50]]
+            color_low = [[50, 50, 50],   [90, 50, 50],   [160, 140, 50], [160, 50, 50],  [20, 20, 20],   [0, 0, 50]]
             color_hgh = [[90, 255, 255], [140, 255, 255], [20, 255, 255], [20, 140, 255], [50, 255, 255], [179, 40, 255]]
             #color_low = [[40, 50, 50],   [90, 50, 50],   [160, 70, 50], [0, 20, 50],  [20, 50, 50],   [0, 0, 50]]
             #color_hgh = [[90, 255, 255], [140, 255, 255], [180, 255, 200], [20, 255, 255], [40, 255, 255], [179, 50, 255]]
@@ -81,7 +79,7 @@ def detect():
             center = [size_x // 2, size_y // 2]
             delta = [-3, -1, 1, 3]
             loopflag = [1 for _ in range(16)]
-            mode_flag = [{0, 4, 5, 6, 7, 8, 9, 10, 11, 15}, {1, 2, 3, 12, 13, 14}]
+            mode_flag = [{1, 2, 3, 12, 13, 14}, {0, 4, 5, 6, 7, 8, 9, 10, 11, 15}]
             while sum([loopflag[i] for i in mode_flag[mode]]):
                 ret, frame = capture.read()
                 frame = cv2.resize(frame, (size_x, size_y))
@@ -113,6 +111,8 @@ def detect():
             print(face, mode, 'done')
             cv2.destroyAllWindows()
         print(face, 'done')
+        for command in commands:
+            move_actuator(command)
     capture.release()
     return state
 
@@ -133,18 +133,17 @@ def fill_box(state):
 def grab_arm():
     for i in range(2):
         for j in range(2):
-            move_actuator(j, i, 1000)
+            move_actuator([j * 2 + i, 1000])
             sleep(1)
 
 def release_arm():
-    for i in range(2):
-        for j in range(2):
-            move_actuator(j, i, 4000)
+    for i in range(4):
+            move_actuator([i, 4000])
 
 def calibration():
     for i in range(2):
         for j in range(2):
-            move_actuator(j, i, 90, 200)
+            move_actuator([j * 2 + i, 90, 150])
         sleep(0.2)
 
 def robotize(solution, rpm=300):
@@ -187,11 +186,12 @@ def robotize(solution, rpm=300):
             robot_solution.append([2, 1000])
 
 # Send commands to move actuators
-def move_actuator(num, arg1, arg2, arg3=None):
-    if arg3 == None:
-        com = str(arg1) + ' ' + str(arg2)
+def move_actuator(arr):
+    num = arr[0] // 2
+    if len(arr) == 2:
+        com = str(arr[0] % 2) + ' ' + str(arr[1])
     else:
-        com = str(arg1) + ' ' + str(arg2) + ' ' + str(arg3)
+        com = str(arr[0] % 2) + ' ' + str(arr[1]) + ' ' + str(arr[2])
     if ser_motor[num].in_waiting:
         ser_motor[num].reset_output_buffer()
     ser_motor[num].write((com + '\n').encode())
@@ -214,27 +214,56 @@ def start_p():
         '''
         args = robot_solution[i]
         print(args)
-        ser_num = args[0] // 2
         i += 1
         l = len(args)
         flag = False
-        args_ad = robot_solution[i]
-        if len(args_ad) == l and args_ad[0] % 2 == args[0] % 2:
-            flag = True
-            i += 1
         if l == 2: # command for arm
-            move_actuator(ser_num, args[0] % 2, args[1])
+            premove = []
+            rpm = 50
+            if args[1] == 1000:
+                if args[0] == 0:
+                    premove.append([1, 5, rpm])
+                    premove.append([3, -5, rpm])
+                elif args[0] == 1:
+                    premove.append([0, -5, rpm])
+                    premove.append([2, 5, rpm])
+                elif args[0] == 2:
+                    premove.append([1, -5, rpm])
+                    premove.append([3, 5, rpm])
+                elif args[0] == 3:
+                    premove.append([0, 5, rpm])
+                    premove.append([2, -5, rpm])
+                for twist in premove:
+                    move_actuator(twist)
+                sleep(0.1)
+            move_actuator(args)
+            '''
             if flag:
-                move_actuator((ser_num + 1) % 2, args_ad[0] % 2, args_ad[1])
-            sleep(0.5)
+                move_actuator(args_ad)
+            '''
+            sleep(0.3)
+            if args[1] == 1000:
+                for j in range(2):
+                    premove[j][1] = -premove[j][1]
+                for twist in premove:
+                    move_actuator(twist)
         else:
-            move_actuator(ser_num, args[0] % 2, args[1] + 5 * args[1] // abs(args[1]), args[2])
+            if i < len(robot_solution):
+                args_ad = robot_solution[i]
+            if len(args_ad) == l and args_ad[0] % 2 == args[0] % 2:
+                flag = True
+                i += 1
+            args[1] += 5 * args[1] // abs(args[1])
+            move_actuator(args)
             if flag:
-                move_actuator((ser_num + 1) % 2, args_ad[0] % 2, args_ad[1] + 5 * args_ad[1] // abs(args_ad[1]), args_ad[2])
-            sleep(0.5)
-            move_actuator(ser_num, args[0] % 2, -5 * args[1] // abs(args[1]), args[2])
+                args_ad[1] += 5 * args_ad[1] // abs(args_ad[1])
+                move_actuator(args_ad)
+            sleep(0.8)
+            args[1] = -5 * args[1] // abs(args[1])
+            move_actuator(args)
             if flag:
-                move_actuator((ser_num + 1) % 2, args_ad[0] % 2, -5 * args_ad[1] // abs(args_ad[1]), args_ad[2])
+                args_ad[1] = -5 * args_ad[1] // abs(args_ad[1])
+                move_actuator(args_ad)
     solv_time = str(int((time() - strt_solv) * 1000) / 1000).ljust(5, '0')
     #solvingtimevar.set(solv_time + 's')
     print('solving time:', solv_time, 's')

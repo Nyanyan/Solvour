@@ -1,6 +1,6 @@
 #include <Servo.h>
 
-const int magnet_threshold = 300;
+const int magnet_threshold = 50;
 const long turn_steps = 400;
 const int step_dir[2] = {11, 9};
 const int step_pul[2] = {12, 10};
