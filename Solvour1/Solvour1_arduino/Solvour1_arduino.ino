@@ -5,8 +5,8 @@ const long turn_steps = 400;
 const int step_dir[2] = {11, 9};
 const int step_pul[2] = {12, 10};
 const int sensor[2] = {14, 15};
-//const int deg[2][4] = {{85, 105, 120, 160}, {80, 95, 110, 150}}; //2, 3
-const int deg[2][4] = {{85, 105, 120, 160}, {88, 105, 120, 160}}; //0, 1
+const int deg[2][4] = {{85, 105, 120, 160}, {80, 95, 110, 150}}; //2, 3
+//const int deg[2][4] = {{85, 105, 120, 160}, {88, 105, 120, 160}}; //0, 1
 
 char buf[30];
 int idx = 0;

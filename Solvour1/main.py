@@ -48,7 +48,7 @@ def inspection_p():
     #state = detect()
     fill_box(state)
     #solution = solver(state, [0.5, 5, 2, 2, 2, 3], 30)
-    solution = [0, 12, 2, 14]
+    solution = [0, 12, 27, 14]
     robotize(solution, 150)
     solutionvar.set(str(len(solution)) + 'moves')
 
