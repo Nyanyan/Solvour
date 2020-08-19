@@ -45,17 +45,17 @@ def inspection_p():
             4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4
             ]
     '''
-    #state = detect()
+    state = detect()
     fill_box(state)
     #solution = solver(state, [0.5, 5, 2, 2, 2, 3], 30)
-    solution = [0, 12, 27, 14]
+    solution = [0, 12, 27, 14, 25, 28]
     robotize(solution, 150)
     solutionvar.set(str(len(solution)) + 'moves')
 
 # Get colors of stickers
 def detect():
-    rpm = 200
-    commands = [[[1, 90, rpm], [3, -90, rpm]], [[1, 90, rpm], [3, -90, rpm]], [[1, 90, rpm], [3, -90, rpm]], [[0, 1000], [2, 1000], [1, 4000], [3, 4000][0, 90, rpm], [2, -90, rpm]], [[0, 1000], [2, 1000], [1, 4000], [3, 4000][0, 180, rpm], [2, -180, rpm]]]
+    rpm = 150
+    commands = [[[1, 90, rpm], [3, -90, rpm]], [[1, 90, rpm], [3, -90, rpm]], [[1, 90, rpm], [3, -90, rpm]], [[0, 1000], [2, 1000], [1, 4000], [3, 4000], [0, 90, rpm], [2, -90, rpm]], [[0, 1000], [2, 1000], [1, 4000], [3, 4000], [0, 180, rpm], [2, -180, rpm]], [[0, 1000], [2, 1000], [1, 4000], [3, 4000], [0, -90, rpm], [2, 90, rpm], [1, 1000], [3, 1000], [0, 4000], [2, 4000], [1, 90, rpm], [3, -90, rpm]]]
     state = [-1 for _ in range(96)]
     capture = cv2.VideoCapture(0)
     for face in range(6):
@@ -67,13 +67,13 @@ def detect():
             move_actuator([(mode + 1) % 2 + 2, 4000])
             #color: g, b, r, o, y, w
             # for normal sticker
-            color_low = [[50, 50, 50],   [90, 50, 50],   [160, 140, 50], [160, 50, 50],  [20, 20, 20],   [0, 0, 50]]
+            color_low = [[50, 50, 50],   [90, 50, 50],   [160, 140, 50], [160, 50, 50],  [20, 0, 20],   [0, 0, 50]]
             color_hgh = [[90, 255, 255], [140, 255, 255], [20, 255, 255], [20, 140, 255], [50, 255, 255], [179, 40, 255]]
             #color_low = [[40, 50, 50],   [90, 50, 50],   [160, 70, 50], [0, 20, 50],  [20, 50, 50],   [0, 0, 50]]
             #color_hgh = [[90, 255, 255], [140, 255, 255], [180, 255, 200], [20, 255, 255], [40, 255, 255], [179, 50, 255]]
             color_idx = [1, 3, 2, 4, 5, 0]
             circlecolor = [(0, 255, 0), (255, 0, 0), (0, 0, 255), (0, 170, 255), (0, 255, 255), (255, 255, 255)]
-            d = 15
+            d = 13
             size_x = 100
             size_y = 100
             center = [size_x // 2, size_y // 2]
@@ -111,7 +111,7 @@ def detect():
             print(face, mode, 'done')
             cv2.destroyAllWindows()
         print(face, 'done')
-        for command in commands:
+        for command in commands[face]:
             move_actuator(command)
     capture.release()
     return state
@@ -184,6 +184,10 @@ def robotize(solution, rpm=300):
             robot_solution.append([3, -90, rpm])
             robot_solution.append([0, 1000])
             robot_solution.append([2, 1000])
+
+def optimise():
+    global robot_solution
+    pass
 
 # Send commands to move actuators
 def move_actuator(arr):
@@ -258,7 +262,7 @@ def start_p():
             if flag:
                 args_ad[1] += 5 * args_ad[1] // abs(args_ad[1])
                 move_actuator(args_ad)
-            sleep(0.8)
+            sleep(0.6)
             args[1] = -5 * args[1] // abs(args[1])
             move_actuator(args)
             if flag:
