@@ -154,7 +154,9 @@ def calibration():
     sleep(0.5)
     for i in range(2):
         for j in range(2):
-            move_actuator([j * 2 + i, 90, 150])
+            move_actuator([j * 2 + (i + 1) % 2, 45, 200])
+            sleep(0.1)
+            move_actuator([j * 2 + i, 90, 200])
         sleep(0.2)
 
 def robotize(solution, rpm=300):
@@ -222,8 +224,8 @@ def optimise():
         pre_arms[command[0]] = arms[command[0]]
         arms[command[0]] = command[1]
         print(arms)
-    for i in reversed(range(len(res))):
-        if len(res[i]) == 3:
+    for i in reversed(range(1, len(res))):
+        if len(res[i]) == 3 and not (len(res[i - 1]) == 3 and res[i][1] + res[i - 1][1] == 0):
             break
         del res[i]
     robot_solution = res
@@ -335,7 +337,7 @@ def start_p():
     #solvingtimevar.set(solv_time + 's')
     print('solving time:', solv_time, 's')
     robot_solution = []
-    #release_arm()
+    release_arm()
 
 ser_motor = [None, None]
 ser_motor[0] = serial.Serial('/dev/ttyUSB0', 9600, timeout=0.01, write_timeout=0)
