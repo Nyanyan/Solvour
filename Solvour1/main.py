@@ -49,10 +49,10 @@ def inspection_p():
     fill_box(state)
     #solution = solver(state, [0.5, 5, 2, 2, 2, 3], 30)
     # R U Fw U' F2, B
-    solution = [0, 12, 27, 14, 25, 30]
+    #solution = [0, 12, 27, 14, 25, 30]
     # R U R' U'
-    #solution = [0, 12, 2, 14]
-    robotize(solution, 175)
+    solution = [0, 12, 2, 14]
+    robotize(solution, 200)
     print(robot_solution)
     optimise()
     print(robot_solution)
@@ -233,16 +233,16 @@ def premove_1(arm, rpm):
     amount = 5
     if arm == 0:
         premove.append([1, amount, rpm])
-        premove.append([3, -amount, rpm])
+        #premove.append([3, -amount, rpm])
     elif arm == 1:
-        premove.append([0, -amount, rpm])
+        #premove.append([0, -amount, rpm])
         premove.append([2, amount, rpm])
     elif arm == 2:
-        premove.append([1, -amount, rpm])
+        #premove.append([1, -amount, rpm])
         premove.append([3, amount, rpm])
     elif arm == 3:
         premove.append([0, amount, rpm])
-        premove.append([2, -amount, rpm])
+        #premove.append([2, -amount, rpm])
     for twist in premove:
         move_actuator(twist)
 
@@ -251,16 +251,16 @@ def premove_2(arm, rpm):
     amount = 5
     if arm == 0:
         premove.append([1, -amount, rpm])
-        premove.append([3, amount, rpm])
+        #premove.append([3, amount, rpm])
     elif arm == 1:
-        premove.append([0, amount, rpm])
+        #premove.append([0, amount, rpm])
         premove.append([2, -amount, rpm])
     elif arm == 2:
-        premove.append([1, amount, rpm])
+        #premove.append([1, amount, rpm])
         premove.append([3, -amount, rpm])
     elif arm == 3:
         premove.append([0, -amount, rpm])
-        premove.append([2, amount, rpm])
+        #premove.append([2, amount, rpm])
     for twist in premove:
         move_actuator(twist)
 
@@ -307,33 +307,35 @@ def start_p():
             move_actuator(args)
             if flag:
                 move_actuator(args_ad)
-            sleep(0.35)
+            sleep(0.3)
             if args[1] == 1000:
                 premove_2(args[0], rpm)
         else:
             if len(args_ad) == l and args_ad[0] % 2 == args[0] % 2:
                 flag = True
                 i += 1
-            args[1] += 5 * args[1] // abs(args[1])
+            #args[1] += 5 * args[1] // abs(args[1])
             move_actuator(args)
             max_turn = args[1]
             if flag:
-                args_ad[1] += 5 * args_ad[1] // abs(args_ad[1])
+                #args_ad[1] += 5 * args_ad[1] // abs(args_ad[1])
                 max_turn = max(max_turn, args_ad[1])
                 move_actuator(args_ad)
-            ratio = 1
+            ratio = 0.5
             slptim = 2 * 60 / rpm * max_turn / 360 * ratio
             sleep(slptim)
+            '''
             args[1] = -5 * args[1] // abs(args[1])
             move_actuator(args)
             if flag:
                 args_ad[1] = -5 * args_ad[1] // abs(args_ad[1])
                 move_actuator(args_ad)
+            '''
     solv_time = str(int((time() - strt_solv) * 1000) / 1000).ljust(5, '0')
     #solvingtimevar.set(solv_time + 's')
     print('solving time:', solv_time, 's')
     robot_solution = []
-    release_arm()
+    #release_arm()
 
 ser_motor = [None, None]
 ser_motor[0] = serial.Serial('/dev/ttyUSB0', 9600, timeout=0.01, write_timeout=0)
