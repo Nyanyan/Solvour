@@ -45,13 +45,14 @@ def inspection_p():
             4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4
             ]
     '''
-    #state = detect()
+    state = detect()
     fill_box(state)
     #solution = solver(state, [0.5, 5, 2, 2, 2, 3], 30)
-    # R U Fw U' F2, B
-    #solution = [0, 12, 27, 14, 25, 30]
+    # R U Fw U' F2 B Uw2 Rw' R F'
+    # reverse: F R' Rw Uw2 B' F2 U Fw' U' R'
+    solution = [0, 12, 27, 14, 25, 30, 16, 5, 0, 26]
     # R U R' U'
-    solution = [0, 12, 2, 14]
+    #solution = [0, 12, 2, 14]
     robotize(solution, 200)
     print(robot_solution)
     optimise()
@@ -117,8 +118,7 @@ def detect():
             print(face, mode, 'done')
             cv2.destroyAllWindows()
         print(face, 'done')
-        for command in commands[face]:
-            move_actuator(command)
+        move_commands(commands[face])
     capture.release()
     return state
 
@@ -230,10 +230,12 @@ def optimise():
             if len(res[i - 1]) == 3 and res[i][1] + res[i - 1][1] == 0:
                 for _ in range(2):
                     del res[-1]
+                i -= 2
             else:
                 break
         else:
             del res[i]
+            i -= 1
     robot_solution = res
 
 def premove_1(arm, rpm):
@@ -284,6 +286,9 @@ def move_actuator(arr):
     ser_motor[num].write((com + '\n').encode())
     ser_motor[num].flush()
 
+def move_commands(arr):
+    
+
 # Move robot
 def start_p():
     global robot_solution
@@ -329,7 +334,7 @@ def start_p():
                 #args_ad[1] += 5 * args_ad[1] // abs(args_ad[1])
                 max_turn = max(max_turn, args_ad[1])
                 move_actuator(args_ad)
-            ratio = 0.35
+            ratio = 0.3
             slptim = 2 * 60 / rpm * max_turn / 360 * ratio
             sleep(slptim)
             '''
@@ -340,7 +345,7 @@ def start_p():
                 move_actuator(args_ad)
             '''
     solv_time = str(int((time() - strt_solv) * 1000) / 1000).ljust(5, '0')
-    #solvingtimevar.set(solv_time + 's')
+    solvingtimevar.set(solv_time + 's')
     print('solving time:', solv_time, 's')
     robot_solution = []
     release_arm()
@@ -371,11 +376,11 @@ for i in range(12):
 inspection = tkinter.Button(root, text="inspection", command=inspection_p)
 inspection.place(x=0, y=0)
 
-solutionvar = tkinter.StringVar(master=root, value='aa')
+solutionvar = tkinter.StringVar(master=root, value='solution')
 solution = tkinter.Label(textvariable=solutionvar)
 solution.place(x=210, y=50)
 
-solvingtimevar = tkinter.StringVar(master=root, value='')
+solvingtimevar = tkinter.StringVar(master=root, value='time')
 solvingtime = tkinter.Label(textvariable=solvingtimevar)
 solvingtime.place(x=210, y=70)
 
