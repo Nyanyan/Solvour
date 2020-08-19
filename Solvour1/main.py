@@ -224,10 +224,16 @@ def optimise():
         pre_arms[command[0]] = arms[command[0]]
         arms[command[0]] = command[1]
         print(arms)
-    for i in reversed(range(1, len(res))):
-        if len(res[i]) == 3 and not (len(res[i - 1]) == 3 and res[i][1] + res[i - 1][1] == 0):
-            break
-        del res[i]
+    i = len(res) - 1
+    while i > 0:
+        if len(res[i]) == 3:
+            if len(res[i - 1]) == 3 and res[i][1] + res[i - 1][1] == 0:
+                for _ in range(2):
+                    del res[-1]
+            else:
+                break
+        else:
+            del res[i]
     robot_solution = res
 
 def premove_1(arm, rpm):
@@ -309,7 +315,7 @@ def start_p():
             move_actuator(args)
             if flag:
                 move_actuator(args_ad)
-            sleep(0.3)
+            sleep(0.2)
             if args[1] == 1000:
                 premove_2(args[0], rpm)
         else:
@@ -323,7 +329,7 @@ def start_p():
                 #args_ad[1] += 5 * args_ad[1] // abs(args_ad[1])
                 max_turn = max(max_turn, args_ad[1])
                 move_actuator(args_ad)
-            ratio = 0.5
+            ratio = 0.35
             slptim = 2 * 60 / rpm * max_turn / 360 * ratio
             sleep(slptim)
             '''
