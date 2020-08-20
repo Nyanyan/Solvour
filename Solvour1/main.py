@@ -46,7 +46,7 @@ def inspection_p():
             4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4
             ]
     '''
-    state = detect()
+    #state = detect()
     fill_box(state)
     #solution = solver(state, [0.5, 5, 2, 2, 2, 3], 30)
     # R U Fw U' F2 B Uw2 Rw' R F'
@@ -54,7 +54,7 @@ def inspection_p():
     solution = [0, 12, 27, 14, 25, 30, 16, 5, 0, 26]
     # R U R' U'
     #solution = [0, 12, 2, 14]
-    robot_solution = robotize(solution, 200)
+    robot_solution = robotize(solution, 175)
     print(robot_solution)
     robot_solution = optimise(robot_solution)
     print(robot_solution)
@@ -160,8 +160,8 @@ def calibration():
     sleep(0.5)
     for i in range(2):
         for j in range(2):
-            move_actuator([j * 2 + (i + 1) % 2, 45, 200])
-            sleep(0.1)
+            #move_actuator([j * 2 + (i + 1) % 2, 45, 200])
+            #sleep(0.1)
             move_actuator([j * 2 + i, 90, 200])
         sleep(0.2)
 
@@ -247,6 +247,7 @@ def premove_1(arm, rpm):
     premove = []
     amount = 5
     if arm == 0:
+        #pass
         premove.append([1, amount, rpm])
         #premove.append([3, -amount, rpm])
     elif arm == 1:
@@ -265,6 +266,7 @@ def premove_2(arm, rpm):
     premove = []
     amount = 5
     if arm == 0:
+        #pass
         premove.append([1, -amount, rpm])
         #premove.append([3, amount, rpm])
     elif arm == 1:
@@ -310,7 +312,7 @@ def move_commands(commands, arm_slp, ratio):
         if i < len(commands):
             args_ad = commands[i]
         if l == 2: # command for arm
-            rpm = 50
+            rpm = 150
             if args[1] == 1000:
                 premove_1(args[0], rpm)
             elif len(args_ad) == l and args_ad[0] % 2 == args[0] % 2:
@@ -339,7 +341,7 @@ def start_p():
     global robot_solution
     print('start!')
     strt_solv = time()
-    move_commands(robot_solution, 0.2, 0.3)
+    move_commands(robot_solution, 0.3, 0.3)
     solv_time = str(int((time() - strt_solv) * 1000) / 1000).ljust(5, '0')
     solvingtimevar.set(solv_time + 's')
     print('solving time:', solv_time, 's')
