@@ -10,10 +10,11 @@ from time import time, sleep
 import tkinter
 import cv2
 import serial
+import RPi.GPIO as GPIO
 
 
 def inspection_p():
-    global solutionvar
+    global solutionvar, robot_solution
     
     # scramble: L2 B L2 F' R2 F' D2 B D2 L D2 B2 D2 F2 D F R U L' Fw2 R U2 Rw2 F L2 F2 Rw2 B' R B' Rw2 Uw' R' U' Rw2 F' R' Fw' Uw' Fw' Rw2 B2 Rw U'
     state = [
@@ -53,25 +54,29 @@ def inspection_p():
     solution = [0, 12, 27, 14, 25, 30, 16, 5, 0, 26]
     # R U R' U'
     #solution = [0, 12, 2, 14]
-    robotize(solution, 200)
+    robot_solution = robotize(solution, 200)
     print(robot_solution)
-    optimise()
+    robot_solution = optimise(robot_solution)
     print(robot_solution)
     solutionvar.set(str(len(solution)) + 'moves')
 
 # Get colors of stickers
 def detect():
     rpm = 150
-    commands = [[[1, 90, rpm], [3, -90, rpm]], [[1, 90, rpm], [3, -90, rpm]], [[1, 90, rpm], [3, -90, rpm]], [[0, 1000], [2, 1000], [1, 4000], [3, 4000], [0, 90, rpm], [2, -90, rpm]], [[0, 1000], [2, 1000], [1, 4000], [3, 4000], [0, 180, rpm], [2, -180, rpm]], [[0, 1000], [2, 1000], [1, 4000], [3, 4000], [0, -90, rpm], [2, 90, rpm], [1, 1000], [3, 1000], [0, 4000], [2, 4000], [1, 90, rpm], [3, -90, rpm]]]
+    commands = [
+        [[1, 1000], [3, 1000], [0, 4000], [2, 4000], [1, 90, rpm], [3, -90, rpm]],
+        [[1, 1000], [3, 1000], [0, 4000], [2, 4000], [1, 90, rpm], [3, -90, rpm]],
+        [[1, 1000], [3, 1000], [0, 4000], [2, 4000], [1, 90, rpm], [3, -90, rpm]],
+        [[0, 1000], [2, 1000], [1, 4000], [3, 4000], [0, 90, rpm], [2, -90, rpm]],
+        [[0, 1000], [2, 1000], [1, 4000], [3, 4000], [0, 180, rpm], [2, -180, rpm]],
+        [[0, 1000], [2, 1000], [1, 4000], [3, 4000], [0, -90, rpm], [2, 90, rpm], [1, 1000], [3, 1000], [0, 4000], [2, 4000], [1, 90, rpm], [3, -90, rpm]],
+    ]
     state = [-1 for _ in range(96)]
     capture = cv2.VideoCapture(0)
     for face in range(6):
         for mode in range(2):
-            move_actuator([mode, 1000])
-            move_actuator([mode + 2, 1000])
-            sleep(1)
-            move_actuator([(mode + 1) % 2, 4000])
-            move_actuator([(mode + 1) % 2 + 2, 4000])
+            coms = [[mode, 1000], [mode + 2, 1000], [(mode + 1) % 2, 4000], [(mode + 1) % 2 + 2, 4000]]
+            move_commands(coms, 0.5, 0.5)
             #color: g, b, r, o, y, w
             # for normal sticker
             color_low = [[50, 50, 50],   [90, 50, 50],   [160, 140, 50], [160, 50, 50],  [20, 0, 20],   [0, 0, 50]]
@@ -80,7 +85,8 @@ def detect():
             #color_hgh = [[90, 255, 255], [140, 255, 255], [180, 255, 200], [20, 255, 255], [40, 255, 255], [179, 50, 255]]
             color_idx = [1, 3, 2, 4, 5, 0]
             circlecolor = [(0, 255, 0), (255, 0, 0), (0, 0, 255), (0, 170, 255), (0, 255, 255), (255, 255, 255)]
-            d = 13
+            dx = 13
+            dy = 16
             size_x = 100
             size_y = 100
             center = [size_x // 2, size_y // 2]
@@ -96,8 +102,8 @@ def detect():
                     for x in range(4):
                         if not y * 4 + x in mode_flag[mode]:
                             continue
-                        y_coord = center[1] + d * delta[y]
-                        x_coord = center[0] + d * delta[x]
+                        y_coord = center[1] + dy * delta[y]
+                        x_coord = center[0] + dx * delta[x]
                         idx = face * 16 + y * 4 + x
                         cv2.circle(frame, (x_coord, y_coord), 2, (0, 0, 0), thickness=3, lineType=cv2.LINE_8, shift=0)
                         val = hsv[y_coord, x_coord]
@@ -118,7 +124,7 @@ def detect():
             print(face, mode, 'done')
             cv2.destroyAllWindows()
         print(face, 'done')
-        move_commands(commands[face])
+        move_commands(commands[face], 0.5, 0.5)
     capture.release()
     return state
 
@@ -159,8 +165,7 @@ def calibration():
             move_actuator([j * 2 + i, 90, 200])
         sleep(0.2)
 
-def robotize(solution, rpm=300):
-    global robot_solution
+def robotize(solution, rpm=200):
     robot_solution = []
     for twist in solution:
         amount = (twist % 3 + 1) * 90
@@ -198,9 +203,9 @@ def robotize(solution, rpm=300):
             robot_solution.append([3, -90, rpm])
             robot_solution.append([0, 1000])
             robot_solution.append([2, 1000])
+    return robot_solution
 
-def optimise():
-    global robot_solution
+def optimise(robot_solution):
     res = []
     arms = [1000 for _ in range(4)]
     pre_arms = [1000 for _ in range(4)]
@@ -236,7 +241,7 @@ def optimise():
         else:
             del res[i]
             i -= 1
-    robot_solution = res
+    return res
 
 def premove_1(arm, rpm):
     premove = []
@@ -286,30 +291,24 @@ def move_actuator(arr):
     ser_motor[num].write((com + '\n').encode())
     ser_motor[num].flush()
 
-def move_commands(arr):
-    
-
-# Move robot
-def start_p():
-    global robot_solution
-    print('start!')
-    strt_solv = time()
+def move_commands(commands, arm_slp, ratio):
     i = 0
-    while i < len(robot_solution):
-        '''
-        if GPIO.input(21) == GPIO.LOW:
+    while i < len(commands):
+        if GPIO.input(4) == GPIO.LOW:
+            '''
             if bluetoothmode:
                 client_socket.send('emergency\n')
+            '''
+            release_arm()
             solvingtimevar.set('emergency stop')
-            print('emergency stop 1')
+            print('emergency stop')
             return
-        '''
-        args = robot_solution[i]
+        args = commands[i]
         i += 1
         l = len(args)
         flag = False
-        if i < len(robot_solution):
-            args_ad = robot_solution[i]
+        if i < len(commands):
+            args_ad = commands[i]
         if l == 2: # command for arm
             rpm = 50
             if args[1] == 1000:
@@ -320,30 +319,27 @@ def start_p():
             move_actuator(args)
             if flag:
                 move_actuator(args_ad)
-            sleep(0.2)
+            sleep(arm_slp)
             if args[1] == 1000:
                 premove_2(args[0], rpm)
         else:
             if len(args_ad) == l and args_ad[0] % 2 == args[0] % 2:
                 flag = True
                 i += 1
-            #args[1] += 5 * args[1] // abs(args[1])
             move_actuator(args)
-            max_turn = args[1]
+            max_turn = abs(args[1])
             if flag:
-                #args_ad[1] += 5 * args_ad[1] // abs(args_ad[1])
-                max_turn = max(max_turn, args_ad[1])
+                max_turn = max(max_turn, abs(args_ad[1]))
                 move_actuator(args_ad)
             ratio = 0.3
-            slptim = 2 * 60 / rpm * max_turn / 360 * ratio
+            slptim = 2 * 60 / args[2] * max_turn / 360 * ratio
             sleep(slptim)
-            '''
-            args[1] = -5 * args[1] // abs(args[1])
-            move_actuator(args)
-            if flag:
-                args_ad[1] = -5 * args_ad[1] // abs(args_ad[1])
-                move_actuator(args_ad)
-            '''
+
+def start_p():
+    global robot_solution
+    print('start!')
+    strt_solv = time()
+    move_commands(robot_solution, 0.2, 0.3)
     solv_time = str(int((time() - strt_solv) * 1000) / 1000).ljust(5, '0')
     solvingtimevar.set(solv_time + 's')
     print('solving time:', solv_time, 's')
@@ -353,6 +349,9 @@ def start_p():
 ser_motor = [None, None]
 ser_motor[0] = serial.Serial('/dev/ttyUSB0', 9600, timeout=0.01, write_timeout=0)
 ser_motor[1] = serial.Serial('/dev/ttyUSB1', 9600, timeout=0.01, write_timeout=0)
+
+GPIO.setmode(GPIO.BCM)
+GPIO.setup(4,GPIO.IN)
 
 sleep(5)
 
