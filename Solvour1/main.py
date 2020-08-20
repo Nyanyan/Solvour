@@ -49,12 +49,12 @@ def inspection_p():
     #state = detect()
     fill_box(state)
     #solution = solver(state, [0.5, 5, 2, 2, 2, 3], 30)
-    # R U Fw U' F2 B Uw2 Rw' R F'
-    # reverse: F R' Rw Uw2 B' F2 U Fw' U' R'
-    solution = [0, 12, 27, 14, 25, 30, 16, 5, 0, 26]
+    # R U Fw L2 F2 B Uw2 Rw' R F'
+    # reverse: F R' Rw Uw2 B' F2 L2 Fw' U' R'
+    solution = [0, 12, 27, 7, 25, 30, 16, 5, 0, 26]
     # R U R' U'
     #solution = [0, 12, 2, 14]
-    robot_solution = robotize(solution, 175)
+    robot_solution = robotize(solution, 150)
     print(robot_solution)
     robot_solution = optimise(robot_solution)
     print(robot_solution)
@@ -162,8 +162,14 @@ def calibration():
         for j in range(2):
             #move_actuator([j * 2 + (i + 1) % 2, 45, 200])
             #sleep(0.1)
-            move_actuator([j * 2 + i, 90, 200])
-        sleep(0.2)
+            move_actuator([j * 2 + i, 45, 150])
+        sleep(0.15)
+    for i in range(2):
+        for j in range(2):
+            #move_actuator([j * 2 + (i + 1) % 2, 45, 200])
+            #sleep(0.1)
+            move_actuator([j * 2 + i, 90, 150])
+        sleep(0.3)
 
 def robotize(solution, rpm=200):
     robot_solution = []
@@ -245,7 +251,7 @@ def optimise(robot_solution):
 
 def premove_1(arm, rpm):
     premove = []
-    amount = 5
+    amount = 8
     if arm == 0:
         #pass
         premove.append([1, amount, rpm])
@@ -264,7 +270,7 @@ def premove_1(arm, rpm):
 
 def premove_2(arm, rpm):
     premove = []
-    amount = 5
+    amount = 8
     if arm == 0:
         #pass
         premove.append([1, -amount, rpm])
@@ -346,6 +352,7 @@ def start_p():
     solvingtimevar.set(solv_time + 's')
     print('solving time:', solv_time, 's')
     robot_solution = []
+    sleep(0.5)
     release_arm()
 
 ser_motor = [None, None]
