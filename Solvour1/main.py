@@ -46,12 +46,17 @@ def inspection_p():
             4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4
             ]
     '''
-    state = detect()
+    #state = detect()
     fill_box(state)
+    #                   0    1     2     3     4      5      6    7     8     9     10     11     12   13    14    15    16     17     18   19   20     21    22     23     24   25    26    27    28     29     30   31    32    33    34     35
+    #move_candidate = ["R", "R2", "R'", "Rw", "Rw2", "Rw'", "L", "L2", "L'", "Lw", "Lw2", "Lw'", "U", "U2", "U'", "Uw", "Uw2", "Uw'", "D", "D2", "D'", "Dw", "Dw2", "Dw'", "F", "F2", "F'", "Fw", "Fw2", "Fw'", "B", "B2", "B'", "Bw", "Bw2", "Bw'"]
     #solution = solver(state, [0.5, 5, 2, 2, 2, 3], 30)
     # R U Fw L2 F2 B Uw2 Rw' R F'
     # reverse: F R' Rw Uw2 B' F2 L2 Fw' U' R'
-    solution = [0, 12, 27, 7, 25, 30, 16, 5, 0, 26]
+    #solution = [0, 12, 27, 7, 25, 30, 16, 5, 0, 26]
+    # Rw2 Fw D' Fw B' R Uw L2 D2 Rw'
+    # reverse Rw D2 L2 Uw' R' B Fw' D Fw' Rw2
+    solution = [4, 27, 20, 27, 32, 0, 15, 7, 19, 5]
     # R U R' U'
     #solution = [0, 12, 2, 14]
     robot_solution = robotize(solution, 200)
@@ -168,7 +173,7 @@ def calibration():
         for j in range(2):
             #move_actuator([j * 2 + (i + 1) % 2, 45, 200])
             #sleep(0.1)
-            move_actuator([j * 2 + i, 90, 150])
+            move_actuator([j * 2 + i, 0, 200])
         sleep(0.3)
 
 def robotize(solution, rpm=200):
@@ -251,7 +256,7 @@ def optimise(robot_solution):
 
 def premove_1(arm, rpm):
     premove = []
-    amount = 8
+    amount = 10
     if arm == 0:
         #pass
         premove.append([1, amount, rpm])
@@ -270,7 +275,7 @@ def premove_1(arm, rpm):
 
 def premove_2(arm, rpm):
     premove = []
-    amount = 8
+    amount = 10
     if arm == 0:
         #pass
         premove.append([1, -amount, rpm])
@@ -339,6 +344,9 @@ def move_commands(commands, arm_slp, ratio):
             if flag:
                 max_turn = max(max_turn, abs(args_ad[1]))
                 move_actuator(args_ad)
+            else:
+                args_adjust = [(args[0] + 1) % 2 + 2 * (1 - args[0] // 2), 0, args[2]]
+                move_actuator(args_adjust)
             slptim = 2 * 60 / args[2] * max_turn / 360 * ratio
             sleep(slptim)
 
@@ -346,7 +354,7 @@ def start_p():
     global robot_solution
     print('start!')
     strt_solv = time()
-    move_commands(robot_solution, 0.3, 0.3)
+    move_commands(robot_solution, 0.2, 0.3)
     solv_time = str(int((time() - strt_solv) * 1000) / 1000).ljust(5, '0')
     solvingtimevar.set(solv_time + 's')
     print('solving time:', solv_time, 's')
