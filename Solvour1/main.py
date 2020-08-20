@@ -46,7 +46,7 @@ def inspection_p():
             4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4
             ]
     '''
-    #state = detect()
+    state = detect()
     fill_box(state)
     #solution = solver(state, [0.5, 5, 2, 2, 2, 3], 30)
     # R U Fw L2 F2 B Uw2 Rw' R F'
@@ -54,7 +54,7 @@ def inspection_p():
     solution = [0, 12, 27, 7, 25, 30, 16, 5, 0, 26]
     # R U R' U'
     #solution = [0, 12, 2, 14]
-    robot_solution = robotize(solution, 150)
+    robot_solution = robotize(solution, 200)
     print(robot_solution)
     robot_solution = optimise(robot_solution)
     print(robot_solution)
@@ -85,8 +85,8 @@ def detect():
             #color_hgh = [[90, 255, 255], [140, 255, 255], [180, 255, 200], [20, 255, 255], [40, 255, 255], [179, 50, 255]]
             color_idx = [1, 3, 2, 4, 5, 0]
             circlecolor = [(0, 255, 0), (255, 0, 0), (0, 0, 255), (0, 170, 255), (0, 255, 255), (255, 255, 255)]
-            dx = 13
-            dy = 16
+            dx = 11
+            dy = 14
             size_x = 100
             size_y = 100
             center = [size_x // 2, size_y // 2]
@@ -339,7 +339,6 @@ def move_commands(commands, arm_slp, ratio):
             if flag:
                 max_turn = max(max_turn, abs(args_ad[1]))
                 move_actuator(args_ad)
-            ratio = 0.3
             slptim = 2 * 60 / args[2] * max_turn / 360 * ratio
             sleep(slptim)
 
