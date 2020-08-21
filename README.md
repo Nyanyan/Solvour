@@ -10,6 +10,8 @@ Solvourは4x4x4ルービックキューブを解くロボットです。4x4x4ル
 
 ![Solvour1](https://github.com/Nyanyan/Solvour/blob/master/img/Solvour.jpg)
 
+Promotion Video / プロモーションビデオ: 
+
 [![Soltvvo](http://img.youtube.com/vi/a2EKRblF6is/0.jpg)](https://youtu.be/a2EKRblF6is)
 
 
