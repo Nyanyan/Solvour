@@ -10,6 +10,10 @@ Solvourは4x4x4ルービックキューブを解くロボットです。4x4x4ル
 
 ![Solvour1](https://github.com/Nyanyan/Solvour/blob/master/img/Solvour.jpg)
 
+[![Soltvvo](http://img.youtube.com/vi/a2EKRblF6is/0.jpg)](https://youtu.be/a2EKRblF6is)
+
+
+
 ## Files and Directories / ファイルとディレクトリ
 
 ### 4x4x4solver
@@ -76,3 +80,20 @@ Program to test the code
 
 ### Solvour1
 
+#### main.py
+
+Main Program for Solvour
+
+Solvourのメインプログラム
+
+#### Solvour1_arduino
+
+Program for ATMEGA328P
+
+ATMEGA328P用プログラム
+
+#### Others
+
+The same as 4x4x4solver
+
+4x4x4solverと同じ
