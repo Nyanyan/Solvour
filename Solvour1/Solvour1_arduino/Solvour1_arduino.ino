@@ -1,6 +1,6 @@
 #include <Servo.h>
 
-const int magnet_threshold = 100;
+const int magnet_threshold = 300;
 const long turn_steps = 400;
 const int step_dir[2] = {11, 9};
 const int step_pul[2] = {12, 10};
@@ -21,11 +21,14 @@ void move_motor(long num, long deg, long spd) {
   digitalWrite(step_dir[num], hl);
   long steps = abs(deg) * turn_steps / 360;
   long avg_time = 1000000 * 60 / turn_steps / spd;
-  long max_time = 500;
+  long max_time = 1033;
   long slope = 50;
   bool motor_hl = false;
   long accel = min(steps / 2, max(0, (max_time - avg_time) / slope));
   int num1 = (num + 1) % 2;
+  int cnt = 0;
+  int max_cnt = deg / 90 + 1;
+  bool cnt_flag = false;
   digitalWrite(step_dir[num1], HIGH);
   bool flag = (deg >= 90);
   for (int i = 0; i < accel; i++) {
@@ -35,6 +38,11 @@ void move_motor(long num, long deg, long spd) {
     if (flag) {
       if (analogRead(sensor[num1]) > magnet_threshold)
         digitalWrite(step_pul[num1], motor_hl);
+      if (analogRead(sensor[num]) > magnet_threshold) {
+        if (!cnt_flag) cnt++;
+        cnt_flag = true;
+      } else cnt_flag = false;
+      if (cnt == max_cnt) break;
     }
     delayMicroseconds(max_time - slope * i);
   }
@@ -45,6 +53,11 @@ void move_motor(long num, long deg, long spd) {
     if (flag) {
       if (analogRead(sensor[num1]) > magnet_threshold)
         digitalWrite(step_pul[num1], motor_hl);
+      if (analogRead(sensor[num]) > magnet_threshold) {
+        if (!cnt_flag) cnt++;
+        cnt_flag = true;
+      } else cnt_flag = false;
+      if (cnt == max_cnt) break;
     }
     delayMicroseconds(avg_time);
   }
@@ -55,6 +68,11 @@ void move_motor(long num, long deg, long spd) {
     if (flag) {
       if (analogRead(sensor[num1]) > magnet_threshold)
         digitalWrite(step_pul[num1], motor_hl);
+      if (analogRead(sensor[num]) > magnet_threshold) {
+        if (!cnt_flag) cnt++;
+        cnt_flag = true;
+      } else cnt_flag = false;
+      if (cnt == max_cnt) break;
     }
     delayMicroseconds(max_time - slope * accel + accel * (i + 1));
   }

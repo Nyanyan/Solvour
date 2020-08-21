@@ -46,7 +46,7 @@ def inspection_p():
             4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4
             ]
     '''
-    #state = detect()
+    state = detect()
     fill_box(state)
     #                   0    1     2     3     4      5      6    7     8     9     10     11     12   13    14    15    16     17     18   19   20     21    22     23     24   25    26    27    28     29     30   31    32    33    34     35
     #move_candidate = ["R", "R2", "R'", "Rw", "Rw2", "Rw'", "L", "L2", "L'", "Lw", "Lw2", "Lw'", "U", "U2", "U'", "Uw", "Uw2", "Uw'", "D", "D2", "D'", "Dw", "Dw2", "Dw'", "F", "F2", "F'", "Fw", "Fw2", "Fw'", "B", "B2", "B'", "Bw", "Bw2", "Bw'"]
@@ -84,18 +84,17 @@ def detect():
             move_commands(coms, 0.5, 0.5)
             #color: g, b, r, o, y, w
             # for normal sticker
-            color_low = [[50, 50, 50],   [90, 50, 50],   [160, 140, 50], [160, 50, 50],  [20, 0, 20],   [0, 0, 50]]
-            color_hgh = [[90, 255, 255], [140, 255, 255], [20, 255, 255], [20, 140, 255], [50, 255, 255], [179, 40, 255]]
+            color_low = [[50, 50, 50],   [90, 50, 50],   [160, 170, 50], [160, 50, 50],  [20, 0, 20],   [0, 0, 50]]
+            color_hgh = [[90, 255, 255], [140, 255, 255], [20, 255, 255], [20, 170, 255], [50, 255, 255], [179, 40, 255]]
             #color_low = [[40, 50, 50],   [90, 50, 50],   [160, 70, 50], [0, 20, 50],  [20, 50, 50],   [0, 0, 50]]
             #color_hgh = [[90, 255, 255], [140, 255, 255], [180, 255, 200], [20, 255, 255], [40, 255, 255], [179, 50, 255]]
             color_idx = [1, 3, 2, 4, 5, 0]
             circlecolor = [(0, 255, 0), (255, 0, 0), (0, 0, 255), (0, 170, 255), (0, 255, 255), (255, 255, 255)]
-            dx = 11
-            dy = 14
+            dx = [-35, -8, 8, 35]
+            dy = [-40, -11, 11, 40]
             size_x = 100
             size_y = 100
             center = [size_x // 2, size_y // 2]
-            delta = [-3, -1, 1, 3]
             loopflag = [1 for _ in range(16)]
             mode_flag = [{1, 2, 3, 12, 13, 14}, {0, 4, 5, 6, 7, 8, 9, 10, 11, 15}]
             while sum([loopflag[i] for i in mode_flag[mode]]):
@@ -107,8 +106,8 @@ def detect():
                     for x in range(4):
                         if not y * 4 + x in mode_flag[mode]:
                             continue
-                        y_coord = center[1] + dy * delta[y]
-                        x_coord = center[0] + dx * delta[x]
+                        y_coord = center[1] + dy[y]
+                        x_coord = center[0] + dx[x]
                         idx = face * 16 + y * 4 + x
                         cv2.circle(frame, (x_coord, y_coord), 2, (0, 0, 0), thickness=3, lineType=cv2.LINE_8, shift=0)
                         val = hsv[y_coord, x_coord]
@@ -354,7 +353,7 @@ def start_p():
     global robot_solution
     print('start!')
     strt_solv = time()
-    move_commands(robot_solution, 0.2, 0.3)
+    move_commands(robot_solution, 0.25, 0.3)
     solv_time = str(int((time() - strt_solv) * 1000) / 1000).ljust(5, '0')
     solvingtimevar.set(solv_time + 's')
     print('solving time:', solv_time, 's')
