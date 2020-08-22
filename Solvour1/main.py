@@ -54,12 +54,15 @@ def inspection_p():
     # R U Fw L2 F2 B Uw2 Rw' R F'
     # reverse: F R' Rw Uw2 B' F2 L2 Fw' U' R'
     #solution = [0, 12, 27, 7, 25, 30, 16, 5, 0, 26]
-    # Rw2 Fw D' Fw B' R Uw L2 D2 Rw'
-    # reverse Rw D2 L2 Uw' R' B Fw' D Fw' Rw2
-    solution = [4, 27, 20, 27, 32, 0, 15, 7, 19, 5]
+    # Rw2 Fw D' Fw B' R Uw L2 F2 Rw
+    # reverse Rw' F2 L2 Uw' R' B Fw' D Fw' Rw2
+    #solution = [4, 27, 20, 27, 32, 0, 15, 7, 25, 3]
+    # Rw2 Fw D' Fw B' R Uw L2 F2 Rw R U Fw L2 F2 B Uw2 Rw' R F'
+    # rev F R' Rw Uw2 B' F2 L2 Fw' U' R' Rw' F2 L2 Uw' R' B Fw' D Fw' Rw2
+    solution = [4, 27, 20, 27, 32, 0, 15, 7, 25, 3, 0, 12, 27, 7, 25, 30, 16, 5, 0, 26]
     # R U R' U'
     #solution = [0, 12, 2, 14]
-    robot_solution = robotize(solution, 100)
+    robot_solution = robotize(solution, 500)
     print(robot_solution)
     robot_solution = optimise(robot_solution)
     print(robot_solution)
@@ -303,7 +306,7 @@ def move_actuator(arr):
         ser_motor[num].reset_output_buffer()
     '''
     ser_motor[num].write((com + '\n').encode())
-    ser_motor[num].flush()
+    #ser_motor[num].flush()
 
 def move_commands(commands, arm_slp, ratio):
     i = 0
@@ -351,7 +354,7 @@ def start_p():
     global robot_solution
     print('start!')
     strt_solv = time()
-    move_commands(robot_solution, 0.4, 0.6)
+    move_commands(robot_solution, 0.25, 0.5)
     solv_time = str(int((time() - strt_solv) * 1000) / 1000).ljust(5, '0')
     solvingtimevar.set(solv_time + 's')
     print('solving time:', solv_time, 's')
