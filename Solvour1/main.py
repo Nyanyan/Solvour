@@ -59,7 +59,7 @@ def inspection_p():
     solution = [4, 27, 20, 27, 32, 0, 15, 7, 19, 5]
     # R U R' U'
     #solution = [0, 12, 2, 14]
-    robot_solution = robotize(solution, 200)
+    robot_solution = robotize(solution, 100)
     print(robot_solution)
     robot_solution = optimise(robot_solution)
     print(robot_solution)
@@ -166,14 +166,14 @@ def calibration():
         for j in range(2):
             #move_actuator([j * 2 + (i + 1) % 2, 45, 200])
             #sleep(0.1)
-            move_actuator([j * 2 + i, 45, 150])
-        sleep(0.15)
+            move_actuator([j * 2 + i, 45, 300])
+        sleep(0.1)
     for i in range(2):
         for j in range(2):
             #move_actuator([j * 2 + (i + 1) % 2, 45, 200])
             #sleep(0.1)
-            move_actuator([j * 2 + i, 0, 200])
-        sleep(0.3)
+            move_actuator([j * 2 + i, 0, 300])
+        sleep(0.2)
 
 def robotize(solution, rpm=200):
     robot_solution = []
@@ -298,8 +298,10 @@ def move_actuator(arr):
         com = str(arr[0] % 2) + ' ' + str(arr[1])
     else:
         com = str(arr[0] % 2) + ' ' + str(arr[1]) + ' ' + str(arr[2])
+    '''
     if ser_motor[num].in_waiting:
         ser_motor[num].reset_output_buffer()
+    '''
     ser_motor[num].write((com + '\n').encode())
     ser_motor[num].flush()
 
@@ -318,32 +320,28 @@ def move_commands(commands, arm_slp, ratio):
         args = commands[i]
         i += 1
         l = len(args)
-        flag = False
         if i < len(commands):
             args_ad = commands[i]
         if l == 2: # command for arm
             rpm = 150
+            move_actuator(args)
             if args[1] == 1000:
                 premove_1(args[0], rpm)
             elif len(args_ad) == l and args_ad[0] % 2 == args[0] % 2:
-                flag = True
-                i += 1
-            move_actuator(args)
-            if flag:
                 move_actuator(args_ad)
+                i += 1
             sleep(arm_slp)
             if args[1] == 1000:
                 premove_2(args[0], rpm)
         else:
-            if len(args_ad) == l and args_ad[0] % 2 == args[0] % 2:
-                flag = True
-                i += 1
-            move_actuator(args)
             max_turn = abs(args[1])
-            if flag:
-                max_turn = max(max_turn, abs(args_ad[1]))
+            if len(args_ad) == l and args_ad[0] % 2 == args[0] % 2:
+                move_actuator(args)
                 move_actuator(args_ad)
+                i += 1
+                max_turn = max(max_turn, abs(args_ad[1]))
             else:
+                move_actuator(args)
                 args_adjust = [(args[0] + 1) % 2 + 2 * (1 - args[0] // 2), 0, args[2]]
                 move_actuator(args_adjust)
             slptim = 2 * 60 / args[2] * max_turn / 360 * ratio
@@ -353,7 +351,7 @@ def start_p():
     global robot_solution
     print('start!')
     strt_solv = time()
-    move_commands(robot_solution, 0.25, 0.3)
+    move_commands(robot_solution, 0.4, 0.6)
     solv_time = str(int((time() - strt_solv) * 1000) / 1000).ljust(5, '0')
     solvingtimevar.set(solv_time + 's')
     print('solving time:', solv_time, 's')
@@ -362,8 +360,8 @@ def start_p():
     release_arm()
 
 ser_motor = [None, None]
-ser_motor[0] = serial.Serial('/dev/ttyUSB0', 9600, timeout=0.01, write_timeout=0)
-ser_motor[1] = serial.Serial('/dev/ttyUSB1', 9600, timeout=0.01, write_timeout=0)
+ser_motor[0] = serial.Serial('/dev/ttyUSB0', 115200, timeout=0.01, write_timeout=0)
+ser_motor[1] = serial.Serial('/dev/ttyUSB1', 115200, timeout=0.01, write_timeout=0)
 
 GPIO.setmode(GPIO.BCM)
 GPIO.setup(4,GPIO.IN)
