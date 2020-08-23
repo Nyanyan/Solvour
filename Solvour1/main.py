@@ -301,12 +301,7 @@ def move_actuator(arr):
         com = str(arr[0] % 2) + ' ' + str(arr[1])
     else:
         com = str(arr[0] % 2) + ' ' + str(arr[1]) + ' ' + str(arr[2])
-    '''
-    if ser_motor[num].in_waiting:
-        ser_motor[num].reset_output_buffer()
-    '''
     ser_motor[num].write((com + '\n').encode())
-    #ser_motor[num].flush()
 
 def move_commands(commands, arm_slp, ratio):
     i = 0
@@ -339,13 +334,13 @@ def move_commands(commands, arm_slp, ratio):
         else:
             max_turn = abs(args[1])
             if len(args_ad) == l and args_ad[0] % 2 == args[0] % 2:
-                move_actuator(args)
                 move_actuator(args_ad)
+                move_actuator(args)
                 i += 1
                 max_turn = max(max_turn, abs(args_ad[1]))
             else:
-                move_actuator(args)
                 args_adjust = [(args[0] + 1) % 2 + 2 * (1 - args[0] // 2), 0, args[2]]
+                move_actuator(args)
                 move_actuator(args_adjust)
             slptim = 2 * 60 / args[2] * max_turn / 360 * ratio
             sleep(slptim)
