@@ -21,8 +21,8 @@ void move_motor(long num, long deg, long spd) {
   digitalWrite(step_dir[num], hl);
   long steps = abs(deg) * turn_steps / 360;
   long avg_time = 1000000 * 60 / turn_steps / spd;
-  long max_time = 1000;
-  long slope = 50;
+  long max_time = 2000;
+  long slope = 100;
   bool motor_hl = false;
   long accel = min(steps / 2, max(0, (max_time - avg_time) / slope));
   int num1 = (num + 1) % 2;
@@ -38,7 +38,7 @@ void move_motor(long num, long deg, long spd) {
     if (flag) {
       if (analogRead(sensor[num1]) > magnet_threshold)
         digitalWrite(step_pul[num1], motor_hl);
-      if (analogRead(sensor[num]) > magnet_threshold) {
+      if (i > 20 && analogRead(sensor[num]) > magnet_threshold) {
         if (!cnt_flag) cnt++;
         cnt_flag = true;
       } else cnt_flag = false;
@@ -82,8 +82,8 @@ void motor_adjust(long num, long spd) {
   long deg = 90;
   long steps = abs(deg) * turn_steps / 360;
   long avg_time = 1000000 * 60 / turn_steps / spd;
-  long max_time = 1000;
-  long slope = 50;
+  long max_time = 2000;
+  long slope = 100;
   bool motor_hl = false;
   long accel = min(steps / 2, max(0, (max_time - avg_time) / slope));
   digitalWrite(step_dir[num], HIGH);
