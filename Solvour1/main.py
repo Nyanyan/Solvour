@@ -12,6 +12,7 @@ import cv2
 import serial
 import RPi.GPIO as GPIO
 import bluetooth
+import subprocess
 
 
 def inspection_p():
@@ -48,7 +49,7 @@ def inspection_p():
             ]
     '''
     if bluetoothmode:
-        state = detect()
+        #state = detect()
         fill_box(state)
         send_state = ' '.join([str(i) for i in state])
         client_socket.send(send_state + '\n')
