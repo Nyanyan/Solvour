@@ -11,6 +11,7 @@ import tkinter
 import cv2
 import serial
 import RPi.GPIO as GPIO
+import bluetooth
 
 
 def inspection_p():
@@ -46,22 +47,28 @@ def inspection_p():
             4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4
             ]
     '''
-    #state = detect()
-    fill_box(state)
-    #                   0    1     2     3     4      5      6    7     8     9     10     11     12   13    14    15    16     17     18   19   20     21    22     23     24   25    26    27    28     29     30   31    32    33    34     35
-    #move_candidate = ["R", "R2", "R'", "Rw", "Rw2", "Rw'", "L", "L2", "L'", "Lw", "Lw2", "Lw'", "U", "U2", "U'", "Uw", "Uw2", "Uw'", "D", "D2", "D'", "Dw", "Dw2", "Dw'", "F", "F2", "F'", "Fw", "Fw2", "Fw'", "B", "B2", "B'", "Bw", "Bw2", "Bw'"]
-    #solution = solver(state, [0.5, 5, 2, 2, 2, 3], 30)
-    # R U Fw L2 F2 B Uw2 Rw' R F'
-    # reverse: F R' Rw Uw2 B' F2 L2 Fw' U' R'
-    #solution = [0, 12, 27, 7, 25, 30, 16, 5, 0, 26]
-    # Rw2 Fw D' Fw B' R Uw L2 F2 Rw
-    # reverse Rw' F2 L2 Uw' R' B Fw' D Fw' Rw2
-    solution = [4, 27, 20, 27, 32, 0, 15, 7, 25, 3]
-    # Rw2 Fw D' Fw B' R Uw L2 F2 Rw R U Fw L2 F2 B Uw2 Rw' R F'
-    # rev F R' Rw Uw2 B' F2 L2 Fw' U' R' Rw' F2 L2 Uw' R' B Fw' D Fw' Rw2
-    #solution = [4, 27, 20, 27, 32, 0, 15, 7, 25, 3, 0, 12, 27, 7, 25, 30, 16, 5, 0, 26]
-    # R U R' U'
-    #solution = [0, 12, 2, 14]
+    if bluetoothmode:
+        state = detect()
+        fill_box(state)
+        send_state = ' '.join([str(i) for i in state])
+        client_socket.send(send_state + '\n')
+        solution = client_socket.recv(1024).decode('utf-8', 'ignore').replace('\n', '')
+        solution = [int(i) for i in solution]
+    else:
+        #                   0    1     2     3     4      5      6    7     8     9     10     11     12   13    14    15    16     17     18   19   20     21    22     23     24   25    26    27    28     29     30   31    32    33    34     35
+        #move_candidate = ["R", "R2", "R'", "Rw", "Rw2", "Rw'", "L", "L2", "L'", "Lw", "Lw2", "Lw'", "U", "U2", "U'", "Uw", "Uw2", "Uw'", "D", "D2", "D'", "Dw", "Dw2", "Dw'", "F", "F2", "F'", "Fw", "Fw2", "Fw'", "B", "B2", "B'", "Bw", "Bw2", "Bw'"]
+        #solution = solver(state, [0.5, 5, 2, 2, 2, 3], 30)
+        # R U Fw L2 F2 B Uw2 Rw' R F'
+        # reverse: F R' Rw Uw2 B' F2 L2 Fw' U' R'
+        #solution = [0, 12, 27, 7, 25, 30, 16, 5, 0, 26]
+        # Rw2 Fw D' Fw B' R Uw L2 F2 Rw
+        # reverse Rw' F2 L2 Uw' R' B Fw' D Fw' Rw2
+        solution = [4, 27, 20, 27, 32, 0, 15, 7, 25, 3]
+        # Rw2 Fw D' Fw B' R Uw L2 F2 Rw R U Fw L2 F2 B Uw2 Rw' R F'
+        # rev F R' Rw Uw2 B' F2 L2 Fw' U' R' Rw' F2 L2 Uw' R' B Fw' D Fw' Rw2
+        #solution = [4, 27, 20, 27, 32, 0, 15, 7, 25, 3, 0, 12, 27, 7, 25, 30, 16, 5, 0, 26]
+        # R U R' U'
+        #solution = [0, 12, 2, 14]
     robot_solution = robotize(solution, 400)
     print(robot_solution)
     robot_solution = optimise(robot_solution)
@@ -93,8 +100,8 @@ def detect():
             #color_hgh = [[90, 255, 255], [140, 255, 255], [180, 255, 200], [20, 255, 255], [40, 255, 255], [179, 50, 255]]
             color_idx = [1, 3, 2, 4, 5, 0]
             circlecolor = [(0, 255, 0), (255, 0, 0), (0, 0, 255), (0, 170, 255), (0, 255, 255), (255, 255, 255)]
-            dx = [-35, -8, 8, 35]
-            dy = [-40, -11, 11, 40]
+            dx = [-40, -5, 5, 40]
+            dy = [-45, -11, 11, 45]
             d = [-3, 0, 3]
             size_x = 100
             size_y = 100
@@ -367,7 +374,18 @@ ser_motor[1] = serial.Serial('/dev/ttyUSB1', 115200, timeout=0.01, write_timeout
 GPIO.setmode(GPIO.BCM)
 GPIO.setup(4,GPIO.IN)
 
-sleep(5)
+bluetoothmode = False
+if bluetoothmode:
+    subprocess.call(['sh', 'bluetooth_script.sh'])
+    PORT = 1
+    server_socket=bluetooth.BluetoothSocket( bluetooth.RFCOMM )
+    print("connect...")
+    server_socket.bind( ("",PORT ))
+    server_socket.listen(1)
+    client_socket,address = server_socket.accept()
+    print("connection success!!")
+
+sleep(1)
 
 state = [-1 for _ in range(96)]
 robot_solution = []
