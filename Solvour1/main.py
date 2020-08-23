@@ -95,6 +95,7 @@ def detect():
             circlecolor = [(0, 255, 0), (255, 0, 0), (0, 0, 255), (0, 170, 255), (0, 255, 255), (255, 255, 255)]
             dx = [-35, -8, 8, 35]
             dy = [-40, -11, 11, 40]
+            d = [-1, 0, 1]
             size_x = 100
             size_y = 100
             center = [size_x // 2, size_y // 2]
@@ -113,7 +114,9 @@ def detect():
                         x_coord = center[0] + dx[x]
                         idx = face * 16 + y * 4 + x
                         cv2.circle(frame, (x_coord, y_coord), 2, (0, 0, 0), thickness=3, lineType=cv2.LINE_8, shift=0)
-                        val = hsv[y_coord, x_coord]
+                        vals = [hsv[y_coord + d[i], x_coord + d[j]] for i in range(3) for j in range(3)]
+                        vals.sort(key=lambda x: x[2])
+                        val = vals[4]
                         for color in range(6):
                             for k in range(3):
                                 if not ((color_low[color][k] < color_hgh[color][k] and color_low[color][k] <= val[k] <= color_hgh[color][k]) or (color_low[color][k] > color_hgh[color][k] and (color_low[color][k] <= val[k] or val[k] <= color_hgh[color][k]))):
