@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 '''
-4x4x4 Solver Main Part Written by Nyanyan
+Solvour Main Part Written by Nyanyan
 Copyright 2020 Nyanyan
 '''
 
@@ -64,13 +64,13 @@ def inspection_p():
         #solution = [0, 12, 27, 7, 25, 30, 16, 5, 0, 26]
         # Rw2 Fw D' Fw B' R Uw L2 F2 Rw
         # reverse Rw' F2 L2 Uw' R' B Fw' D Fw' Rw2
-        solution = [4, 27, 20, 27, 32, 0, 15, 7, 25, 3]
+        #solution = [4, 27, 20, 27, 32, 0, 15, 7, 25, 3]
         # Rw2 Fw D' Fw B' R Uw L2 F2 Rw R U Fw L2 F2 B Uw2 Rw' R F'
         # rev F R' Rw Uw2 B' F2 L2 Fw' U' R' Rw' F2 L2 Uw' R' B Fw' D Fw' Rw2
         #solution = [4, 27, 20, 27, 32, 0, 15, 7, 25, 3, 0, 12, 27, 7, 25, 30, 16, 5, 0, 26]
         # R U R' U'
-        #solution = [0, 12, 2, 14]
-    robot_solution = robotize(solution, 400)
+        solution = [0, 12, 2, 14]
+    robot_solution = robotize(solution, 100)
     print(robot_solution)
     robot_solution = optimise(robot_solution)
     print(robot_solution)
@@ -236,9 +236,28 @@ def optimise(robot_solution):
     for command in robot_solution:
         if len(command) == 3:
             res.append(command)
-            print(command)
+            #print(command)
             continue
         if arms[command[0]] == command[1]:
+            continue
+        if arms[command[0]] < command[1]:
+            for i in reversed(range(len(res))):
+                if res[i][0] == command[0] and res[i][1] >= 1000:
+                    del res[i]
+                    command.append(pre_arms[command[0]])
+                    res.append(command)
+                    arms[command[0]] = command[1]
+                    break
+                elif res[i][1] < 1000:
+                    command.append(arms[command[0]])
+                    res.append(command)
+                    pre_arms[command[0]] = arms[command[0]]
+                    arms[command[0]] = command[1]
+                    break
+            else:
+                command.append(pre_arms[command[0]])
+                res.append(command)
+                arms[command[0]] = command[1]
             continue
         if pre_arms[command[0]] == command[1] == 4000:
             for i in reversed(range(len(res))):
@@ -249,10 +268,11 @@ def optimise(robot_solution):
                 if len(res[i]) == 2 and res[i][0] == command[0]:
                     del res[i]
                     break
+        command.append(arms[command[0]])
         res.append(command)
         pre_arms[command[0]] = arms[command[0]]
         arms[command[0]] = command[1]
-        print(arms)
+        #print(arms)
     i = len(res) - 1
     while i > 0:
         if len(res[i]) == 3:
@@ -328,23 +348,25 @@ def move_commands(commands, arm_slp, ratio):
             return
         args = commands[i]
         i += 1
-        l = len(args)
         if i < len(commands):
             args_ad = commands[i]
-        if l == 2: # command for arm
+        type_same = False #(args[1] >= 1000 and args_ad[1] >= 1000) or (args[1] < 1000 and args_ad[1] < 1000)
+        if args[2] >= 1000: # command for arm
             rpm = 150
-            move_actuator(args)
+            move_actuator(args[:2])
+            max_d = abs(args[1] - args[2]) // 1000
             if args[1] == 1000:
                 premove_1(args[0], rpm)
-            elif len(args_ad) == l and args_ad[0] % 2 == args[0] % 2:
-                move_actuator(args_ad)
+            elif type_same and args_ad[0] % 2 == args[0] % 2:
+                move_actuator(args_ad[:2])
+                max_d = max(max_d, abs(args_ad[1] - args_ad[2]) // 1000)
                 i += 1
-            sleep(arm_slp)
+            sleep(max_d * arm_slp)
             if args[1] == 1000:
                 premove_2(args[0], rpm)
         else:
             max_turn = abs(args[1])
-            if len(args_ad) == l and args_ad[0] % 2 == args[0] % 2:
+            if type_same and args_ad[0] % 2 == args[0] % 2:
                 move_actuator(args_ad)
                 move_actuator(args)
                 i += 1
@@ -360,7 +382,7 @@ def start_p():
     global robot_solution
     print('start!')
     strt_solv = time()
-    move_commands(robot_solution, 0.2, 0.5)
+    move_commands(robot_solution, 0.3, 0.5)
     solv_time = str(int((time() - strt_solv) * 1000) / 1000).ljust(5, '0')
     solvingtimevar.set(solv_time + 's')
     print('solving time:', solv_time, 's')
