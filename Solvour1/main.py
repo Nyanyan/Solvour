@@ -62,15 +62,15 @@ def inspection_p():
         # R U Fw L2 F2 B Uw2 Rw' R F'
         # reverse: F R' Rw Uw2 B' F2 L2 Fw' U' R'
         #solution = [0, 12, 27, 7, 25, 30, 16, 5, 0, 26]
-        # Rw2 Fw D' Fw B' R Uw L2 F2 Rw
-        # reverse Rw' F2 L2 Uw' R' B Fw' D Fw' Rw2
-        #solution = [4, 27, 20, 27, 32, 0, 15, 7, 25, 3]
+        # Rw2 Fw D' Fw L' R Uw L2 F2 Rw
+        # reverse Rw' F2 L2 Uw' R' L Fw' D Fw' Rw2
+        solution = [4, 27, 20, 27, 8, 0, 15, 7, 25, 3]
         # Rw2 Fw D' Fw B' R Uw L2 F2 Rw R U Fw L2 F2 B Uw2 Rw' R F'
         # rev F R' Rw Uw2 B' F2 L2 Fw' U' R' Rw' F2 L2 Uw' R' B Fw' D Fw' Rw2
         #solution = [4, 27, 20, 27, 32, 0, 15, 7, 25, 3, 0, 12, 27, 7, 25, 30, 16, 5, 0, 26]
         # R U R' U'
-        solution = [0, 12, 2, 14]
-    robot_solution = robotize(solution, 100)
+        #solution = [0, 12, 2, 14]
+    robot_solution = robotize(solution, 600)
     print(robot_solution)
     robot_solution = optimise(robot_solution)
     print(robot_solution)
@@ -199,8 +199,8 @@ def robotize(solution, rpm=200):
         if axis(twist) == 1: # U or D
             robot_solution.append([0, 4000])
             robot_solution.append([2, 4000])
-            robot_solution.append([1, -90, rpm])
             robot_solution.append([3, 90, rpm])
+            robot_solution.append([1, -90, rpm])
             robot_solution.append([0, 1000])
             robot_solution.append([1, 1000])
             robot_solution.append([2, 1000])
@@ -240,6 +240,7 @@ def optimise(robot_solution):
             continue
         if arms[command[0]] == command[1]:
             continue
+        '''
         if arms[command[0]] < command[1]:
             for i in reversed(range(len(res))):
                 if res[i][0] == command[0] and res[i][1] >= 1000:
@@ -248,7 +249,7 @@ def optimise(robot_solution):
                     res.append(command)
                     arms[command[0]] = command[1]
                     break
-                elif res[i][1] < 1000:
+                elif res[i][1] < 1000 or res[i][0] % 2 != command[0] % 2:
                     command.append(arms[command[0]])
                     res.append(command)
                     pre_arms[command[0]] = arms[command[0]]
@@ -259,13 +260,14 @@ def optimise(robot_solution):
                 res.append(command)
                 arms[command[0]] = command[1]
             continue
+        '''
         if pre_arms[command[0]] == command[1] == 4000:
             for i in reversed(range(len(res))):
-                if len(res[i]) == 3:
+                if res[i][1] < 1000:
                     break
                 if res[i][0] % 2 != command[0] % 2:
                     break
-                if len(res[i]) == 2 and res[i][0] == command[0]:
+                if res[i][0] == command[0]:
                     del res[i]
                     break
         command.append(arms[command[0]])
@@ -275,8 +277,8 @@ def optimise(robot_solution):
         #print(arms)
     i = len(res) - 1
     while i > 0:
-        if len(res[i]) == 3:
-            if len(res[i - 1]) == 3 and res[i][1] + res[i - 1][1] == 0:
+        if res[i][1] < 1000:
+            if res[i - 1][1] < 1000 and res[i][1] + res[i - 1][1] == 0:
                 for _ in range(2):
                     del res[-1]
                 i -= 2
@@ -289,9 +291,8 @@ def optimise(robot_solution):
 
 def premove_1(arm, rpm):
     premove = []
-    amount = 10
+    amount = 7
     if arm == 0:
-        #pass
         premove.append([1, amount, rpm])
         #premove.append([3, -amount, rpm])
     elif arm == 1:
@@ -308,9 +309,8 @@ def premove_1(arm, rpm):
 
 def premove_2(arm, rpm):
     premove = []
-    amount = 10
+    amount = 7
     if arm == 0:
-        #pass
         premove.append([1, -amount, rpm])
         #premove.append([3, amount, rpm])
     elif arm == 1:
@@ -350,19 +350,19 @@ def move_commands(commands, arm_slp, ratio):
         i += 1
         if i < len(commands):
             args_ad = commands[i]
-        type_same = False #(args[1] >= 1000 and args_ad[1] >= 1000) or (args[1] < 1000 and args_ad[1] < 1000)
+        type_same = (args[1] >= 1000 and args_ad[1] >= 1000) or (args[1] < 1000 and args_ad[1] < 1000)
         if args[2] >= 1000: # command for arm
             rpm = 150
             move_actuator(args[:2])
             max_d = abs(args[1] - args[2]) // 1000
-            if args[1] == 1000:
+            if args[1] < args[2]:
                 premove_1(args[0], rpm)
             elif type_same and args_ad[0] % 2 == args[0] % 2:
                 move_actuator(args_ad[:2])
                 max_d = max(max_d, abs(args_ad[1] - args_ad[2]) // 1000)
                 i += 1
             sleep(max_d * arm_slp)
-            if args[1] == 1000:
+            if args[1] < args[2]:
                 premove_2(args[0], rpm)
         else:
             max_turn = abs(args[1])
@@ -382,7 +382,7 @@ def start_p():
     global robot_solution
     print('start!')
     strt_solv = time()
-    move_commands(robot_solution, 0.3, 0.5)
+    move_commands(robot_solution, 0.1, 0.25)
     solv_time = str(int((time() - strt_solv) * 1000) / 1000).ljust(5, '0')
     solvingtimevar.set(solv_time + 's')
     print('solving time:', solv_time, 's')
