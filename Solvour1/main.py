@@ -56,6 +56,7 @@ def inspection_p():
         solution = client_socket.recv(1024).decode('utf-8', 'ignore').replace('\n', '')
         solution = [int(i) for i in solution]
     else:
+        fill_box(state)
         #                   0    1     2     3     4      5      6    7     8     9     10     11     12   13    14    15    16     17     18   19   20     21    22     23     24   25    26    27    28     29     30   31    32    33    34     35
         move_candidate = ["R", "R2", "R'", "Rw", "Rw2", "Rw'", "L", "L2", "L'", "Lw", "Lw2", "Lw'", "U", "U2", "U'", "Uw", "Uw2", "Uw'", "D", "D2", "D'", "Dw", "Dw2", "Dw'", "F", "F2", "F'", "Fw", "Fw2", "Fw'", "B", "B2", "B'", "Bw", "Bw2", "Bw'"]
         #solution = solver(state, [0.5, 5, 2, 2, 2, 3], 30)
@@ -70,21 +71,20 @@ def inspection_p():
         #solution = [4, 27, 20, 27, 32, 0, 15, 7, 25, 3, 0, 12, 27, 7, 25, 30, 16, 5, 0, 26]
         # Fw B' R Uw L2 F2 Rw R U Fw
         # rev Fw' U' R' Rw' F2 L2 Uw' R' B Fw'
-        state_reshape = [32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 31, 30, 29, 28, 27, 26, 25, 24, 23, 22, 21, 20, 19, 18, 17, 16]
-        face_coord = ['U', 'F', 'R', 'B', 'L', 'D']
-        state_str = ''.join([face_coord[state[i]] for i in state_reshape])
-        solution_str = subprocess.call('java -cp .:threephase.jar:twophase.jar solver ' + state_str)
-        print(solution_str)
-        solution = ''
-        for i in solution_str.split():
-            if not i in move_candidate:
-                break
-            else:
-                solution.append(move_candidate.index(i))
-        print(solution)
         #solution = [27, 32, 0, 15, 7, 25, 3, 0, 12, 27]
         # R U R' U'
         #solution = [0, 12, 2, 14]
+        state_reshape = [32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 31, 30, 29, 28, 27, 26, 25, 24, 23, 22, 21, 20, 19, 18, 17, 16]
+        face_coord = ['U', 'F', 'R', 'B', 'L', 'D']
+        state_str = ''.join([face_coord[state[i]] for i in state_reshape])
+        solution_str = subprocess.check_output(['java', '-cp', '.:threephase.jar:twophase.jar', 'solver', state_str]).decode('utf-8', 'ignore')
+        print(solution_str)
+        solution = []
+        for i in solution_str.split():
+            print(i)
+            if i in move_candidate:
+                solution.append(move_candidate.index(i))
+        print(solution)
     robot_solution = robotize(solution, 500)
     print(robot_solution)
     robot_solution = optimise(robot_solution)

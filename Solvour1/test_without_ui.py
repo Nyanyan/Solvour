@@ -48,12 +48,11 @@ move_candidate = ["R", "R2", "R'", "Rw", "Rw2", "Rw'", "L", "L2", "L'", "Lw", "L
 state_reshape = [32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 31, 30, 29, 28, 27, 26, 25, 24, 23, 22, 21, 20, 19, 18, 17, 16]
 face_coord = ['U', 'F', 'R', 'B', 'L', 'D']
 state_str = ''.join([face_coord[state[i]] for i in state_reshape])
-solution_str = subprocess.check_output(['java', '-cp', '.:threephase.jar:twophase.jar', 'solver', state_str])
+solution_str = subprocess.check_output(['java', '-cp', '.:threephase.jar:twophase.jar', 'solver', state_str]).decode('utf-8', 'ignore')
 print(solution_str)
-solution = ''
+solution = []
 for i in solution_str.split():
-    if not i in move_candidate:
-        break
-    else:
+    print(i)
+    if i in move_candidate:
         solution.append(move_candidate.index(i))
 print(solution)
