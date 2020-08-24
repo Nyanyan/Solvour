@@ -242,6 +242,7 @@ def optimise(robot_solution):
             res.append(command)
             #print(command)
             continue
+        '''
         if arms[command[0]] < command[1] < 3000:
             for i in reversed(range(len(res))):
                 if res[i][0] == command[0] and res[i][1] >= 1000:
@@ -261,6 +262,7 @@ def optimise(robot_solution):
                 res.append(command)
                 arms[command[0]] = command[1]
             continue
+        '''
         if pre_arms[command[0]] == command[1] == 4000:
             for i in reversed(range(len(res))):
                 if res[i][1] < 1000:
