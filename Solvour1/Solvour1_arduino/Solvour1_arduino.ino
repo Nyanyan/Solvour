@@ -94,6 +94,7 @@ void motor_adjust(long num, long spd) {
   bool motor_hl = false;
   digitalWrite(step_dir[num], HIGH);
   for(int i=0;i < max_step;i++){
+    motor_hl = !motor_hl;
     if (analogRead(sensor[num]) > magnet_threshold)
       digitalWrite(step_pul[num], motor_hl);
     else break;

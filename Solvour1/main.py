@@ -73,7 +73,7 @@ def inspection_p():
         solution = [27, 32, 0, 15, 7, 25, 3, 0, 12, 27]
         # R U R' U'
         #solution = [0, 12, 2, 14]
-    robot_solution = robotize(solution, 200)
+    robot_solution = robotize(solution, 500)
     print(robot_solution)
     robot_solution = optimise(robot_solution)
     print(robot_solution)
@@ -193,7 +193,7 @@ def calibration():
         sleep(0.14)
 
 def robotize(solution, rpm=200):
-    regrip_rpm = 200
+    regrip_rpm = 400
     robot_solution = []
     for twist in solution:
         amount = (twist % 3 + 1) * 90
@@ -242,7 +242,7 @@ def optimise(robot_solution):
             res.append(command)
             #print(command)
             continue
-        if arms[command[0]] < command[1]:
+        if arms[command[0]] < command[1] < 3000:
             for i in reversed(range(len(res))):
                 if res[i][0] == command[0] and res[i][1] >= 1000:
                     del res[i]
@@ -277,7 +277,7 @@ def optimise(robot_solution):
         res.append(command)
         pre_arms[command[0]] = arms[command[0]]
         arms[command[0]] = command[1]
-        print(arms)
+        #print(arms)
         #print(arms)
     i = len(res) - 1
     while i > 0:
@@ -340,6 +340,7 @@ def move_actuator(arr):
 
 def move_commands(commands, arm_slp, ratio):
     i = 0
+    strt = -1
     while i < len(commands):
         if GPIO.input(4) == GPIO.LOW:
             '''
@@ -349,7 +350,7 @@ def move_commands(commands, arm_slp, ratio):
             release_arm()
             solvingtimevar.set('emergency stop')
             print('emergency stop')
-            return
+            return -1
         args = commands[i]
         i += 1
         if i < len(commands):
@@ -369,6 +370,8 @@ def move_commands(commands, arm_slp, ratio):
             if args[1] < args[2]:
                 premove_2(args[0], rpm)
         else:
+            if strt == -1:
+                strt = time()
             max_turn = abs(args[1])
             if type_same and args_ad[0] % 2 == args[0] % 2:
                 move_actuator(args_ad)
@@ -381,14 +384,15 @@ def move_commands(commands, arm_slp, ratio):
                 move_actuator(args_adjust)
             slptim = 2 * 60 / args[2] * max_turn / 360 * ratio
             sleep(slptim)
+    return time() - strt
 
 def start_p():
     global robot_solution
     print('start!')
     strt_solv = time()
     #move_commands(robot_solution, 0.09, 0.22)
-    move_commands(robot_solution, 0.15, 0.3)
-    solv_time = str(int((time() - strt_solv) * 1000) / 1000).ljust(5, '0')
+    solv_time = str(int(move_commands(robot_solution, 0.11, 0.27) * 1000) / 1000).ljust(5, '0')
+    #solv_time = str(int((time() - strt_solv) * 1000) / 1000).ljust(5, '0')
     solvingtimevar.set(solv_time + 's')
     print('solving time:', solv_time, 's')
     robot_solution = []
