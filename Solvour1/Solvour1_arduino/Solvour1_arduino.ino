@@ -89,34 +89,15 @@ void move_motor(long num, long deg, long spd) {
 }
 
 void motor_adjust(long num, long spd) {
-  long deg = 90;
-  long steps = abs(deg) * turn_steps / 360;
-  long avg_time = 1000000 * 60 / turn_steps / spd;
-  long max_time = 1000;
-  long slope = 50;
+  int max_step = 150;
+  int delay_time = 1000;
   bool motor_hl = false;
-  long accel = min(steps / 2, max(0, (max_time - avg_time) / slope));
   digitalWrite(step_dir[num], HIGH);
-  for (int i = 0; i < accel; i++) {
-    motor_hl = !motor_hl;
+  for(int i=0;i < max_step;i++){
     if (analogRead(sensor[num]) > magnet_threshold)
       digitalWrite(step_pul[num], motor_hl);
     else break;
-    delayMicroseconds(max_time - slope * i);
-  }
-  for (int i = 0; i < steps * 2 - accel * 2; i++) {
-    motor_hl = !motor_hl;
-    if (analogRead(sensor[num]) > magnet_threshold)
-      digitalWrite(step_pul[num], motor_hl);
-    else break;
-    delayMicroseconds(avg_time);
-  }
-  for (int i = 0; i < accel; i++) {
-    motor_hl = !motor_hl;
-    if (analogRead(sensor[num]) > magnet_threshold)
-      digitalWrite(step_pul[num], motor_hl);
-    else break;
-    delayMicroseconds(max_time - slope * i);
+    delayMicroseconds(delay_time);
   }
 }
 
