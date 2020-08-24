@@ -73,7 +73,7 @@ def inspection_p():
         solution = [27, 32, 0, 15, 7, 25, 3, 0, 12, 27]
         # R U R' U'
         #solution = [0, 12, 2, 14]
-    robot_solution = robotize(solution, 700)
+    robot_solution = robotize(solution, 200)
     print(robot_solution)
     robot_solution = optimise(robot_solution)
     print(robot_solution)
@@ -193,6 +193,7 @@ def calibration():
         sleep(0.14)
 
 def robotize(solution, rpm=200):
+    regrip_rpm = 200
     robot_solution = []
     for twist in solution:
         amount = (twist % 3 + 1) * 90
@@ -202,8 +203,8 @@ def robotize(solution, rpm=200):
         if axis(twist) == 1: # U or D
             robot_solution.append([0, 4000])
             robot_solution.append([2, 4000])
-            robot_solution.append([3, 90, 500])
-            robot_solution.append([1, -90, 500])
+            robot_solution.append([3, 90, regrip_rpm])
+            robot_solution.append([1, -90, regrip_rpm])
             robot_solution.append([0, 1000])
             robot_solution.append([1, 1000])
             robot_solution.append([2, 1000])
@@ -226,8 +227,8 @@ def robotize(solution, rpm=200):
         if axis(twist) == 1: # U or D
             robot_solution.append([0, 4000])
             robot_solution.append([2, 4000])
-            robot_solution.append([1, 90, 500])
-            robot_solution.append([3, -90, 500])
+            robot_solution.append([1, 90, regrip_rpm])
+            robot_solution.append([3, -90, regrip_rpm])
             robot_solution.append([0, 1000])
             robot_solution.append([2, 1000])
     return robot_solution
@@ -241,7 +242,6 @@ def optimise(robot_solution):
             res.append(command)
             #print(command)
             continue
-        '''
         if arms[command[0]] < command[1]:
             for i in reversed(range(len(res))):
                 if res[i][0] == command[0] and res[i][1] >= 1000:
@@ -261,7 +261,6 @@ def optimise(robot_solution):
                 res.append(command)
                 arms[command[0]] = command[1]
             continue
-        '''
         if pre_arms[command[0]] == command[1] == 4000:
             for i in reversed(range(len(res))):
                 if res[i][1] < 1000:
@@ -387,7 +386,8 @@ def start_p():
     global robot_solution
     print('start!')
     strt_solv = time()
-    move_commands(robot_solution, 0.09, 0.22)
+    #move_commands(robot_solution, 0.09, 0.22)
+    move_commands(robot_solution, 0.15, 0.3)
     solv_time = str(int((time() - strt_solv) * 1000) / 1000).ljust(5, '0')
     solvingtimevar.set(solv_time + 's')
     print('solving time:', solv_time, 's')
