@@ -69,10 +69,10 @@ def inspection_p():
         #solution = [4, 27, 20, 27, 8, 0, 15, 7, 25, 3]
         # Rw2 Fw D' Fw B' R Uw L2 F2 Rw R U Fw L2 F2 B Uw2 Rw' R F'
         # rev F R' Rw Uw2 B' F2 L2 Fw' U' R' Rw' F2 L2 Uw' R' B Fw' D Fw' Rw2
-        solution = [4, 27, 20, 27, 32, 0, 15, 7, 25, 3, 0, 12, 27, 7, 25, 30, 16, 5, 0, 26]
+        #solution = [4, 27, 20, 27, 32, 0, 15, 7, 25, 3, 0, 12, 27, 7, 25, 30, 16, 5, 0, 26]
         # Fw B' R Uw L2 F2 Rw R U Fw
         # rev Fw' U' R' Rw' F2 L2 Uw' R' B Fw'
-        #solution = [27, 32, 0, 15, 7, 25, 3, 0, 12, 27]
+        solution = [27, 32, 0, 15, 7, 25, 3, 0, 12, 27]
         # R U R' U'
         #solution = [0, 12, 2, 14]
         '''
@@ -88,7 +88,7 @@ def inspection_p():
                 solution.append(move_candidate.index(i))
         print(solution)
         '''
-    robot_solution = robotize(solution, 700)
+    robot_solution = robotize(solution, 500)
     print(robot_solution)
     robot_solution = optimise(robot_solution)
     print(robot_solution)
@@ -208,7 +208,7 @@ def calibration():
         sleep(0.14)
 
 def robotize(solution, rpm=200):
-    regrip_rpm = 300
+    regrip_rpm = 250
     robot_solution = []
     for twist in solution:
         amount = (twist % 3 + 1) * 90
@@ -257,7 +257,7 @@ def optimise(robot_solution):
             res.append(command)
             #print(command)
             continue
-        '''
+
         if arms[command[0]] < command[1] < 3000:
             for i in reversed(range(len(res))):
                 if res[i][0] == command[0] and res[i][1] >= 1000:
@@ -277,7 +277,7 @@ def optimise(robot_solution):
                 res.append(command)
                 arms[command[0]] = command[1]
             continue
-        '''
+
         if pre_arms[command[0]] == command[1] == 4000:
             for i in reversed(range(len(res))):
                 if res[i][1] < 1000:
@@ -408,7 +408,7 @@ def start_p():
     print('start!')
     strt_solv = time()
     #move_commands(robot_solution, 0.09, 0.22)
-    solv_time = str(int(move_commands(robot_solution, 0.09, 0.22) * 1000) / 1000).ljust(5, '0')
+    solv_time = str(int(move_commands(robot_solution, 0.09, 0.2) * 1000) / 1000).ljust(5, '0')
     #solv_time = str(int((time() - strt_solv) * 1000) / 1000).ljust(5, '0')
     solvingtimevar.set(solv_time + 's')
     print('solving time:', solv_time, 's')

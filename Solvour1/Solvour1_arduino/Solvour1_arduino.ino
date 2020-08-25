@@ -5,8 +5,8 @@ const long turn_steps = 400;
 const int step_dir[2] = {11, 9};
 const int step_pul[2] = {12, 10};
 const int sensor[2] = {14, 15};
-const int deg[2][4] = {{82, 97, 115, 160}, {77, 90, 105, 150}}; //2, 3
-//const int deg[2][4] = {{85, 105, 120, 160}, {88, 105, 120, 160}}; //0, 1
+//const int deg[2][4] = {{82, 97, 115, 160}, {77, 90, 105, 150}}; //2, 3
+const int deg[2][4] = {{85, 105, 120, 160}, {88, 105, 120, 160}}; //0, 1
 
 char buf[30];
 int idx = 0;
@@ -21,14 +21,14 @@ void move_motor(long num, long deg, long spd) {
   digitalWrite(step_dir[num], hl);
   long steps = abs(deg) * turn_steps / 360;
   long avg_time = 1000000 * 60 / turn_steps / spd;
-  long max_time = 800;
+  long max_time = 1000;
   long slope = 50;
   bool motor_hl = false;
   long accel = min(steps / 2, max(0, (max_time - avg_time) / slope));
   int num1 = (num + 1) % 2;
-  int cnt = 0;
-  int max_cnt = deg / 90 + 1;
-  bool cnt_flag = false;
+  //int cnt = 0;
+  //int max_cnt = deg / 90 + int(analogRead(sensor[num]) <= magnet_threshold);
+  //bool cnt_flag = false;
   digitalWrite(step_dir[num1], HIGH);
   bool flag = (deg >= 90);
   for (int i = 0; i < accel; i++) {
@@ -38,11 +38,13 @@ void move_motor(long num, long deg, long spd) {
     if (flag) {
       if (analogRead(sensor[num1]) > magnet_threshold)
         digitalWrite(step_pul[num1], motor_hl);
+      /*
       if (analogRead(sensor[num]) <= magnet_threshold) {
         if (!cnt_flag) cnt++;
         cnt_flag = true;
       } else cnt_flag = false;
       if (cnt == max_cnt) break;
+      */
     }
     delayMicroseconds(max_time - slope * i);
   }
@@ -53,11 +55,13 @@ void move_motor(long num, long deg, long spd) {
     if (flag) {
       if (analogRead(sensor[num1]) > magnet_threshold)
         digitalWrite(step_pul[num1], motor_hl);
+      /*
       if (analogRead(sensor[num]) <= magnet_threshold) {
         if (!cnt_flag) cnt++;
         cnt_flag = true;
       } else cnt_flag = false;
       if (cnt == max_cnt) break;
+      */
     }
     delayMicroseconds(avg_time);
   }
@@ -68,14 +72,17 @@ void move_motor(long num, long deg, long spd) {
     if (flag) {
       if (analogRead(sensor[num1]) > magnet_threshold)
         digitalWrite(step_pul[num1], motor_hl);
+      /*
       if (analogRead(sensor[num]) <= magnet_threshold) {
         if (!cnt_flag) cnt++;
         cnt_flag = true;
       } else cnt_flag = false;
       if (cnt == max_cnt) break;
+      */
     }
     delayMicroseconds(max_time - slope * accel + accel * (i + 1));
   }
+  /*
   if (deg >= 90) {
     int max_while = 50;
     int while_cnt = 0;
@@ -86,6 +93,7 @@ void move_motor(long num, long deg, long spd) {
       delayMicroseconds(max_time);
     }
   }
+  */
 }
 
 void motor_adjust(long num, long spd) {
