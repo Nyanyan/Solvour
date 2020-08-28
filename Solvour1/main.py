@@ -258,7 +258,7 @@ def optimise(robot_solution):
             #print(command)
             continue
 
-        if arms[command[0]] < command[1] < 3000:
+        if arms[command[0]] < command[1] < 4000: # MODIFIED
             for i in reversed(range(len(res))):
                 if res[i][0] == command[0] and res[i][1] >= 1000:
                     del res[i]
