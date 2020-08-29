@@ -258,7 +258,7 @@ def optimise(robot_solution):
             #print(command)
             continue
 
-        if arms[command[0]] < command[1] < 4000: # MODIFIED
+        if arms[command[0]] < command[1] < 2000: # MODIFIED
             for i in reversed(range(len(res))):
                 if res[i][0] == command[0] and res[i][1] >= 1000:
                     del res[i]
@@ -312,7 +312,7 @@ def optimise(robot_solution):
 
 def premove_1(arm, rpm):
     premove = []
-    amount = 12
+    amount = 5
     if arm == 0:
         premove.append([1, amount, rpm])
         #premove.append([3, -amount, rpm])
@@ -330,7 +330,7 @@ def premove_1(arm, rpm):
 
 def premove_2(arm, rpm):
     premove = []
-    amount = 12
+    amount = 5
     if arm == 0:
         premove.append([1, -amount, rpm])
         #premove.append([3, amount, rpm])
@@ -408,7 +408,7 @@ def start_p():
     print('start!')
     strt_solv = time()
     #move_commands(robot_solution, 0.09, 0.22)
-    solv_time = str(int(move_commands(robot_solution, 0.09, 0.2) * 1000) / 1000).ljust(5, '0')
+    solv_time = str(int(move_commands(robot_solution, 0.09, 0.25) * 1000) / 1000).ljust(5, '0')
     #solv_time = str(int((time() - strt_solv) * 1000) / 1000).ljust(5, '0')
     solvingtimevar.set(solv_time + 's')
     print('solving time:', solv_time, 's')
